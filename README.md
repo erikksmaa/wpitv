@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # WPiTV / iTV Laravel 12 Core Structure
 
 ## Project Overview
@@ -50,3 +51,7 @@ npm run dev
    - DILARANG menjalankan `php artisan migrate:fresh` atau `php artisan db:wipe`.
    - Table name legacy diakomodasi langsung via Eloquent Model `$table` property (`ms_banner`, `ms_program`, `ms_news`, `ms_video`, `tr_perliputan`, `tr_usercounter`).
    - Autentikasi menggunakan field `username` (bukan email). User non-aktif (`status = 0`) diblokir dari login.
+=======
+# wpitv
+moderenisasi website wpitv
+>>>>>>> 9e488494db8ac2e4e11a467fd09d6487acd39dbe
