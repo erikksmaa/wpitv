@@ -39,7 +39,7 @@ class TVClubGroup extends Model
     public function members()
     {
         return $this->belongsToMany(TVClubMember::class, 'tvclub_group_members', 'group_id', 'member_id')
-                    ->withPivot('id', 'role')
-                    ->withTimestamps();
+            ->withPivot('id', 'role')
+            ->withTimestamps();
     }
 }

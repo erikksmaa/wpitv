@@ -1,1 +1,444 @@
 import './bootstrap';
+
+(function () {
+  'use strict';
+
+  // ===================== THEME TOGGLE =====================
+  const root = document.documentElement;
+  const THEME_KEY = 'wpitv-v2-theme';
+
+  function applyTheme(theme) {
+    if (theme === 'dark') {
+      root.classList.add('dark');
+      root.setAttribute('data-theme', 'dark');
+    } else {
+      root.classList.remove('dark');
+      root.setAttribute('data-theme', 'light');
+    }
+    localStorage.setItem(THEME_KEY, theme);
+  }
+
+  // Initialize theme
+  const savedTheme = localStorage.getItem(THEME_KEY);
+  if (savedTheme === 'dark' || savedTheme === 'light') {
+    applyTheme(savedTheme);
+  } else {
+    const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    applyTheme(prefersDark ? 'dark' : 'light');
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    initInteractive();
+  });
+
+  // Re-run on Livewire navigation/morph if applicable
+  document.addEventListener('livewire:navigated', () => {
+    initInteractive();
+  });
+
+  function initInteractive() {
+    // ===================== HOMEPAGE FEATURED VIDEO =====================
+    document.querySelectorAll('[data-home-featured]').forEach(function (featured) {
+      if (featured.dataset.bound === 'true') return;
+
+      featured.dataset.bound = 'true';
+      const section = featured.closest('.home-featured-hero');
+      const player = featured.querySelector('[data-home-featured-player]');
+      const frame = featured.querySelector('[data-home-featured-frame]');
+      const poster = featured.querySelector('[data-home-featured-poster]');
+      const playerLabel = featured.querySelector('[data-home-featured-player-label]');
+      const status = featured.querySelector('[data-home-featured-status]');
+      const detailLink = featured.querySelector('[data-home-featured-link]');
+      const detailLinkLabel = featured.querySelector('[data-home-featured-link-label]');
+      const metaPrimary = section?.querySelector('[data-home-featured-meta-primary]');
+      const metaSecondary = section?.querySelector('[data-home-featured-meta-secondary]');
+      const metaSecondaryWrap = section?.querySelector('[data-home-featured-meta-secondary-wrap]');
+      const options = Array.from(featured.querySelectorAll('[data-home-video-option]'));
+
+      if (!player || !frame || !poster || options.length === 0) return;
+
+      function selectVideo(option, moveFocus = false) {
+        const key = option.dataset.key;
+        if (!key || featured.dataset.activeKey === key) {
+          if (moveFocus) option.focus();
+          return;
+        }
+
+        const title = option.dataset.title || 'Video WPiTV';
+        const source = option.dataset.embedUrl
+          ? option.dataset.embedUrl + '?playsinline=1&controls=1&rel=0&modestbranding=1'
+          : '';
+
+        if (!source) return;
+
+        featured.dataset.activeKey = key;
+        player.classList.add('is-switching');
+        player.classList.remove('is-player-ready');
+
+        options.forEach(function (item) {
+          const active = item === option;
+          item.classList.toggle('is-active', active);
+          item.setAttribute('aria-selected', active ? 'true' : 'false');
+          item.setAttribute('tabindex', active ? '0' : '-1');
+        });
+
+        poster.src = option.dataset.thumbnailUrl || '';
+        poster.alt = 'Cuplikan ' + title;
+        frame.title = title + ' — WPiTV';
+        frame.dataset.src = source;
+        frame.dataset.loaded = 'true';
+        frame.dataset.loadKey = key;
+        frame.src = source;
+
+        if (playerLabel) playerLabel.textContent = option.dataset.label || 'Video unggulan';
+        if (metaPrimary) metaPrimary.textContent = option.dataset.metaPrimary || title;
+
+        const secondary = option.dataset.program
+          ? 'Program: ' + option.dataset.program
+          : (option.dataset.metaSecondary || '');
+        if (metaSecondary) metaSecondary.textContent = secondary;
+        metaSecondaryWrap?.classList.toggle('hidden', !secondary);
+
+        if (detailLink) {
+          const detailUrl = option.dataset.detailUrl || '';
+          const externalUrl = option.dataset.externalUrl || '';
+          detailLink.href = detailUrl || externalUrl;
+          detailLink.classList.toggle('hidden', !detailUrl && !externalUrl);
+
+          if (detailUrl) {
+            detailLink.removeAttribute('target');
+            detailLink.removeAttribute('rel');
+            if (detailLinkLabel) detailLinkLabel.textContent = 'Lihat detail tayangan';
+          } else {
+            detailLink.target = '_blank';
+            detailLink.rel = 'noopener noreferrer';
+            if (detailLinkLabel) detailLinkLabel.textContent = 'Tonton di YouTube';
+          }
+        }
+
+        if (status) status.textContent = 'Video aktif: ' + title;
+        window.setTimeout(function () {
+          player.classList.remove('is-switching');
+        }, 180);
+
+        if (moveFocus) option.focus();
+      }
+
+      if (!frame.dataset.switchBound) {
+        frame.dataset.switchBound = 'true';
+        frame.addEventListener('load', function () {
+          if (frame.dataset.loadKey === featured.dataset.activeKey || !frame.dataset.loadKey) {
+            player.classList.add('is-player-ready');
+            player.classList.remove('is-switching');
+          }
+        });
+      }
+
+      options.forEach(function (option, index) {
+        option.addEventListener('click', function () {
+          selectVideo(option);
+        });
+
+        option.addEventListener('keydown', function (event) {
+          let nextIndex = null;
+
+          if (event.key === 'ArrowRight') nextIndex = (index + 1) % options.length;
+          if (event.key === 'ArrowLeft') nextIndex = (index - 1 + options.length) % options.length;
+          if (event.key === 'Home') nextIndex = 0;
+          if (event.key === 'End') nextIndex = options.length - 1;
+
+          if (nextIndex !== null) {
+            event.preventDefault();
+            selectVideo(options[nextIndex], true);
+          }
+        });
+      });
+    });
+
+    // ===================== PROGRAM PRODUCTION CREW =====================
+    document.querySelectorAll('[data-program-crew]').forEach(function (crew) {
+      if (crew.dataset.bound === 'true') return;
+
+      crew.dataset.bound = 'true';
+      const tabs = Array.from(crew.querySelectorAll('[data-program-crew-tab]'));
+      const panels = Array.from(crew.querySelectorAll('[data-program-crew-panel]'));
+      const panelGroup = crew.querySelector('.program-crew-panels');
+
+      if (tabs.length < 2 || panels.length === 0) return;
+
+      function selectGroup(tab, moveFocus = false) {
+        const groupId = tab.dataset.programCrewTab;
+        if (!groupId) return;
+
+        tabs.forEach(function (item) {
+          const active = item === tab;
+          item.classList.toggle('is-active', active);
+          item.setAttribute('aria-selected', active ? 'true' : 'false');
+          item.setAttribute('tabindex', active ? '0' : '-1');
+        });
+
+        panels.forEach(function (panel) {
+          panel.hidden = panel.dataset.programCrewPanel !== groupId;
+        });
+
+        if (panelGroup) panelGroup.dataset.activeGroup = groupId;
+        if (moveFocus) tab.focus();
+      }
+
+      tabs.forEach(function (tab, index) {
+        tab.addEventListener('click', function () {
+          selectGroup(tab);
+        });
+
+        tab.addEventListener('keydown', function (event) {
+          let nextIndex = null;
+
+          if (event.key === 'ArrowRight') nextIndex = (index + 1) % tabs.length;
+          if (event.key === 'ArrowLeft') nextIndex = (index - 1 + tabs.length) % tabs.length;
+          if (event.key === 'Home') nextIndex = 0;
+          if (event.key === 'End') nextIndex = tabs.length - 1;
+
+          if (nextIndex !== null) {
+            event.preventDefault();
+            selectGroup(tabs[nextIndex], true);
+          }
+        });
+      });
+    });
+
+    // Keep the fast thumbnail visible during the first paint, then initialize
+    // the single active YouTube player when the browser is idle. Playback is
+    // never started automatically.
+    document.querySelectorAll('[data-hero-video]').forEach(function (frame) {
+      if (frame.dataset.scheduled === 'true') return;
+
+      frame.dataset.scheduled = 'true';
+      const loadPlayer = function () {
+        if (!frame.isConnected || frame.dataset.loaded === 'true') return;
+        frame.dataset.loaded = 'true';
+        frame.addEventListener('load', function () {
+          frame.closest('[data-home-featured-player], .hero-video-card, .video-player-wrap')?.classList.add('is-player-ready');
+        }, { once: true });
+        frame.src = frame.dataset.src;
+      };
+      const schedulePlayer = function () {
+        if ('requestIdleCallback' in window) {
+          window.requestIdleCallback(loadPlayer, { timeout: 2200 });
+        } else {
+          window.setTimeout(loadPlayer, 1200);
+        }
+      };
+
+      if (document.readyState === 'complete') schedulePlayer();
+      else window.addEventListener('load', schedulePlayer, { once: true });
+    });
+
+    const themeBtn = document.getElementById('themeToggle');
+    if (themeBtn && !themeBtn.dataset.bound) {
+      themeBtn.dataset.bound = 'true';
+      themeBtn.addEventListener('click', function () {
+        const isDark = root.classList.contains('dark') || root.getAttribute('data-theme') === 'dark';
+        applyTheme(isDark ? 'light' : 'dark');
+      });
+    }
+
+    // ===================== HEADER SCROLL =====================
+    const header = document.getElementById('siteHeader');
+    if (header) {
+      window.addEventListener('scroll', function () {
+        header.classList.toggle('scrolled', window.scrollY > 10);
+      }, { passive: true });
+    }
+
+    // ===================== MOBILE MENU =====================
+    const burger = document.getElementById('burgerBtn');
+    const mPanel = document.getElementById('mobilePanel');
+    if (burger && mPanel && !burger.dataset.bound) {
+      burger.dataset.bound = 'true';
+      burger.addEventListener('click', function () {
+        const open = mPanel.classList.toggle('open');
+        burger.classList.toggle('open', open);
+        burger.setAttribute('aria-expanded', open ? 'true' : 'false');
+        mPanel.setAttribute('aria-hidden', open ? 'false' : 'true');
+      });
+
+      mPanel.querySelectorAll('a').forEach(function (a) {
+        a.addEventListener('click', function () {
+          mPanel.classList.remove('open');
+          burger.classList.remove('open');
+          burger.setAttribute('aria-expanded', 'false');
+          mPanel.setAttribute('aria-hidden', 'true');
+        });
+      });
+    }
+
+    // ===================== SCROLL REVEAL =====================
+    if ('IntersectionObserver' in window) {
+      const rvObs = new IntersectionObserver(function (entries) {
+        entries.forEach(function (e) {
+          if (e.isIntersecting) {
+            e.target.classList.add('in-view');
+            rvObs.unobserve(e.target);
+          }
+        });
+      }, { threshold: 0.10 });
+
+      document.querySelectorAll('[data-reveal]').forEach(function (el) {
+        rvObs.observe(el);
+      });
+    } else {
+      document.querySelectorAll('[data-reveal]').forEach(function (el) {
+        el.classList.add('in-view');
+      });
+    }
+
+    // ===================== SPOTLIGHT CAROUSEL =====================
+    const spTrack = document.getElementById('spotlightTrack');
+    const spDots = document.getElementById('spotDots');
+    const spPrev = document.getElementById('spotPrev');
+    const spNext = document.getElementById('spotNext');
+
+    if (spTrack && !spTrack.dataset.bound) {
+      spTrack.dataset.bound = 'true';
+      const spSlides = spTrack.querySelectorAll('.spotlight-slide');
+      let spIdx = 0;
+      let spTimer;
+
+      if (spSlides.length > 0) {
+        if (spDots) {
+          spDots.innerHTML = '';
+          spSlides.forEach(function (_, i) {
+            const dot = document.createElement('button');
+            dot.className = 'spot-dot' + (i === 0 ? ' active' : '');
+            dot.setAttribute('role', 'tab');
+            dot.setAttribute('aria-label', 'Slide ' + (i + 1));
+            dot.addEventListener('click', function () {
+              spGo(i);
+              spRestart();
+            });
+            spDots.appendChild(dot);
+          });
+        }
+
+        function spGo(i) {
+          spIdx = (i + spSlides.length) % spSlides.length;
+          spTrack.style.transform = 'translateX(-' + (spIdx * 100) + '%)';
+          if (spDots) {
+            spDots.querySelectorAll('.spot-dot').forEach(function (d, di) {
+              d.classList.toggle('active', di === spIdx);
+              d.setAttribute('aria-selected', di === spIdx ? 'true' : 'false');
+            });
+          }
+        }
+
+        function spRestart() {
+          clearInterval(spTimer);
+          if (spSlides.length > 1) {
+            spTimer = setInterval(function () {
+              spGo(spIdx + 1);
+            }, 5500);
+          }
+        }
+
+        if (spPrev) {
+          spPrev.addEventListener('click', function () {
+            spGo(spIdx - 1);
+            spRestart();
+          });
+        }
+        if (spNext) {
+          spNext.addEventListener('click', function () {
+            spGo(spIdx + 1);
+            spRestart();
+          });
+        }
+
+        const spWrap = spTrack.parentElement;
+        if (spWrap) {
+          spWrap.addEventListener('mouseenter', function () {
+            clearInterval(spTimer);
+          });
+          spWrap.addEventListener('mouseleave', spRestart);
+          spWrap.addEventListener('keydown', function (e) {
+            if (e.key === 'ArrowLeft') {
+              spGo(spIdx - 1);
+              spRestart();
+            }
+            if (e.key === 'ArrowRight') {
+              spGo(spIdx + 1);
+              spRestart();
+            }
+          });
+        }
+
+        let tx = 0;
+        spTrack.addEventListener('touchstart', function (e) {
+          tx = e.changedTouches[0].screenX;
+        }, { passive: true });
+
+        spTrack.addEventListener('touchend', function (e) {
+          const diff = tx - e.changedTouches[0].screenX;
+          if (Math.abs(diff) > 50) {
+            spGo(diff > 0 ? spIdx + 1 : spIdx - 1);
+            spRestart();
+          }
+        }, { passive: true });
+
+        if (spSlides.length > 1) {
+          spRestart();
+        }
+      }
+    }
+
+    // ===================== COUNT UP ANIMATION =====================
+    const counters = document.querySelectorAll('[data-count]');
+    function doCount(el) {
+      const target = parseInt(el.getAttribute('data-target'), 10);
+      const suffix = el.getAttribute('data-suffix') || '';
+      if (isNaN(target)) return;
+      if (target > 1000) {
+        el.textContent = target + suffix;
+        return;
+      }
+      const dur = 1500;
+      let start = null;
+      function step(ts) {
+        if (!start) start = ts;
+        const p = Math.min((ts - start) / dur, 1);
+        const e = 1 - Math.pow(1 - p, 3);
+        el.textContent = Math.round(e * target) + suffix;
+        if (p < 1) requestAnimationFrame(step);
+      }
+      requestAnimationFrame(step);
+    }
+
+    if (counters.length) {
+      if ('IntersectionObserver' in window) {
+        const cObs = new IntersectionObserver(function (entries) {
+          entries.forEach(function (e) {
+            if (e.isIntersecting) {
+              doCount(e.target);
+              cObs.unobserve(e.target);
+            }
+          });
+        }, { threshold: 0.4 });
+        counters.forEach(function (el) {
+          cObs.observe(el);
+        });
+      } else {
+        counters.forEach(function (el) {
+          el.textContent = (el.getAttribute('data-target') || '0') + (el.getAttribute('data-suffix') || '');
+        });
+      }
+    }
+
+    // Fallback error image
+    document.querySelectorAll('img').forEach(function (img) {
+      img.addEventListener('error', function () {
+        if (this.dataset.fallback) {
+          this.src = this.dataset.fallback;
+        }
+      });
+    });
+  }
+})();

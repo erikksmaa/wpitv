@@ -22,7 +22,6 @@ class User extends Authenticatable
 
     protected $hidden = [
         'password',
-        'remember_token',
     ];
 
     protected function casts(): array
@@ -31,6 +30,11 @@ class User extends Authenticatable
             'status' => 'boolean',
             'password' => 'hashed',
         ];
+    }
+
+    public function getRememberTokenName(): string
+    {
+        return '';
     }
 
     public function role()
@@ -61,5 +65,15 @@ class User extends Authenticatable
     public function isAdminNews(): bool
     {
         return $this->role && $this->role->name === 'Admin News';
+    }
+
+    public function getInitialsAttribute(): string
+    {
+        $words = preg_split('/\s+/', trim($this->name ?: $this->username));
+        if (count($words) >= 2) {
+            return mb_strtoupper(mb_substr($words[0], 0, 1).mb_substr($words[1], 0, 1));
+        }
+
+        return mb_strtoupper(mb_substr($words[0] ?? 'U', 0, 2));
     }
 }

@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Models\User;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -19,19 +21,19 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        \Illuminate\Support\Facades\Gate::define('access-admin', function (\App\Models\User $user) {
+        Gate::define('access-admin', function (User $user) {
             return $user->status && $user->role !== null;
         });
 
-        \Illuminate\Support\Facades\Gate::define('manage-production', function (\App\Models\User $user) {
+        Gate::define('manage-production', function (User $user) {
             return $user->status && ($user->isSuperAdmin() || $user->isAdminProduction());
         });
 
-        \Illuminate\Support\Facades\Gate::define('manage-news', function (\App\Models\User $user) {
+        Gate::define('manage-news', function (User $user) {
             return $user->status && ($user->isSuperAdmin() || $user->isAdminNews());
         });
 
-        \Illuminate\Support\Facades\Gate::define('manage-users', function (\App\Models\User $user) {
+        Gate::define('manage-users', function (User $user) {
             return $user->status && $user->isSuperAdmin();
         });
     }

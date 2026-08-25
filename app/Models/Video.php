@@ -47,4 +47,13 @@ class Video extends Model
     {
         return "https://www.youtube.com/embed/{$this->youtube_id}";
     }
+
+    public function getThumbnailUrlAttribute(): string
+    {
+        if (empty($this->youtube_id)) {
+            return asset('images/placeholders/program-placeholder.svg');
+        }
+
+        return "https://img.youtube.com/vi/{$this->youtube_id}/hqdefault.jpg";
+    }
 }

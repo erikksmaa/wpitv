@@ -1,0 +1,403 @@
+<?php
+
+namespace Tests\Feature\Admin;
+
+use App\Livewire\Admin\Peliputan\Form;
+use App\Livewire\Admin\Peliputan\Index;
+use App\Models\Coverage;
+use App\Models\Role;
+use App\Models\User;
+use Illuminate\Foundation\Testing\DatabaseTransactions;
+use Livewire\Livewire;
+use Tests\TestCase;
+
+class PeliputanManagementTest extends TestCase
+{
+    use DatabaseTransactions;
+
+    protected User $superAdmin;
+
+    protected User $adminProduction;
+
+    protected User $adminNews;
+
+    protected User $inactiveUser;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $superAdminRole = Role::where('name', 'Super Admin')->first() ?? Role::find(1);
+        $prodRole = Role::where('name', 'Admin Production')->first() ?? Role::find(2);
+        $newsRole = Role::where('name', 'Admin News')->first() ?? Role::find(3);
+
+        $this->superAdmin = User::factory()->create([
+            'role_id' => $superAdminRole->id,
+            'status' => 1,
+        ]);
+
+        $this->adminProduction = User::factory()->create([
+            'role_id' => $prodRole->id,
+            'status' => 1,
+        ]);
+
+        $this->adminNews = User::factory()->create([
+            'role_id' => $newsRole->id,
+            'status' => 1,
+        ]);
+
+        $this->inactiveUser = User::factory()->create([
+            'role_id' => $superAdminRole->id,
+            'status' => 0,
+        ]);
+    }
+
+    public function test_guest_cannot_access_peliputan(): void
+    {
+        $this->get(route('admin.peliputan.index'))->assertRedirect(route('login'));
+    }
+
+    public function test_inactive_user_cannot_access_peliputan(): void
+    {
+        $this->actingAs($this->inactiveUser)->get(route('admin.peliputan.index'))->assertRedirect(route('login'));
+    }
+
+    public function test_super_admin_can_view_peliputan_index(): void
+    {
+        $coverage = Coverage::create([
+            'submission_code' => 'PLP-20260817-0001',
+            'name' => 'Dr. Budi Utomo',
+            'email' => 'budi@kampus.ac.id',
+            'phone' => '08123456789',
+            'event_name' => 'Seminar Dies Natalis WPiTV',
+            'event_date' => '2026-09-10',
+            'event_time' => '09:00',
+            'location' => 'Auditorium Utama Lt. 3',
+            'description' => 'Permohonan peliputan seminar nasional',
+            'status' => Coverage::STATUS_PENDING,
+        ]);
+
+        $response = $this->actingAs($this->superAdmin)->get(route('admin.peliputan.index'));
+        $response->assertStatus(200);
+        $response->assertSee('Peliputan & Liputan Acara');
+        $response->assertSee('PLP-20260817-0001');
+        $response->assertSee('Seminar Dies Natalis WPiTV');
+        $response->assertSee('Tambah Peliputan');
+    }
+
+    public function test_admin_production_can_view_peliputan_index(): void
+    {
+        $response = $this->actingAs($this->adminProduction)->get(route('admin.peliputan.index'));
+        $response->assertStatus(200);
+        $response->assertSee('Peliputan & Liputan Acara');
+        $response->assertSee('Tambah Peliputan');
+    }
+
+    public function test_admin_news_can_view_peliputan_index_but_cannot_see_create_button(): void
+    {
+        $response = $this->actingAs($this->adminNews)->get(route('admin.peliputan.index'));
+        $response->assertStatus(200);
+        $response->assertSee('Peliputan & Liputan Acara');
+        $response->assertDontSee('Tambah Peliputan');
+    }
+
+    public function test_admin_news_cannot_access_create_or_edit_direct_urls(): void
+    {
+        $coverage = Coverage::create([
+            'submission_code' => 'PLP-20260817-0002',
+            'name' => 'Pemohon Test',
+            'email' => 'test@kampus.ac.id',
+            'phone' => '08123456789',
+            'event_name' => 'Event Direct Test',
+            'event_date' => '2026-09-10',
+            'location' => 'Aula 1',
+            'description' => 'Deskripsi event',
+            'status' => Coverage::STATUS_PENDING,
+        ]);
+
+        $this->actingAs($this->adminNews)->get(route('admin.peliputan.create'))->assertStatus(403);
+        $this->actingAs($this->adminNews)->get(route('admin.peliputan.edit', $coverage))->assertStatus(403);
+    }
+
+    public function test_super_admin_can_create_coverage(): void
+    {
+        Livewire::actingAs($this->superAdmin)
+            ->test(Form::class)
+            ->set('name', 'Prof. Ahmad Dahlan')
+            ->set('email', 'ahmad@kampus.ac.id')
+            ->set('phone', '081399887766')
+            ->set('event_name', 'Kongres Kebangsaan 2026')
+            ->set('event_date', '2026-10-15')
+            ->set('event_time', '08:30')
+            ->set('location', 'Gedung Rektorat Lt. 2')
+            ->set('description', 'Liputan pembukaan dan sesi pleno 1')
+            ->set('status', Coverage::STATUS_APPROVED)
+            ->set('admin_note', 'Tugaskan Kru 1 dan Kru 2')
+            ->call('save')
+            ->assertRedirect(route('admin.peliputan.index'));
+
+        $this->assertDatabaseHas('tr_perliputan', [
+            'event_name' => 'Kongres Kebangsaan 2026',
+            'name' => 'Prof. Ahmad Dahlan',
+            'email' => 'ahmad@kampus.ac.id',
+            'status' => 'approved',
+            'admin_note' => 'Tugaskan Kru 1 dan Kru 2',
+        ]);
+    }
+
+    public function test_admin_production_can_create_coverage(): void
+    {
+        Livewire::actingAs($this->adminProduction)
+            ->test(Form::class)
+            ->set('name', 'Koordinator Kemahasiswaan')
+            ->set('email', 'kemahasiswaan@kampus.ac.id')
+            ->set('phone', '081555443322')
+            ->set('event_name', 'Pekan Olahraga Mahasiswa')
+            ->set('event_date', '2026-11-01')
+            ->set('location', 'GOR Kampus')
+            ->set('description', 'Liputan final turnamen futsal')
+            ->set('status', Coverage::STATUS_PENDING)
+            ->call('save')
+            ->assertRedirect(route('admin.peliputan.index'));
+
+        $this->assertDatabaseHas('tr_perliputan', [
+            'event_name' => 'Pekan Olahraga Mahasiswa',
+            'name' => 'Koordinator Kemahasiswaan',
+            'status' => 'pending',
+        ]);
+    }
+
+    public function test_validation_works(): void
+    {
+        Livewire::actingAs($this->superAdmin)
+            ->test(Form::class)
+            ->set('name', '')
+            ->set('email', 'not-an-email')
+            ->set('phone', '')
+            ->set('event_name', '')
+            ->set('event_date', '')
+            ->set('location', '')
+            ->set('description', '')
+            ->call('save')
+            ->assertHasErrors(['name', 'email', 'phone', 'event_name', 'event_date', 'location', 'description']);
+    }
+
+    public function test_super_admin_can_edit_coverage(): void
+    {
+        $coverage = Coverage::create([
+            'submission_code' => 'PLP-20260817-0003',
+            'name' => 'Nama Sebelum Edit',
+            'email' => 'sebelum@kampus.ac.id',
+            'phone' => '0811111111',
+            'event_name' => 'Event Sebelum Edit',
+            'event_date' => '2026-09-20',
+            'location' => 'Ruang Teater',
+            'description' => 'Rincian sebelum edit',
+            'status' => Coverage::STATUS_PENDING,
+        ]);
+
+        Livewire::actingAs($this->superAdmin)
+            ->test(Form::class, ['coverage' => $coverage])
+            ->set('name', 'Nama Sesudah Edit')
+            ->set('event_name', 'Event Sesudah Edit')
+            ->set('status', Coverage::STATUS_IN_PROGRESS)
+            ->call('save')
+            ->assertRedirect(route('admin.peliputan.index'));
+
+        $this->assertDatabaseHas('tr_perliputan', [
+            'id' => $coverage->id,
+            'name' => 'Nama Sesudah Edit',
+            'event_name' => 'Event Sesudah Edit',
+            'status' => 'in_progress',
+        ]);
+    }
+
+    public function test_super_admin_and_admin_production_can_delete_coverage(): void
+    {
+        $coverage = Coverage::create([
+            'submission_code' => 'PLP-20260817-0004',
+            'name' => 'Hapus Test',
+            'email' => 'hapus@kampus.ac.id',
+            'phone' => '0899999999',
+            'event_name' => 'Event Mau Dihapus',
+            'event_date' => '2026-09-25',
+            'location' => 'Studio 2',
+            'description' => 'Deskripsi hapus',
+            'status' => Coverage::STATUS_PENDING,
+        ]);
+
+        Livewire::actingAs($this->adminProduction)
+            ->test(Index::class)
+            ->call('delete', $coverage->id);
+
+        $this->assertDatabaseMissing('tr_perliputan', ['id' => $coverage->id]);
+    }
+
+    public function test_admin_news_cannot_delete_coverage_via_livewire(): void
+    {
+        $coverage = Coverage::create([
+            'submission_code' => 'PLP-20260817-0005',
+            'name' => 'Hapus Denied Test',
+            'email' => 'denied@kampus.ac.id',
+            'phone' => '0899999998',
+            'event_name' => 'Event Denied Delete',
+            'event_date' => '2026-09-25',
+            'location' => 'Studio 3',
+            'description' => 'Deskripsi denied delete',
+            'status' => Coverage::STATUS_PENDING,
+        ]);
+
+        Livewire::actingAs($this->adminNews)
+            ->test(Index::class)
+            ->call('delete', $coverage->id)
+            ->assertStatus(403);
+
+        $this->assertDatabaseHas('tr_perliputan', ['id' => $coverage->id]);
+    }
+
+    public function test_quick_status_update_works(): void
+    {
+        $coverage = Coverage::create([
+            'submission_code' => 'PLP-20260817-0006',
+            'name' => 'Quick Status Test',
+            'email' => 'quick@kampus.ac.id',
+            'phone' => '0877777777',
+            'event_name' => 'Event Quick Status',
+            'event_date' => '2026-09-30',
+            'location' => 'Auditorium 2',
+            'description' => 'Kebutuhan quick status',
+            'status' => Coverage::STATUS_PENDING,
+        ]);
+
+        Livewire::actingAs($this->superAdmin)
+            ->test(Index::class)
+            ->call('openStatusModal', $coverage->id)
+            ->set('newStatus', Coverage::STATUS_COMPLETED)
+            ->set('adminNote', 'Liputan selesai diunggah ke YouTube')
+            ->call('updateStatus');
+
+        $coverage->refresh();
+        $this->assertEquals(Coverage::STATUS_COMPLETED, $coverage->status);
+        $this->assertEquals('Liputan selesai diunggah ke YouTube', $coverage->admin_note);
+    }
+
+    public function test_admin_news_cannot_update_status(): void
+    {
+        $coverage = Coverage::create([
+            'submission_code' => 'PLP-20260817-0007',
+            'name' => 'Status Denied Test',
+            'email' => 'statusdenied@kampus.ac.id',
+            'phone' => '0877777776',
+            'event_name' => 'Event Denied Status',
+            'event_date' => '2026-09-30',
+            'location' => 'Auditorium 3',
+            'description' => 'Kebutuhan denied status',
+            'status' => Coverage::STATUS_PENDING,
+        ]);
+
+        Livewire::actingAs($this->adminNews)
+            ->test(Index::class)
+            ->call('openStatusModal', $coverage->id)
+            ->assertStatus(403);
+    }
+
+    public function test_search_works(): void
+    {
+        Coverage::create([
+            'submission_code' => 'PLP-20260817-UNIQUE',
+            'name' => 'Pemohon Search Unik',
+            'email' => 'searchunik@kampus.ac.id',
+            'phone' => '0812344321',
+            'event_name' => 'Konser Musik Orkestra Mahasiswa',
+            'event_date' => '2026-10-10',
+            'location' => 'Stadion Kampus Terbuka',
+            'description' => 'Deskripsi konser musik',
+            'status' => Coverage::STATUS_APPROVED,
+        ]);
+
+        Livewire::actingAs($this->superAdmin)
+            ->test(Index::class)
+            ->set('search', 'Orkestra Mahasiswa')
+            ->assertSee('Konser Musik Orkestra Mahasiswa')
+            ->set('search', 'PencarianKataKunciTidakAda')
+            ->assertDontSee('Konser Musik Orkestra Mahasiswa');
+    }
+
+    public function test_status_filter_works(): void
+    {
+        Coverage::create([
+            'submission_code' => 'PLP-STAT-1',
+            'name' => 'Pemohon Stat 1',
+            'email' => 's1@kampus.ac.id',
+            'phone' => '081111111',
+            'event_name' => 'Acara Status Pending',
+            'event_date' => '2026-10-10',
+            'location' => 'Lokasi 1',
+            'description' => 'Desc 1',
+            'status' => Coverage::STATUS_PENDING,
+        ]);
+
+        Coverage::create([
+            'submission_code' => 'PLP-STAT-2',
+            'name' => 'Pemohon Stat 2',
+            'email' => 's2@kampus.ac.id',
+            'phone' => '082222222',
+            'event_name' => 'Acara Status Completed',
+            'event_date' => '2026-10-10',
+            'location' => 'Lokasi 2',
+            'description' => 'Desc 2',
+            'status' => Coverage::STATUS_COMPLETED,
+        ]);
+
+        Livewire::actingAs($this->superAdmin)
+            ->test(Index::class)
+            ->set('statusFilter', Coverage::STATUS_COMPLETED)
+            ->assertSee('Acara Status Completed')
+            ->assertDontSee('Acara Status Pending');
+    }
+
+    public function test_date_filter_works(): void
+    {
+        Coverage::create([
+            'submission_code' => 'PLP-DATE-1',
+            'name' => 'Pemohon Date 1',
+            'email' => 'd1@kampus.ac.id',
+            'phone' => '081111111',
+            'event_name' => 'Acara Bulan Oktober',
+            'event_date' => '2026-10-15',
+            'location' => 'Lokasi D1',
+            'description' => 'Desc D1',
+            'status' => Coverage::STATUS_PENDING,
+        ]);
+
+        Coverage::create([
+            'submission_code' => 'PLP-DATE-2',
+            'name' => 'Pemohon Date 2',
+            'email' => 'd2@kampus.ac.id',
+            'phone' => '082222222',
+            'event_name' => 'Acara Bulan Desember',
+            'event_date' => '2026-12-25',
+            'location' => 'Lokasi D2',
+            'description' => 'Desc D2',
+            'status' => Coverage::STATUS_PENDING,
+        ]);
+
+        Livewire::actingAs($this->superAdmin)
+            ->test(Index::class)
+            ->set('dateFrom', '2026-12-01')
+            ->set('dateTo', '2026-12-31')
+            ->assertSee('Acara Bulan Desember')
+            ->assertDontSee('Acara Bulan Oktober');
+    }
+
+    public function test_sorting_and_pagination_works(): void
+    {
+        Livewire::actingAs($this->superAdmin)
+            ->test(Index::class)
+            ->call('sortBy', 'event_name')
+            ->assertSet('sortField', 'event_name')
+            ->assertSet('sortDirection', 'asc')
+            ->set('perPage', 25)
+            ->assertSet('perPage', 25);
+    }
+}

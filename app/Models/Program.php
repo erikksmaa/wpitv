@@ -2,8 +2,10 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Storage;
 
 class Program extends Model
 {
@@ -24,6 +26,34 @@ class Program extends Model
         return [
             'status' => 'boolean',
         ];
+    }
+
+    /**
+     * Get the full URL for the program cover image with fallback.
+     */
+    protected function imageUrl(): Attribute
+    {
+        return Attribute::make(
+            get: function () {
+                if (empty($this->image)) {
+                    return asset('images/placeholders/program-placeholder.svg');
+                }
+
+                if (Storage::disk('public')->exists('programs/'.$this->image)) {
+                    return asset('storage/programs/'.$this->image);
+                }
+
+                return asset('images/placeholders/program-placeholder.svg');
+            }
+        );
+    }
+
+    /**
+     * Scope query to only include active programs.
+     */
+    public function scopeActive($query)
+    {
+        return $query->where('status', true);
     }
 
     public function videos()

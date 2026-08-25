@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <rect width="200" height="200" rx="16" fill="#f0f4fd"/>
+  <rect x="35" y="45" width="130" height="95" rx="8" fill="#435ebe" fill-opacity="0.1" stroke="#435ebe" stroke-width="3"/>
+  <path d="M75 140 L65 165 M125 140 L135 165 M55 165 L145 165" stroke="#435ebe" stroke-width="3" stroke-linecap="round"/>
+  <path d="M85 45 L70 25 M115 45 L130 25" stroke="#435ebe" stroke-width="3" stroke-linecap="round"/>
+  <polygon points="90,75 120,92.5 90,110" fill="#435ebe"/>
+  <text x="100" y="185" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="11" font-weight="700" fill="#7c8db5" text-anchor="middle" letter-spacing="1">WPITV PROGRAM</text>
+</svg>

@@ -2,49 +2,31 @@
 
 namespace App\Livewire\Admin\Dashboard;
 
-use Livewire\Component;
-use Illuminate\Support\Facades\DB;
+use App\Services\AdminDashboardMetrics;
 use Illuminate\Support\Facades\Auth;
-use App\Models\User;
-use App\Models\Role;
-use App\Models\Program;
-use App\Models\Video;
-use App\Models\News;
-use App\Models\Banner;
-use App\Models\Coverage;
+use Illuminate\Support\Facades\Log;
+use Livewire\Component;
 
 class Index extends Component
 {
-    public function render()
+    public function render(AdminDashboardMetrics $metrics)
     {
-        $dbConnected = false;
-        $dbMessage = '';
-        $counts = [];
+        $dashboard = [];
+        $dashboardAvailable = true;
 
         try {
-            DB::connection()->getPdo();
-            $dbConnected = true;
-            $dbMessage = 'Terhubung ke database MySQL wpitv';
-
-            $counts = [
-                'users' => User::count(),
-                'roles' => Role::count(),
-                'programs' => Program::count(),
-                'videos' => Video::count(),
-                'news' => News::count(),
-                'banners' => Banner::count(),
-                'coverage' => Coverage::count(),
-            ];
-        } catch (\Exception $e) {
-            $dbConnected = false;
-            $dbMessage = 'Gagal terhubung: ' . $e->getMessage();
+            $dashboard = $metrics->get();
+        } catch (\Throwable $exception) {
+            $dashboardAvailable = false;
+            Log::error('Admin dashboard metrics failed to load.', ['exception' => $exception]);
         }
 
         return view('livewire.admin.dashboard.index', [
-            'dbConnected' => $dbConnected,
-            'dbMessage' => $dbMessage,
-            'counts' => $counts,
+            'dashboard' => $dashboard,
+            'dashboardAvailable' => $dashboardAvailable,
             'user' => Auth::user(),
-        ])->layout('layouts.admin', ['title' => 'Admin Dashboard - WPiTV', 'header' => 'Dashboard Overview']);
+        ])->layout('layouts.admin', [
+            'title' => 'Dasbor Admin - WPiTV',
+        ]);
     }
 }

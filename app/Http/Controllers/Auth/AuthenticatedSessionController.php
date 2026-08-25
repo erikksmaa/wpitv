@@ -28,6 +28,9 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
+        $displayName = $request->user()->name ?: $request->user()->username;
+        $request->session()->flash('success', "Selamat datang kembali, {$displayName}. Anda berhasil masuk ke WPiTV Admin.");
+
         return redirect()->intended(route('admin.dashboard', absolute: false));
     }
 
