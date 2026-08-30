@@ -17,7 +17,7 @@
     --wp-cyan: #24a3dd;
     --wp-deep-blue: #1e368b;
     --wp-navy: #0b1730;
-    --wp-accent: #f59a32;
+    --wp-accent: #e7861f;
     --wp-success: #25aa65;
     --wp-danger: #e34b43;
     --wp-info: #24a3dd;
@@ -97,6 +97,8 @@ body {
     border-right: 1px solid rgba(255, 255, 255, 0.06);
     box-shadow: 6px 0 24px rgba(11, 23, 48, 0.12);
     width: 280px;
+    z-index: 1045;
+    pointer-events: auto;
 }
 
 #sidebar .sidebar-header {
@@ -205,9 +207,52 @@ body {
 /* Main shell and top navigation */
 #main.layout-navbar {
     margin-left: 280px;
-    padding: 0.85rem 1.1rem 1rem;
+    padding: 0;
     transition: margin-left 220ms ease;
 }
+
+#main #main-content {
+    padding: 1.5rem 1.75rem 1rem;
+}
+
+.admin-mobile-bar {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    min-height: 62px;
+    margin: 0.9rem 1.25rem 0;
+    padding: 0.55rem 0.7rem;
+    border: 1px solid var(--wp-border);
+    border-radius: 14px;
+    background: var(--wp-surface);
+    box-shadow: var(--wp-shadow-sm);
+}
+
+.admin-mobile-bar .burger-btn {
+    display: inline-flex !important;
+    width: 42px;
+    height: 42px;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border: 0;
+    border-radius: 11px;
+    color: #fff;
+    background: var(--wp-primary);
+    font-size: 1.35rem;
+}
+
+.admin-mobile-brand {
+    display: inline-flex;
+    min-width: 0;
+    align-items: center;
+    gap: 0.65rem;
+    color: var(--wp-ink);
+    font-size: 0.86rem;
+    font-weight: 800;
+}
+
+.admin-mobile-brand img { width: 54px; height: 36px; object-fit: contain; }
 
 #main .navbar-top {
     backdrop-filter: blur(14px);
@@ -1719,14 +1764,22 @@ footer {
 @media (max-width: 1199.98px) {
     #main.layout-navbar {
         margin-left: 0;
-        padding: 1rem;
+        padding: 0;
     }
+
+    #main #main-content { padding: 1rem 1.25rem; }
+
+    #sidebar .sidebar-wrapper { z-index: 1045; pointer-events: auto; }
+    .sidebar-backdrop { z-index: 1040 !important; background: rgba(7, 17, 31, 0.58) !important; }
 }
 
 @media (max-width: 767.98px) {
     #main.layout-navbar {
-        padding: 0.75rem;
+        padding: 0;
     }
+
+    #main #main-content { padding: 0.75rem; }
+    .admin-mobile-bar { margin: 0.7rem 0.75rem 0; }
 
     #main .navbar-top {
         border-radius: 12px;
@@ -1772,3 +1825,136 @@ footer {
         transition-duration: 0.01ms !important;
     }
 }
+
+/* Organization management */
+.org-admin-page { display: grid; gap: 1rem; }
+.org-admin-back a { color: var(--wp-primary); font-weight: 700; font-size: .88rem; }
+.org-admin-hero {
+    align-items: center;
+    background: linear-gradient(135deg, #102f69 0%, #1559aa 68%, #1f84d2 100%);
+    border-radius: 20px;
+    box-shadow: 0 16px 34px rgba(10, 47, 105, .18);
+    color: #fff;
+    display: flex;
+    justify-content: space-between;
+    overflow: hidden;
+    padding: 1.35rem 1.5rem;
+    position: relative;
+}
+.org-admin-hero::after { background: rgba(255, 255, 255, .08); border-radius: 50%; content: ''; height: 170px; position: absolute; right: -40px; top: -80px; width: 170px; }
+.org-admin-hero--tvclub { background: linear-gradient(135deg, #0b274f, #164f94 60%, #2078bb); }
+.org-admin-hero > * { position: relative; z-index: 1; }
+.org-admin-hero h1 { color: #fff; font-size: clamp(1.35rem, 2vw, 1.8rem); margin: .18rem 0 .25rem; }
+.org-admin-hero p { color: rgba(255, 255, 255, .78); margin: 0; }
+.org-admin-eyebrow { color: #ffb154; font-size: .7rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
+.org-admin-hero .btn-primary { background: #fff; border-color: #fff; color: #1559aa; }
+.org-admin-preview,
+.org-admin-list { border: 1px solid var(--wp-border); border-radius: 18px; box-shadow: 0 8px 24px rgba(22, 45, 83, .07); overflow: hidden; }
+.org-admin-preview .card-header,
+.org-admin-list .card-header { align-items: center; background: var(--wp-surface); border-bottom: 1px solid var(--wp-border); display: flex; justify-content: space-between; padding: 1rem 1.15rem; }
+.org-admin-preview .card-header span:first-child,
+.org-admin-list .card-header span:first-child { color: var(--wp-muted); display: block; font-size: .68rem; font-weight: 800; letter-spacing: .09em; text-transform: uppercase; }
+.org-admin-preview .card-header h2,
+.org-admin-list .card-header h2 { color: var(--wp-heading); font-size: 1rem; margin: .12rem 0 0; }
+.org-admin-tree-scroll { overflow-x: auto; padding: .5rem .25rem 1rem; }
+.org-admin-tree { display: flex; justify-content: center; list-style: none; margin: 0; min-width: max-content; padding: 0; }
+.org-admin-tree__branch { align-items: center; display: flex; flex-direction: column; padding: 0 .4rem; position: relative; }
+.org-admin-tree__children { display: flex; justify-content: center; list-style: none; margin: 1.6rem 0 0; padding: 1.25rem 0 0; position: relative; }
+.org-admin-tree__children::before { background: #9db6d7; content: ''; height: 1px; left: 12%; position: absolute; right: 12%; top: 0; }
+.org-admin-tree__children > .org-admin-tree__branch::before { background: #9db6d7; content: ''; height: 1.25rem; left: 50%; position: absolute; top: -1.25rem; width: 1px; }
+.org-admin-tree__branch:has(> .org-admin-tree__children)::after { background: #9db6d7; bottom: -1.6rem; content: ''; height: 1.6rem; left: 50%; position: absolute; width: 1px; }
+.org-admin-node { background: linear-gradient(145deg, var(--wp-surface), var(--wp-soft)); border: 1px solid #cbd9e9; border-radius: 14px; box-shadow: 0 7px 18px rgba(18, 55, 99, .08); min-width: 190px; padding: .8rem; position: relative; width: 210px; }
+.org-admin-node.is-inactive { opacity: .72; }
+.org-admin-node__accent { background: #f28a2b; border-radius: 999px; display: block; height: 4px; margin-bottom: .65rem; width: 34px; }
+.org-admin-node__heading { align-items: flex-start; display: flex; gap: .5rem; justify-content: space-between; }
+.org-admin-node__heading small { color: var(--wp-muted); display: block; font-size: .62rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+.org-admin-node__heading strong { color: var(--wp-heading); display: block; font-size: .9rem; line-height: 1.3; }
+.org-admin-node__people { display: grid; gap: .35rem; margin-top: .65rem; }
+.org-admin-node__people > span,
+.org-admin-person,
+.org-admin-assignees > span { align-items: center; color: var(--wp-text); display: flex; font-size: .76rem; gap: .45rem; }
+.org-admin-node__people b,
+.org-admin-person > b,
+.org-admin-assignees > span > b { align-items: center; background: #e5f1ff; border-radius: 50%; color: #1559aa; display: inline-flex; flex: 0 0 28px; font-size: .62rem; height: 28px; justify-content: center; width: 28px; }
+.org-admin-node__people em,
+.org-admin-assignees em { color: var(--wp-muted); font-size: .75rem; font-style: normal; }
+.org-admin-node__actions { border-top: 1px solid var(--wp-border); display: flex; gap: .25rem; margin-top: .65rem; padding-top: .55rem; }
+.org-admin-list thead th { background: var(--wp-soft); color: var(--wp-muted); font-size: .68rem; letter-spacing: .06em; padding: .85rem 1rem; text-transform: uppercase; }
+.org-admin-list tbody td { border-color: var(--wp-border); color: var(--wp-text); padding: .85rem 1rem; }
+.org-admin-person small,
+.org-admin-assignees small { color: var(--wp-muted); display: block; font-size: .68rem; }
+.org-admin-assignees { display: flex; flex-wrap: wrap; gap: .4rem; min-width: 230px; }
+.org-admin-assignees > span { background: var(--wp-soft); border: 1px solid var(--wp-border); border-radius: 12px; padding: .35rem .45rem; }
+.org-admin-assignees button { background: transparent; border: 0; color: #dc3545; padding: 0; }
+.org-admin-empty { color: var(--wp-muted); padding: 2.25rem 1rem; text-align: center; }
+.org-admin-empty i { color: #277ac4; display: block; font-size: 2rem; margin-bottom: .5rem; }
+.org-admin-empty h3 { color: var(--wp-heading); font-size: 1rem; margin-bottom: .25rem; }
+.org-admin-empty p { margin: 0; }
+.org-admin-empty--compact { padding: 1.5rem; }
+.org-admin-modal { background: rgba(6, 17, 36, .68); z-index: 1055; }
+.org-admin-modal .modal-content { background: var(--wp-surface); border: 1px solid var(--wp-border); border-radius: 18px; overflow: hidden; }
+.org-admin-modal .modal-header { background: linear-gradient(135deg, var(--wp-soft), var(--wp-surface)); border-bottom: 1px solid var(--wp-border); padding: 1rem 1.15rem; }
+.org-admin-modal .modal-header span { color: #277ac4; font-size: .68rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+.org-admin-modal .modal-header h2 { color: var(--wp-heading); font-size: 1.08rem; margin: .1rem 0 0; }
+.org-admin-modal .modal-body { padding: 1.15rem; }
+.org-admin-context { align-items: center; background: var(--wp-soft); border: 1px solid var(--wp-border); border-radius: 12px; color: var(--wp-text); display: flex; gap: .6rem; margin-bottom: 1rem; padding: .75rem; }
+.org-admin-context i { color: #198754; }
+
+@media (max-width: 767.98px) {
+    .org-admin-hero { align-items: flex-start; flex-direction: column; gap: 1rem; padding: 1.1rem; }
+    .org-admin-hero .btn { width: 100%; }
+    .org-admin-tree-scroll { overflow-x: visible; }
+    .org-admin-tree,
+    .org-admin-tree__children { align-items: stretch; display: block; min-width: 0; width: 100%; }
+    .org-admin-tree__branch { align-items: stretch; padding: 0; }
+    .org-admin-tree__children { border-left: 2px solid #9db6d7; margin: .65rem 0 .25rem .75rem; padding: 0 0 0 1rem; }
+    .org-admin-tree__children::before,
+    .org-admin-tree__branch:has(> .org-admin-tree__children)::after { display: none; }
+    .org-admin-tree__children > .org-admin-tree__branch { margin-top: .65rem; }
+    .org-admin-tree__children > .org-admin-tree__branch::before { height: 1px; left: -1rem; top: 1.25rem; width: 1rem; }
+    .org-admin-node { min-width: 0; width: 100%; }
+    .org-admin-list .table-responsive { max-height: none; }
+    .org-admin-modal .modal-dialog { margin: .65rem; }
+}
+
+html[data-bs-theme="dark"] .org-admin-node,
+body.theme-dark .org-admin-node { border-color: #29466d; }
+html[data-bs-theme="dark"] .org-admin-tree__children::before,
+html[data-bs-theme="dark"] .org-admin-tree__children > .org-admin-tree__branch::before,
+html[data-bs-theme="dark"] .org-admin-tree__branch:has(> .org-admin-tree__children)::after,
+body.theme-dark .org-admin-tree__children::before,
+body.theme-dark .org-admin-tree__children > .org-admin-tree__branch::before,
+body.theme-dark .org-admin-tree__branch:has(> .org-admin-tree__children)::after { background: #4f719c; }
+
+/* WPiTV Agenda V1 */
+.agenda-admin-page { display: grid; gap: 1rem; }
+.agenda-admin-heading { align-items: flex-end; display: flex; gap: 1rem; justify-content: space-between; margin: 0; }
+.agenda-admin-heading h3 { color: var(--wp-heading); margin: .2rem 0; }
+.agenda-admin-heading p { color: var(--wp-muted); margin: 0; }
+.agenda-eyebrow { color: #277ac4; font-size: .68rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
+.agenda-admin-shell, .agenda-form-section { background: var(--wp-surface); border: 1px solid var(--wp-border); border-radius: 18px; box-shadow: 0 9px 24px rgba(19, 50, 88, .07); overflow: hidden; }
+.agenda-tabs { background: var(--wp-soft); border-bottom: 1px solid var(--wp-border); display: flex; gap: .25rem; padding: .65rem; }
+.agenda-tabs button { background: transparent; border: 0; border-radius: 10px; color: var(--wp-muted); font-weight: 700; padding: .65rem 1rem; }
+.agenda-tabs button.active { background: #fff; box-shadow: 0 3px 12px rgba(20, 63, 113, .1); color: #155dac; }
+.agenda-filters { display: grid; gap: .65rem; grid-template-columns: minmax(220px, 1.5fr) repeat(3, minmax(130px, .7fr)) auto; padding: 1rem; }
+.agenda-filters input, .agenda-filters select { background: var(--wp-surface); border: 1px solid var(--wp-border); border-radius: 10px; color: var(--wp-text); min-height: 42px; padding: .55rem .75rem; width: 100%; }
+.agenda-search { position: relative; }.agenda-search i { color: var(--wp-muted); left: .8rem; position: absolute; top: .7rem; }.agenda-search input { padding-left: 2.25rem; }
+.agenda-monthbar { align-items: center; border-block: 1px solid var(--wp-border); display: flex; justify-content: space-between; padding: .8rem 1rem; }
+.agenda-monthbar h4 { color: var(--wp-heading); margin: 0; text-transform: capitalize; }
+.agenda-monthbar button { background: var(--wp-soft); border: 1px solid var(--wp-border); border-radius: 9px; color: var(--wp-text); min-height: 36px; padding: .4rem .7rem; }.agenda-monthbar div button + button { margin-left: .35rem; }
+.agenda-calendar { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); padding: 0 1rem 1rem; }
+.agenda-weekday { color: var(--wp-muted); font-size: .67rem; font-weight: 800; letter-spacing: .05em; padding: .75rem .45rem; text-align: center; text-transform: uppercase; }
+.agenda-day { border: 1px solid var(--wp-border); margin: -1px 0 0 -1px; min-height: 128px; padding: .45rem; position: relative; }.agenda-day.is-outside { background: var(--wp-soft); opacity: .58; }.agenda-day.is-today { box-shadow: inset 0 0 0 2px #e7861f; z-index: 1; }
+.agenda-day-number { align-items: center; display: flex; justify-content: space-between; }.agenda-day-number span { color: var(--wp-heading); font-size: .75rem; font-weight: 800; }.agenda-day-number a { color: #277ac4; }
+.agenda-day-items { display: grid; gap: .3rem; margin-top: .4rem; }.agenda-calendar-item { border: 0; border-left: 3px solid #277ac4; border-radius: 6px; color: #17466f; font-size: .64rem; overflow: hidden; padding: .32rem .4rem; text-align: left; text-overflow: ellipsis; white-space: nowrap; }.agenda-calendar-item span { font-weight: 800; margin-right: .25rem; }
+.status-draft { background: #eef1f5; color: #596579; }.status-scheduled { background: #e5f2ff; color: #155dac; }.status-completed { background: #e6f6ee; color: #087a48; }.status-cancelled { background: #fdecec; color: #b42332; }
+.agenda-more { color: var(--wp-muted); font-size: .62rem; padding-left: .35rem; }.agenda-mobile-count { display: none; }
+.agenda-table thead th { background: var(--wp-soft); color: var(--wp-muted); font-size: .66rem; letter-spacing: .05em; padding: .8rem; text-transform: uppercase; }.agenda-table td { border-color: var(--wp-border); color: var(--wp-text); padding: .8rem; }.agenda-table td > small, .agenda-table td > strong + small { color: var(--wp-muted); display: block; font-size: .7rem; }.agenda-type-badge, .agenda-status, .agenda-visibility { border-radius: 999px; display: inline-flex; font-size: .68rem; font-weight: 800; padding: .38rem .6rem; }.agenda-type-badge, .agenda-visibility { background: var(--wp-soft); color: var(--wp-text); }
+.agenda-empty { align-items: center; color: var(--wp-muted); display: flex; flex-direction: column; gap: .25rem; padding: 2.5rem; }.agenda-empty i { color: #277ac4; font-size: 2rem; }.agenda-empty strong { color: var(--wp-heading); }
+.agenda-modal { background: rgba(5, 17, 36, .7); z-index: 1055; }.agenda-modal .modal-content { background: var(--wp-surface); border: 1px solid var(--wp-border); border-radius: 18px; overflow: hidden; }.agenda-modal .modal-header, .agenda-modal .modal-footer { border-color: var(--wp-border); }.agenda-modal h4 { color: var(--wp-heading); margin: .15rem 0 0; }
+.agenda-detail-lead { align-items: center; background: linear-gradient(135deg, #0b2c57, #1768ad); border-radius: 15px; color: #fff; display: flex; gap: 1rem; padding: 1rem; }.agenda-date-block { align-items: center; background: rgba(255,255,255,.12); border-radius: 12px; display: flex; flex-direction: column; min-width: 76px; padding: .6rem; }.agenda-date-block strong { font-size: 1.6rem; }.agenda-date-block span { font-size: .72rem; }.agenda-detail-lead p { color: rgba(255,255,255,.76); margin: .3rem 0 0; }
+.agenda-detail-grid { display: grid; gap: .7rem; grid-template-columns: 1fr 1fr; margin-top: 1rem; }.agenda-detail-grid > div { background: var(--wp-soft); border: 1px solid var(--wp-border); border-radius: 12px; padding: .75rem; }.agenda-detail-grid small, .agenda-description small { color: var(--wp-muted); display: block; font-size: .65rem; font-weight: 800; text-transform: uppercase; }.agenda-detail-grid strong { color: var(--wp-heading); display: block; }.agenda-detail-grid a { font-size: .72rem; }.agenda-description { margin-top: 1rem; }.agenda-description p { color: var(--wp-text); margin: .35rem 0 0; white-space: pre-line; }
+.agenda-back { color: #277ac4; font-size: .8rem; font-weight: 700; }.agenda-form { display: grid; gap: 1rem; }.agenda-form-section { padding: 1.15rem; }.agenda-form-title { align-items: flex-start; display: flex; gap: .8rem; margin-bottom: 1rem; }.agenda-form-title > span { align-items: center; background: #e4f1ff; border-radius: 9px; color: #155dac; display: flex; font-size: .72rem; font-weight: 800; height: 34px; justify-content: center; width: 34px; }.agenda-form-title h4 { color: var(--wp-heading); font-size: 1rem; margin: 0; }.agenda-form-title p { color: var(--wp-muted); font-size: .78rem; margin: .15rem 0 0; }.agenda-form label { color: var(--wp-heading); font-size: .78rem; font-weight: 700; margin-bottom: .35rem; }.agenda-form-actions { display: flex; gap: .6rem; justify-content: flex-end; }
+@media (max-width: 991.98px) { .agenda-filters { grid-template-columns: 1fr 1fr; }.agenda-search { grid-column: 1 / -1; } }
+@media (max-width: 575.98px) { .agenda-admin-heading { align-items: stretch; flex-direction: column; }.agenda-admin-heading .btn { width: 100%; }.agenda-filters { grid-template-columns: 1fr; }.agenda-search { grid-column: auto; }.agenda-monthbar { padding-inline: .65rem; }.agenda-monthbar h4 { font-size: .95rem; }.agenda-today { font-size: .7rem; }.agenda-calendar { padding-inline: .45rem; }.agenda-day { min-height: 53px; padding: .35rem; }.agenda-day-number a, .agenda-day-items { display: none; }.agenda-day-number { justify-content: center; }.agenda-day-number span { font-size: .68rem; }.agenda-mobile-count { align-items: center; background: #277ac4; border-radius: 50%; bottom: 3px; color: #fff; display: flex; font-size: .57rem; height: 17px; justify-content: center; left: 50%; position: absolute; transform: translateX(-50%); width: 17px; }.agenda-weekday { font-size: .58rem; padding-inline: 0; }.agenda-detail-grid { grid-template-columns: 1fr; }.agenda-detail-lead { align-items: flex-start; }.agenda-modal .modal-dialog { margin: .6rem; }.agenda-modal .modal-footer { align-items: stretch; flex-direction: column; }.agenda-modal .modal-footer > div { display: grid; gap: .4rem; }.agenda-form-actions { flex-direction: column-reverse; }.agenda-form-actions .btn { width: 100%; } }
+html[data-bs-theme="dark"] .agenda-tabs button.active, body.theme-dark .agenda-tabs button.active { background: #14263f; color: #7fc5ff; }

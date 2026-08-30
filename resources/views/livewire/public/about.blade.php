@@ -128,6 +128,20 @@
         </div>
     </section>
 
+    @if(!empty($organizationTree))
+        <section class="about-wpitv-section public-org-section public-org-section--wpitv" aria-labelledby="wpitvOrganizationTitle">
+            <div class="pub-container">
+                <div class="about-wpitv-section-heading about-wpitv-section-heading--split" data-reveal>
+                    <div><span class="about-wpitv-kicker">Orang &amp; Peran</span><h2 id="wpitvOrganizationTitle">Struktur Organisasi WPiTV</h2></div>
+                    <p>Susunan peran yang menjaga arah redaksi, produksi, dan operasional media WPiTV.</p>
+                </div>
+                <div class="public-org-tree-scroll" data-reveal><ul class="public-org-tree public-org-tree--roots">
+                    @foreach($organizationTree as $node)<x-public.organization-tree-node :node="$node" />@endforeach
+                </ul></div>
+            </div>
+        </section>
+    @endif
+
     <section class="about-wpitv-section about-wpitv-pillars-section" aria-labelledby="about-wpitv-pillars-title">
         <div class="pub-container">
             <div class="about-wpitv-section-heading about-wpitv-section-heading--split" data-reveal>

@@ -98,6 +98,45 @@ import 'sweetalert2/dist/sweetalert2.min.css';
         document.body.classList.toggle('modal-open', Boolean(hasOpenAdminModal));
     }
 
+    function syncSidebarAccessibility() {
+        const sidebar = document.getElementById('sidebar');
+        const toggle = document.querySelector('.admin-menu-toggle');
+        if (!sidebar || !toggle) return;
+
+        const expanded = sidebar.classList.contains('active') && window.innerWidth < 1200;
+        toggle.setAttribute('aria-expanded', String(expanded));
+        toggle.setAttribute('aria-label', expanded ? 'Tutup menu admin' : 'Buka menu admin');
+    }
+
+    function initializeAdminSidebar() {
+        const sidebar = document.getElementById('sidebar');
+        if (!sidebar || sidebar.dataset.wpiSidebarReady === 'true') {
+            syncSidebarAccessibility();
+            return;
+        }
+
+        sidebar.dataset.wpiSidebarReady = 'true';
+        new MutationObserver(syncSidebarAccessibility).observe(sidebar, {
+            attributes: true,
+            attributeFilter: ['class'],
+        });
+
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape' && window.innerWidth < 1200 && sidebar.classList.contains('active')) {
+                window.sidebar?.hide?.();
+                document.querySelector('.admin-menu-toggle')?.focus();
+            }
+        });
+
+        sidebar.addEventListener('click', (event) => {
+            const link = event.target.closest('a.sidebar-link:not([href="#"]), a.submenu-link');
+            if (link && window.innerWidth < 1200) window.sidebar?.hide?.();
+        });
+
+        window.addEventListener('resize', syncSidebarAccessibility, { passive: true });
+        syncSidebarAccessibility();
+    }
+
     function submitConfirmation(form) {
         if (form.id === 'logout-form' || form.dataset.adminConfirm === 'logout') {
             return {
@@ -140,11 +179,12 @@ import 'sweetalert2/dist/sweetalert2.min.css';
 
         event.preventDefault();
         event.stopImmediatePropagation();
+        const isUpdate = target.dataset.adminConfirmKind === 'update';
         const approved = await confirmAction({
-            title: 'Apakah Anda yakin ingin menghapus data ini?',
-            message: 'Data yang dihapus tidak dapat dikembalikan.',
-            confirmText: 'Ya, hapus',
-            type: 'warning',
+            title: isUpdate ? 'Apakah Anda yakin ingin mengubah status ini?' : 'Apakah Anda yakin ingin menghapus data ini?',
+            message: isUpdate ? 'Status akan disimpan sebelum draft WhatsApp disiapkan.' : 'Data yang dihapus tidak dapat dikembalikan.',
+            confirmText: isUpdate ? 'Ya, simpan' : 'Ya, hapus',
+            type: isUpdate ? 'info' : 'warning',
         });
         if (approved && target.isConnected) {
             target.dataset.adminConfirmed = 'true';
@@ -179,10 +219,12 @@ import 'sweetalert2/dist/sweetalert2.min.css';
     document.addEventListener('DOMContentLoaded', () => {
         consumeAlerts();
         syncModalOpenState();
+        initializeAdminSidebar();
     });
     document.addEventListener('livewire:navigated', () => {
         consumeAlerts();
         syncModalOpenState();
+        initializeAdminSidebar();
     });
 
     const observer = new MutationObserver((mutations) => {

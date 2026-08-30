@@ -37,6 +37,63 @@ import './bootstrap';
   });
 
   function initInteractive() {
+    // ===================== GLOBAL PUBLIC SEARCH =====================
+    const globalSearch = document.querySelector('[data-global-search]');
+    const searchTrigger = document.getElementById('searchBtn');
+    if (globalSearch && searchTrigger && globalSearch.dataset.bound !== 'true') {
+      globalSearch.dataset.bound = 'true';
+
+      function getSearchInput() {
+        return globalSearch.querySelector('[data-global-search-input]');
+      }
+
+      function resetSearch() {
+        const searchInput = getSearchInput();
+        if (!searchInput || searchInput.value === '') return;
+        searchInput.value = '';
+        searchInput.dispatchEvent(new Event('input', { bubbles: true }));
+      }
+
+      function closeSearch(restoreFocus = false) {
+        globalSearch.classList.remove('is-open');
+        globalSearch.setAttribute('aria-hidden', 'true');
+        searchTrigger.setAttribute('aria-expanded', 'false');
+        document.body.classList.remove('global-search-open');
+        resetSearch();
+        if (restoreFocus) searchTrigger.focus();
+      }
+
+      function openSearch() {
+        const mobilePanel = document.getElementById('mobilePanel');
+        const burgerButton = document.getElementById('burgerBtn');
+        mobilePanel?.classList.remove('open');
+        burgerButton?.classList.remove('open');
+        burgerButton?.setAttribute('aria-expanded', 'false');
+        mobilePanel?.setAttribute('aria-hidden', 'true');
+
+        globalSearch.classList.add('is-open');
+        globalSearch.setAttribute('aria-hidden', 'false');
+        searchTrigger.setAttribute('aria-expanded', 'true');
+        document.body.classList.add('global-search-open');
+        window.setTimeout(function () {
+          getSearchInput()?.focus({ preventScroll: true });
+        }, 60);
+      }
+
+      searchTrigger.addEventListener('click', openSearch);
+      globalSearch.addEventListener('click', function (event) {
+        if (event.target.closest('[data-global-search-close]') || event.target === globalSearch) {
+          closeSearch(true);
+        }
+      });
+      globalSearch.addEventListener('keydown', function (event) {
+        if (event.key === 'Escape') {
+          event.preventDefault();
+          closeSearch(true);
+        }
+      });
+    }
+
     // ===================== HOMEPAGE FEATURED VIDEO =====================
     document.querySelectorAll('[data-home-featured]').forEach(function (featured) {
       if (featured.dataset.bound === 'true') return;
@@ -250,6 +307,53 @@ import './bootstrap';
       }, { passive: true });
     }
 
+    // ===================== TV CLUB NAVIGATION =====================
+    document.querySelectorAll('[data-tvclub-nav]').forEach(function (dropdown) {
+      if (dropdown.dataset.bound === 'true') return;
+
+      dropdown.dataset.bound = 'true';
+      const trigger = dropdown.querySelector('[data-tvclub-nav-trigger]');
+      const menu = dropdown.querySelector('[data-tvclub-nav-menu]');
+      if (!trigger || !menu) return;
+
+      function setOpen(open, restoreFocus = false) {
+        dropdown.classList.toggle('is-open', open);
+        trigger.setAttribute('aria-expanded', open ? 'true' : 'false');
+        menu.setAttribute('aria-hidden', open ? 'false' : 'true');
+        if (restoreFocus) trigger.focus();
+      }
+
+      trigger.addEventListener('click', function () {
+        setOpen(!dropdown.classList.contains('is-open'));
+      });
+
+      dropdown.addEventListener('keydown', function (event) {
+        if (event.key === 'Escape' && dropdown.classList.contains('is-open')) {
+          event.preventDefault();
+          setOpen(false, true);
+        }
+      });
+
+      document.addEventListener('click', function (event) {
+        if (!dropdown.contains(event.target)) setOpen(false);
+      });
+    });
+
+    document.querySelectorAll('[data-tvclub-mobile]').forEach(function (accordion) {
+      if (accordion.dataset.bound === 'true') return;
+
+      accordion.dataset.bound = 'true';
+      const trigger = accordion.querySelector('[data-tvclub-mobile-trigger]');
+      const menu = accordion.querySelector('[data-tvclub-mobile-menu]');
+      if (!trigger || !menu) return;
+
+      trigger.addEventListener('click', function () {
+        const open = accordion.classList.toggle('is-open');
+        trigger.setAttribute('aria-expanded', open ? 'true' : 'false');
+        menu.setAttribute('aria-hidden', open ? 'false' : 'true');
+      });
+    });
+
     // ===================== MOBILE MENU =====================
     const burger = document.getElementById('burgerBtn');
     const mPanel = document.getElementById('mobilePanel');
@@ -260,6 +364,13 @@ import './bootstrap';
         burger.classList.toggle('open', open);
         burger.setAttribute('aria-expanded', open ? 'true' : 'false');
         mPanel.setAttribute('aria-hidden', open ? 'false' : 'true');
+        if (!open) {
+          mPanel.querySelectorAll('[data-tvclub-mobile]').forEach(function (accordion) {
+            accordion.classList.remove('is-open');
+            accordion.querySelector('[data-tvclub-mobile-trigger]')?.setAttribute('aria-expanded', 'false');
+            accordion.querySelector('[data-tvclub-mobile-menu]')?.setAttribute('aria-hidden', 'true');
+          });
+        }
       });
 
       mPanel.querySelectorAll('a').forEach(function (a) {

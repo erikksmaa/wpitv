@@ -105,7 +105,7 @@
                                     <i class="bi bi-arrow-{{ $sortDirection === 'asc' ? 'up' : 'down' }} text-primary"></i>
                                 @endif
                             </th>
-                            <th scope="col" class="text-end" style="width: 120px;">Aksi</th>
+                            <th scope="col" class="text-end" style="width: 245px;">Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -153,10 +153,16 @@
                                     </span>
                                 </td>
                                 <td class="text-end">
-                                    <div class="btn-group btn-group-sm" role="group">
+                                    <div class="d-flex flex-wrap justify-content-end gap-1" role="group" aria-label="Aksi {{ $gen->name }}">
+                                        <a href="{{ route('admin.tvclub.generations.organization', $gen) }}"
+                                           class="btn btn-sm btn-info text-white fw-semibold"
+                                           title="Struktur Organisasi"
+                                           aria-label="Kelola struktur organisasi {{ $gen->name }}">
+                                            <i class="bi bi-diagram-3 me-1"></i> Struktur Organisasi
+                                        </a>
                                         @can('update', $gen)
                                             <a href="{{ route('admin.tvclub.generations.edit', $gen) }}" 
-                                               class="btn btn-outline-primary" 
+                                               class="btn btn-sm btn-outline-primary"
                                                title="Edit Generasi">
                                                 <i class="bi bi-pencil-square"></i>
                                             </a>
@@ -166,7 +172,7 @@
                                             <button type="button" 
                                                     wire:click="delete({{ $gen->id }})" 
                                                     data-admin-confirm="Apakah Anda yakin ingin menghapus generasi '{{ $gen->name }}'? Tindakan ini tidak dapat dibatalkan."
-                                                    class="btn btn-outline-danger" 
+                                                    class="btn btn-sm btn-outline-danger"
                                                     title="Hapus Generasi">
                                                 <i class="bi bi-trash"></i>
                                             </button>

@@ -3,7 +3,9 @@
 namespace App\Livewire\Admin\Peliputan;
 
 use App\Models\Coverage;
+use App\Support\CoverageWhatsApp;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Validation\Rule;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Attributes\Url;
@@ -47,6 +49,10 @@ class Index extends Component
     public string $adminNote = '';
 
     public bool $showStatusModal = false;
+
+    public ?string $preparedWhatsAppUrl = null;
+
+    public ?string $preparedWhatsAppCode = null;
 
     // View Details Modal State
     public ?Coverage $selectedCoverage = null;
@@ -101,7 +107,7 @@ class Index extends Component
 
     public function openDetailModal(int $id): void
     {
-        $coverage = Coverage::findOrFail($id);
+        $coverage = Coverage::with(['agendas' => fn ($query) => $query->orderBy('agenda_date')])->findOrFail($id);
         $this->authorize('view', $coverage);
 
         $this->selectedCoverage = $coverage;
@@ -122,41 +128,57 @@ class Index extends Component
         $this->selectedCoverageId = $coverage->id;
         $this->newStatus = $coverage->status;
         $this->adminNote = $coverage->admin_note ?? '';
+        $this->reset(['preparedWhatsAppUrl', 'preparedWhatsAppCode']);
         $this->showStatusModal = true;
     }
 
     public function closeStatusModal(): void
     {
         $this->showStatusModal = false;
-        $this->reset(['selectedCoverageId', 'newStatus', 'adminNote']);
+        $this->reset(['selectedCoverageId', 'newStatus', 'adminNote', 'preparedWhatsAppUrl', 'preparedWhatsAppCode']);
     }
 
     public function updateStatus(): void
     {
-        $coverage = Coverage::findOrFail($this->selectedCoverageId);
-        $this->authorize('updateStatus', $coverage);
+        $coverage = $this->persistStatus();
 
-        $allowedStatuses = [
-            Coverage::STATUS_PENDING,
-            Coverage::STATUS_APPROVED,
-            Coverage::STATUS_IN_PROGRESS,
-            Coverage::STATUS_COMPLETED,
-            Coverage::STATUS_REJECTED,
-        ];
+        $this->closeStatusModal();
+        session()->flash('success', "Status permohonan \"{$coverage->submission_code}\" berhasil diperbarui.");
+    }
 
-        if (! in_array($this->newStatus, $allowedStatuses, true)) {
-            session()->flash('error', 'Status yang dipilih tidak valid.');
+    public function updateStatusAndPrepareWhatsApp(): void
+    {
+        $coverage = $this->persistStatus();
+        $whatsAppUrl = app(CoverageWhatsApp::class)->adminToClientUrl($coverage, true);
+
+        if (! $whatsAppUrl) {
+            $this->addError('whatsapp', 'Nomor WhatsApp pemohon tidak valid. Status tetap berhasil disimpan.');
 
             return;
         }
 
-        $coverage->update([
-            'status' => $this->newStatus,
-            'admin_note' => $this->adminNote,
+        $this->preparedWhatsAppUrl = $whatsAppUrl;
+        $this->preparedWhatsAppCode = $coverage->submission_code;
+        session()->flash('success', "Status permohonan \"{$coverage->submission_code}\" berhasil diperbarui.");
+    }
+
+    private function persistStatus(): Coverage
+    {
+        $validated = $this->validate([
+            'selectedCoverageId' => ['required', 'integer'],
+            'newStatus' => ['required', 'string', Rule::in(array_keys(Coverage::getStatusOptions()))],
+            'adminNote' => ['nullable', 'string'],
         ]);
 
-        $this->closeStatusModal();
-        session()->flash('success', "Status permohonan \"{$coverage->submission_code}\" berhasil diperbarui.");
+        $coverage = Coverage::findOrFail($validated['selectedCoverageId']);
+        $this->authorize('updateStatus', $coverage);
+
+        $coverage->update([
+            'status' => $validated['newStatus'],
+            'admin_note' => $validated['adminNote'],
+        ]);
+
+        return $coverage->fresh();
     }
 
     public function delete(int $id): void
@@ -217,6 +239,9 @@ class Index extends Component
             'coverages' => $coverages,
             'stats' => $stats,
             'statusOptions' => Coverage::getStatusOptions(),
+            'selectedCoverageWhatsAppUrl' => $this->selectedCoverage
+                ? app(CoverageWhatsApp::class)->adminToClientUrl($this->selectedCoverage)
+                : null,
         ]);
     }
 }

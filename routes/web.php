@@ -25,12 +25,16 @@ Route::get('/tayangan/{video}', App\Livewire\Public\Videos\Show::class)->name('v
 Route::get('/berita', App\Livewire\Public\News\Index::class)->name('news.index');
 Route::get('/berita/{news:slug}', App\Livewire\Public\News\Show::class)->name('news.show');
 Route::get('/tv-club', App\Livewire\Public\TVClub\Index::class)->name('tvclub.index');
+Route::get('/tv-club/generasi', App\Livewire\Public\TVClub\Generations\Index::class)->name('tvclub.generations.index');
 Route::get('/tv-club/generasi/{generation}', App\Livewire\Public\TVClub\Generations\Show::class)->name('tvclub.generations.show');
+Route::get('/tv-club/anggota', App\Livewire\Public\TVClub\Members\Index::class)->name('tvclub.members.index');
 Route::get('/tv-club/anggota/{member}', App\Livewire\Public\TVClub\Members\Show::class)->name('tvclub.members.show');
+Route::get('/tv-club/tim-produksi', App\Livewire\Public\TVClub\Groups\Index::class)->name('tvclub.groups.index');
 Route::get('/peliputan', App\Livewire\Public\Peliputan\Index::class)->name('peliputan.index');
 Route::get('/peliputan/ajukan', Create::class)->name('peliputan.create');
 Route::get('/peliputan/berhasil/{code}', Success::class)->name('peliputan.success');
 Route::get('/peliputan/status', Status::class)->name('peliputan.status');
+Route::get('/agenda', App\Livewire\Public\Agenda\Index::class)->name('agenda.index');
 
 /*
 |--------------------------------------------------------------------------
@@ -64,10 +68,14 @@ Route::prefix('admin')->middleware(['auth', 'active', 'role:Super Admin,Admin Pr
     // Visitor Statistics
     Route::get('/visitor-statistics', App\Livewire\Admin\VisitorStatistics\Index::class)->name('admin.visitor-statistics.index');
 
+    // WPiTV Organization Structure
+    Route::get('/organisasi-wpitv', App\Livewire\Admin\Organization\Index::class)->name('admin.organization.index');
+
     // TV Club Generations Management
     Route::get('/tvclub/generations', App\Livewire\Admin\TVClub\Generations\Index::class)->name('admin.tvclub.generations.index');
     Route::get('/tvclub/generations/create', App\Livewire\Admin\TVClub\Generations\Form::class)->name('admin.tvclub.generations.create');
     Route::get('/tvclub/generations/{generation}/edit', App\Livewire\Admin\TVClub\Generations\Form::class)->name('admin.tvclub.generations.edit');
+    Route::get('/tvclub/generations/{generation}/organization', App\Livewire\Admin\TVClub\Organization\Index::class)->name('admin.tvclub.generations.organization');
 
     // TV Club Members Management
     Route::get('/tvclub/members', App\Livewire\Admin\TVClub\Members\Index::class)->name('admin.tvclub.members.index');
@@ -93,6 +101,12 @@ Route::prefix('admin')->middleware(['auth', 'active', 'role:Super Admin,Admin Pr
     Route::get('/peliputan', App\Livewire\Admin\Peliputan\Index::class)->name('admin.peliputan.index');
     Route::get('/peliputan/create', App\Livewire\Admin\Peliputan\Form::class)->name('admin.peliputan.create');
     Route::get('/peliputan/{coverage}/edit', App\Livewire\Admin\Peliputan\Form::class)->name('admin.peliputan.edit');
+
+    // WPiTV Agenda Management
+    Route::get('/agenda', App\Livewire\Admin\Agenda\Index::class)->name('admin.agenda.index');
+    Route::get('/agenda/create', App\Livewire\Admin\Agenda\Form::class)->name('admin.agenda.create');
+    Route::get('/agenda/create/from-peliputan/{coverage}', App\Livewire\Admin\Agenda\Form::class)->name('admin.agenda.from-coverage');
+    Route::get('/agenda/{agenda}/edit', App\Livewire\Admin\Agenda\Form::class)->name('admin.agenda.edit');
 });
 
 require __DIR__.'/auth.php';

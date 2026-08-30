@@ -300,6 +300,17 @@
 
                     <form wire:submit.prevent="updateStatus">
                         <div class="modal-body admin-modal-body">
+                            @if ($preparedWhatsAppUrl)
+                                <div class="alert alert-success mb-3" role="status">
+                                    <strong>Status sudah disimpan.</strong>
+                                    Draft WhatsApp untuk {{ $preparedWhatsAppCode }} siap dibuka. Pesan tetap perlu dikirim manual di WhatsApp.
+                                </div>
+                            @endif
+
+                            @error('whatsapp')
+                                <div class="alert alert-warning mb-3" role="alert">{{ $message }}</div>
+                            @enderror
+
                             <div class="admin-modal-intro">
                                 <i class="bi bi-info-circle" aria-hidden="true"></i>
                                 <div>
@@ -343,6 +354,24 @@
                             <span class="admin-modal-footer-hint"><i class="bi bi-shield-check" aria-hidden="true"></i> Perubahan dicatat setelah dikonfirmasi</span>
                             <div class="admin-modal-actions">
                                 <button type="button" class="btn btn-light" wire:click="closeStatusModal">Batal</button>
+                                @if ($preparedWhatsAppUrl)
+                                    <a href="{{ $preparedWhatsAppUrl }}"
+                                       class="btn btn-outline-primary"
+                                       target="_blank"
+                                       rel="noopener noreferrer"
+                                       aria-label="Buka WhatsApp untuk pengajuan {{ $preparedWhatsAppCode }}">
+                                        <i class="bi bi-whatsapp me-1" aria-hidden="true"></i>Buka WhatsApp
+                                    </a>
+                                @else
+                                    <button type="button"
+                                            class="btn btn-outline-primary"
+                                            wire:click="updateStatusAndPrepareWhatsApp"
+                                            wire:loading.attr="disabled"
+                                            data-admin-confirm
+                                            data-admin-confirm-kind="update">
+                                        <i class="bi bi-whatsapp me-1" aria-hidden="true"></i>Simpan &amp; Siapkan WhatsApp
+                                    </button>
+                                @endif
                                 <button type="submit" class="btn btn-primary">
                                     <i class="bi bi-check2-circle me-1" aria-hidden="true"></i>Simpan
                                 </button>
@@ -434,12 +463,37 @@
                                 </div>
                             </section>
                         @endif
+
+                        @if($selectedCoverage->agendas->isNotEmpty())
+                            <section class="coverage-detail-section">
+                                <div class="coverage-detail-section-title"><span><i class="bi bi-calendar2-week"></i></span><div><h6>Agenda Terkait</h6><small>Agenda operasional yang dibuat dari permohonan ini</small></div></div>
+                                <div class="d-flex flex-wrap gap-2">@foreach($selectedCoverage->agendas as $agenda)<a href="{{ route('admin.agenda.index') }}" class="badge bg-light-primary text-primary p-2">{{ $agenda->agenda_date->locale('id')->translatedFormat('d M Y') }} · {{ $agenda->title }}</a>@endforeach</div>
+                            </section>
+                        @endif
                     </div>
 
                     <div class="coverage-detail-footer">
                         <span class="coverage-detail-footer-hint"><i class="bi bi-shield-check" aria-hidden="true"></i> Data hanya dapat diubah oleh petugas berwenang</span>
                         <div class="d-flex gap-2">
+                            @can('updateStatus', $selectedCoverage)
+                                @if ($selectedCoverageWhatsAppUrl)
+                                    <a href="{{ $selectedCoverageWhatsAppUrl }}"
+                                       class="btn btn-outline-secondary btn-sm"
+                                       target="_blank"
+                                       rel="noopener noreferrer"
+                                       aria-label="Hubungi {{ $selectedCoverage->name }} melalui WhatsApp">
+                                        <i class="bi bi-whatsapp me-1" aria-hidden="true"></i>Hubungi Pemohon
+                                    </a>
+                                @else
+                                    <span class="btn btn-outline-secondary btn-sm disabled" aria-disabled="true" title="Nomor WhatsApp tidak valid">
+                                        <i class="bi bi-whatsapp me-1" aria-hidden="true"></i>Nomor WhatsApp tidak valid
+                                    </span>
+                                @endif
+                            @endcan
                             @can('update', $selectedCoverage)
+                                @can('create', App\Models\WpitvAgenda::class)
+                                    <a href="{{ route('admin.agenda.from-coverage', $selectedCoverage) }}" class="btn btn-outline-success btn-sm"><i class="bi bi-calendar-plus me-1"></i>Buat Agenda</a>
+                                @endcan
                                 <a href="{{ route('admin.peliputan.edit', $selectedCoverage) }}" class="btn btn-outline-primary btn-sm">
                                     <i class="bi bi-pencil-square me-1" aria-hidden="true"></i>Edit
                                 </a>

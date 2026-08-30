@@ -21,6 +21,7 @@ class AboutPageTest extends TestCase
         $this->get(route('public.about'))
             ->assertOk()
             ->assertSee('Membawa cerita kampus lebih dekat melalui layar.')
+            ->assertSee('Campus Broadcast')
             ->assertSee('Widya Pratama Internet Televisi')
             ->assertSee('Brings The World Into You')
             ->assertSee('Visi · redaksi profil terdahulu')

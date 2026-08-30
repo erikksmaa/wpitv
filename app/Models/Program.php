@@ -65,4 +65,9 @@ class Program extends Model
     {
         return $this->hasMany(TVClubGroup::class, 'program_id');
     }
+
+    public function agendas()
+    {
+        return $this->hasMany(WpitvAgenda::class, 'program_id');
+    }
 }

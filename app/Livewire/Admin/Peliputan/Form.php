@@ -3,6 +3,7 @@
 namespace App\Livewire\Admin\Peliputan;
 
 use App\Models\Coverage;
+use App\Support\CoverageWhatsApp;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Validation\Rule;
 use Livewire\Attributes\Layout;
@@ -38,6 +39,8 @@ class Form extends Component
     public string $status = 'pending';
 
     public ?string $admin_note = '';
+
+    public ?string $preparedWhatsAppUrl = null;
 
     public function mount(?Coverage $coverage = null): void
     {
@@ -107,6 +110,34 @@ class Form extends Component
 
     public function save()
     {
+        $isEdit = (bool) $this->coverageId;
+        $this->persistCoverage();
+
+        if ($isEdit) {
+            session()->flash('success', "Permohonan peliputan \"{$this->submission_code}\" berhasil diperbarui.");
+        } else {
+            session()->flash('success', "Permohonan peliputan \"{$this->submission_code}\" berhasil ditambahkan.");
+        }
+
+        return redirect()->route('admin.peliputan.index');
+    }
+
+    public function saveAndPrepareWhatsApp(): void
+    {
+        if (! $this->coverageId) {
+            abort(403);
+        }
+
+        $coverage = $this->persistCoverage();
+        $this->preparedWhatsAppUrl = app(CoverageWhatsApp::class)->adminToClientUrl($coverage, true);
+
+        if (! $this->preparedWhatsAppUrl) {
+            $this->addError('whatsapp', 'Nomor WhatsApp pemohon tidak valid. Perubahan tetap berhasil disimpan.');
+        }
+    }
+
+    private function persistCoverage(): Coverage
+    {
         if ($this->coverageId) {
             $this->authorize('update', $this->coverage);
         } else {
@@ -114,20 +145,19 @@ class Form extends Component
         }
 
         $validated = $this->validate();
-
-        if (empty($validated['event_time'])) {
-            $validated['event_time'] = null;
-        }
+        $validated['event_time'] = empty($validated['event_time']) ? null : $validated['event_time'];
 
         if ($this->coverageId) {
             $this->coverage->update($validated);
-            session()->flash('success', "Permohonan peliputan \"{$this->submission_code}\" berhasil diperbarui.");
-        } else {
-            Coverage::create($validated);
-            session()->flash('success', "Permohonan peliputan \"{$this->submission_code}\" berhasil ditambahkan.");
+            $this->coverage = $this->coverage->fresh();
+
+            return $this->coverage;
         }
 
-        return redirect()->route('admin.peliputan.index');
+        $this->coverage = Coverage::create($validated);
+        $this->coverageId = $this->coverage->id;
+
+        return $this->coverage;
     }
 
     public function render()
@@ -137,6 +167,9 @@ class Form extends Component
         return view('livewire.admin.peliputan.form', [
             'isEdit' => $isEdit,
             'statusOptions' => Coverage::getStatusOptions(),
+            'clientWhatsAppUrl' => $isEdit
+                ? app(CoverageWhatsApp::class)->adminToClientUrl($this->coverage)
+                : null,
         ])->title(($isEdit ? 'Edit Peliputan: '.$this->submission_code : 'Tambah Permohonan Peliputan').' - WPiTV Admin');
     }
 }

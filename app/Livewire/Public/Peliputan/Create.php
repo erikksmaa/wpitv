@@ -46,14 +46,14 @@ class Create extends Component
     protected function validationAttributes(): array
     {
         return [
-            'name' => 'Nama Pemohon / Organisasi',
-            'email' => 'Alamat Email',
+            'name' => 'Nama Pemohon',
+            'email' => 'Email',
             'phone' => 'Nomor Telepon / WhatsApp',
-            'event_name' => 'Nama Kegiatan / Acara',
+            'event_name' => 'Nama Kegiatan',
             'event_date' => 'Tanggal Kegiatan',
-            'event_time' => 'Waktu Acara',
-            'location' => 'Lokasi Acara',
-            'description' => 'Deskripsi Kebutuhan Peliputan',
+            'event_time' => 'Waktu Kegiatan',
+            'location' => 'Lokasi Kegiatan',
+            'description' => 'Deskripsi Kegiatan',
         ];
     }
 

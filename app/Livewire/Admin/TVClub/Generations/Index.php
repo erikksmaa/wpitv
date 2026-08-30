@@ -65,12 +65,12 @@ class Index extends Component
 
     public function delete(int $id): void
     {
-        $generation = TVClubGeneration::withCount(['members', 'groups'])->findOrFail($id);
+        $generation = TVClubGeneration::withCount(['members', 'groups', 'organizationPositions'])->findOrFail($id);
 
         $this->authorize('delete', $generation);
 
         // Delete Protection: Block deletion if foreign keys exist
-        if ($generation->members_count > 0 || $generation->groups_count > 0) {
+        if ($generation->members_count > 0 || $generation->groups_count > 0 || $generation->organization_positions_count > 0) {
             session()->flash('error', 'Generation cannot be deleted because it is still used by members or production groups.');
 
             return;
@@ -91,7 +91,7 @@ class Index extends Component
         $sortDirection = in_array($this->sortDirection, ['asc', 'desc'], true) ? $this->sortDirection : 'desc';
 
         $generations = TVClubGeneration::query()
-            ->withCount(['members', 'groups'])
+            ->withCount(['members', 'groups', 'organizationPositions'])
             ->when($this->search !== '', function ($query) {
                 $query->where(function ($q) {
                     $q->where('name', 'like', '%'.$this->search.'%')

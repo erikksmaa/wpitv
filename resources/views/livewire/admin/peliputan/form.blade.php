@@ -200,7 +200,16 @@
                         </div>
 
                         <!-- Action Buttons -->
-                        <div class="d-flex align-items-center gap-2 pt-4 border-top mt-4">
+                        @if ($isEdit && $preparedWhatsAppUrl)
+                            <div class="alert alert-success mt-4 mb-0" role="status">
+                                <strong>Perubahan sudah disimpan.</strong>
+                                Draft WhatsApp menggunakan status terbaru dan siap dibuka.
+                            </div>
+                        @endif
+                        @error('whatsapp')
+                            <div class="alert alert-warning mt-4 mb-0" role="alert">{{ $message }}</div>
+                        @enderror
+                        <div class="d-flex flex-wrap align-items-center gap-2 pt-4 border-top mt-4">
                             <button type="submit" class="btn btn-primary" wire:loading.attr="disabled">
                                 <span wire:loading.remove wire:target="save">
                                     <i class="bi bi-save me-1"></i> {{ $isEdit ? 'Simpan Perubahan' : 'Tambah Permohonan' }}
@@ -210,6 +219,37 @@
                                     Menyimpan Data...
                                 </span>
                             </button>
+                            @if ($isEdit)
+                                @if ($preparedWhatsAppUrl)
+                                    <a href="{{ $preparedWhatsAppUrl }}"
+                                       class="btn btn-outline-primary"
+                                       target="_blank"
+                                       rel="noopener noreferrer"
+                                       aria-label="Buka WhatsApp untuk pengajuan {{ $submission_code }}">
+                                        <i class="bi bi-whatsapp me-1" aria-hidden="true"></i>Buka WhatsApp
+                                    </a>
+                                @else
+                                    <button type="button"
+                                            class="btn btn-outline-primary"
+                                            wire:click="saveAndPrepareWhatsApp"
+                                            wire:loading.attr="disabled"
+                                            data-admin-confirm
+                                            data-admin-confirm-kind="update">
+                                        <i class="bi bi-whatsapp me-1" aria-hidden="true"></i>Simpan &amp; Siapkan WhatsApp
+                                    </button>
+                                @endif
+                                @if ($clientWhatsAppUrl)
+                                    <a href="{{ $clientWhatsAppUrl }}"
+                                       class="btn btn-link text-decoration-none"
+                                       target="_blank"
+                                       rel="noopener noreferrer"
+                                       aria-label="Hubungi {{ $name }} melalui WhatsApp">
+                                        Hubungi Pemohon
+                                    </a>
+                                @else
+                                    <span class="small text-muted">Nomor WhatsApp tidak valid</span>
+                                @endif
+                            @endif
                             <a href="{{ route('admin.peliputan.index') }}" class="btn btn-light">Batal</a>
                         </div>
                     </form>

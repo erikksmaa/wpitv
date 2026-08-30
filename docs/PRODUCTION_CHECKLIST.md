@@ -30,6 +30,7 @@ Gunakan checklist ini sebelum dan saat melakukan deployment ke server produksi W
 - [ ] `APP_ENV=production`
 - [ ] `APP_DEBUG=false`
 - [ ] `APP_URL=https://[DOMAIN_RESMI_WPITV]` (HTTPS)
+- [ ] `WPITV_WHATSAPP_NUMBER=628xxxxxxxxxx` terisi agar tombol komunikasi Peliputan aktif.
 - [ ] `DB_CONNECTION=mysql`
 - [ ] `DB_HOST`, `DB_PORT`, `DB_DATABASE`, `DB_USERNAME`, `DB_PASSWORD` terkonfigurasi ke database produksi.
 - [ ] `SESSION_DRIVER=file`

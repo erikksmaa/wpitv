@@ -30,7 +30,7 @@
 <body>
     <div id="app">
         <!-- Mazer Original Sidebar -->
-        <div id="sidebar" class="active">
+        <div id="sidebar" aria-label="Navigasi admin">
             <div class="sidebar-wrapper active">
                 <div class="sidebar-header position-relative">
                     <div class="d-flex justify-content-between align-items-center">
@@ -59,6 +59,13 @@
                             <a href="{{ route('admin.visitor-statistics.index') }}" class="sidebar-link">
                                 <i class="bi bi-graph-up-arrow"></i>
                                 <span>Statistik Pengunjung</span>
+                            </a>
+                        </li>
+
+                        <li class="sidebar-item {{ request()->routeIs('admin.organization.*') ? 'active' : '' }}">
+                            <a href="{{ route('admin.organization.index') }}" class="sidebar-link">
+                                <i class="bi bi-diagram-3-fill"></i>
+                                <span>Organisasi WPiTV</span>
                             </a>
                         </li>
 
@@ -91,6 +98,13 @@
                             <a href="{{ route('admin.peliputan.index') }}" class="sidebar-link">
                                 <i class="bi bi-camera-reels-fill"></i>
                                 <span>Peliputan Acara</span>
+                            </a>
+                        </li>
+
+                        <li class="sidebar-item {{ request()->routeIs('admin.agenda.*') ? 'active' : '' }}">
+                            <a href="{{ route('admin.agenda.index') }}" class="sidebar-link">
+                                <i class="bi bi-calendar2-week-fill"></i>
+                                <span>Agenda WPiTV</span>
                             </a>
                         </li>
 
@@ -149,7 +163,15 @@
 
         <!-- Mazer Main Content Container -->
         <div id="main" class="layout-navbar">
-
+            <header class="admin-mobile-bar d-xl-none" aria-label="Navigasi admin seluler">
+                <button type="button" class="burger-btn admin-menu-toggle" aria-controls="sidebar" aria-expanded="false" aria-label="Buka menu admin">
+                    <i class="bi bi-list" aria-hidden="true"></i>
+                </button>
+                <a href="{{ route('admin.dashboard') }}" class="admin-mobile-brand" aria-label="Ke Dasbor WPiTV">
+                    <img src="{{ asset('logo-wpi.png') }}" alt="" aria-hidden="true">
+                    <span>WPiTV Admin</span>
+                </a>
+            </header>
 
             <div id="main-content">
                 <div class="page-heading">

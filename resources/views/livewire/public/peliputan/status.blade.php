@@ -123,7 +123,7 @@
                                 @elseif($coverageResult->status === 'in_progress')
                                     <span class="peliputan-badge-in_progress">
                                         <span class="w-2 h-2 rounded-full bg-cyan-600 animate-pulse" aria-hidden="true"></span>
-                                        Sedang Berjalan
+                                        Sedang Diproses
                                     </span>
                                 @elseif($coverageResult->status === 'completed')
                                     <span class="peliputan-badge-completed">
@@ -172,18 +172,6 @@
                             </div>
                         </div>
 
-                        <!-- ADMIN NOTE (IF ANY) -->
-                        @if($coverageResult->admin_note)
-                            <div class="p-4 rounded-xl bg-blue-500/10 border border-blue-500/20 text-xs text-[var(--text-primary)] space-y-1 mb-6">
-                                <span class="font-bold text-brand-blue dark:text-brand-cyan uppercase tracking-wider block">
-                                    Catatan dari Tim Redaksi WPiTV:
-                                </span>
-                                <p class="leading-relaxed text-[var(--text-secondary)]">
-                                    {{ $coverageResult->admin_note }}
-                                </p>
-                            </div>
-                        @endif
-
                         <!-- STATUS MESSAGE -->
                         <div class="text-xs text-[var(--text-muted)] leading-relaxed p-4 rounded-xl bg-[var(--bg)] border border-[var(--border)]">
                             @if($coverageResult->status === 'pending')
@@ -195,9 +183,26 @@
                             @elseif($coverageResult->status === 'completed')
                                 Peliputan telah selesai dilaksanakan. Hasil liputan akan diproses oleh tim editing untuk penayangan dan arsip.
                             @elseif($coverageResult->status === 'rejected')
-                                Mohon maaf, permohonan peliputan ini belum dapat kami proses karena keterbatasan jadwal siaran atau ketentuan teknis.
+                                Pengajuan peliputan ini belum dapat kami proses. Hubungi Admin WPiTV bila Anda memerlukan informasi lebih lanjut.
                             @endif
                         </div>
+
+                        @if($whatsAppUrl)
+                            <div class="coverage-whatsapp-panel">
+                                <div>
+                                    <strong>Perlu koordinasi lebih lanjut?</strong>
+                                    <span>Hubungi Admin WPiTV melalui WhatsApp dengan detail pengajuan Anda.</span>
+                                </div>
+                                <a href="{{ $whatsAppUrl }}"
+                                   class="pub-btn pub-btn--secondary coverage-whatsapp-action"
+                                   target="_blank"
+                                   rel="noopener noreferrer"
+                                   aria-label="Hubungi Admin WPiTV melalui WhatsApp">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 11.5a8.4 8.4 0 0 1-9 8.5 9.8 9.8 0 0 1-4-.9L3 21l1.7-4.6A8.5 8.5 0 1 1 21 11.5Z"/><path d="M8.5 8.5c.5 3 2 4.5 5 5"/></svg>
+                                    Hubungi Admin
+                                </a>
+                            </div>
+                        @endif
                     </div>
                 @endif
             </div>

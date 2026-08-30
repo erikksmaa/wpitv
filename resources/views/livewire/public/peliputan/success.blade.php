@@ -1,76 +1,26 @@
-<div>
-    <!-- HERO / HEADER SECTION -->
-    <section class="pub-hero !py-12 md:!py-16 border-b border-[var(--border)]" aria-labelledby="successTitle">
-        <div class="hero-deco" aria-hidden="true"></div>
-        <div class="pub-container relative z-10">
-            <!-- Breadcrumb -->
-            <nav class="flex items-center gap-2 text-xs text-[var(--text-muted)] mb-4" aria-label="Breadcrumb">
-                <a href="{{ route('public.home') }}" class="hover:text-brand-blue transition-colors">Beranda</a>
-                <span class="text-[var(--text-faint)]">/</span>
-                <a href="{{ route('peliputan.index') }}" class="hover:text-brand-blue transition-colors">Peliputan</a>
-                <span class="text-[var(--text-faint)]">/</span>
-                <span class="text-brand-blue font-medium" aria-current="page">Pengajuan Berhasil</span>
-            </nav>
+<div class="coverage-success">
+    <section class="coverage-success-hero" aria-labelledby="coverageSuccessTitle"><div class="pub-container">
+        <nav class="coverage-breadcrumb" aria-label="Breadcrumb"><a href="{{ route('public.home') }}">Beranda</a><span aria-hidden="true">/</span><a href="{{ route('peliputan.index') }}">Peliputan</a><span aria-hidden="true">/</span><span aria-current="page">Berhasil</span></nav>
+        <div class="coverage-success-mark" aria-hidden="true"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="m5 12 4 4L19 6"/></svg></div>
+        <p class="coverage-eyebrow"><span aria-hidden="true"></span> Pengajuan Tersimpan</p>
+        <h1 id="coverageSuccessTitle">Pengajuan Berhasil Dikirim</h1>
+        <p>Tim WPiTV akan meninjau informasi kegiatan yang Anda kirimkan.</p>
+    </div></section>
 
-            <div class="max-w-2xl">
-                <div class="inline-flex items-center gap-2 text-xs font-bold text-green-600 bg-green-500/10 border border-green-500/20 px-3 py-1 rounded-full mb-3 uppercase tracking-wider">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-                    Permohonan Diterima
-                </div>
-                <h1 class="hero-title !text-3xl md:!text-4xl !mb-2.5" id="successTitle">
-                    Pengajuan Peliputan Terkirim!
-                </h1>
-                <p class="text-sm md:text-base text-[var(--text-muted)] leading-relaxed">
-                    Terima kasih. Permohonan peliputan Anda telah masuk ke sistem antrean redaksi WPiTV untuk ditinjau.
-                </p>
-            </div>
-        </div>
-    </section>
-
-    <!-- SUCCESS CONTENT -->
-    <section class="pub-section">
-        <div class="pub-container">
-            <div class="max-w-2xl mx-auto space-y-6">
-                <!-- CODE CARD -->
-                <div class="bg-[var(--surface)] p-6 sm:p-8 rounded-3xl border border-[var(--border)] shadow-sm text-center">
-                    <span class="text-xs font-semibold uppercase tracking-wider text-[var(--text-muted)] block mb-2">
-                        Kode Unik Pengajuan Anda
-                    </span>
-                    <div class="inline-block bg-[var(--surface-muted)] border-2 border-dashed border-brand-blue/40 rounded-2xl px-6 py-4 mb-4">
-                        <span class="font-mono font-extrabold text-2xl sm:text-3xl text-brand-blue dark:text-brand-cyan tracking-wider select-all">
-                            {{ $coverage->submission_code }}
-                        </span>
-                    </div>
-                    <p class="text-xs sm:text-sm text-[var(--text-muted)] max-w-md mx-auto leading-relaxed mb-6">
-                        Mohon simpan dan catat kode pengajuan di atas. Anda dapat menggunakannya kapan saja untuk mengecek perkembangan status liputan.
-                    </p>
-
-                    <!-- QUICK SUMMARY -->
-                    <div class="bg-[var(--bg)] p-4 rounded-2xl border border-[var(--border)] text-left text-xs text-[var(--text-secondary)] space-y-2 mb-6">
-                        <div class="flex justify-between py-1 border-b border-[var(--border)]">
-                            <span class="text-[var(--text-muted)]">Nama Kegiatan:</span>
-                            <span class="font-semibold text-[var(--text-primary)] text-right max-w-[60%]">{{ $coverage->event_name }}</span>
-                        </div>
-                        <div class="flex justify-between py-1 border-b border-[var(--border)]">
-                            <span class="text-[var(--text-muted)]">Tanggal Acara:</span>
-                            <span class="font-semibold text-[var(--text-primary)]">{{ $coverage->event_date ? $coverage->event_date->isoFormat('D MMMM Y') : '-' }}</span>
-                        </div>
-                        <div class="flex justify-between py-1">
-                            <span class="text-[var(--text-muted)]">Status Awal:</span>
-                            <span class="peliputan-badge-pending">Menunggu Review</span>
-                        </div>
-                    </div>
-
-                    <div class="flex flex-col sm:flex-row items-center justify-center gap-3">
-                        <a href="{{ route('peliputan.status') }}" class="pub-btn pub-btn--primary w-full sm:w-auto">
-                            Cek Status Pengajuan
-                        </a>
-                        <a href="{{ route('public.home') }}" class="pub-btn pub-btn--ghost w-full sm:w-auto">
-                            Kembali ke Beranda
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
+    <section class="pub-section coverage-success-content"><div class="pub-container"><div class="coverage-success-layout">
+        <main class="coverage-success-card">
+            <div class="coverage-success-code"><span>Kode Pengajuan</span><strong>{{ $coverage->submission_code }}</strong><p>Simpan kode ini untuk mengecek status pengajuan.</p></div>
+            <div class="coverage-success-notice"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg><p>Pengajuan masih menunggu review dan belum berarti peliputan otomatis disetujui.</p></div>
+            <section class="coverage-success-summary" aria-labelledby="coverageSummaryTitle"><div class="coverage-summary-heading"><p>Ringkasan</p><h2 id="coverageSummaryTitle">Detail kegiatan</h2></div><dl>
+                <div><dt>Nama kegiatan</dt><dd>{{ $coverage->event_name }}</dd></div>
+                <div><dt>Tanggal</dt><dd>{{ $coverage->event_date ? $coverage->event_date->locale('id')->translatedFormat('j F Y') : '-' }}</dd></div>
+                @if($coverage->event_time)<div><dt>Waktu</dt><dd>{{ substr($coverage->event_time, 0, 5) }} WIB</dd></div>@endif
+                <div><dt>Lokasi</dt><dd>{{ $coverage->location }}</dd></div>
+            </dl></section>
+            <div class="coverage-success-actions"><a href="{{ route('peliputan.status', ['submission_code' => $coverage->submission_code]) }}" class="pub-btn pub-btn--primary">Cek Status</a>@if($whatsAppUrl)<a href="{{ $whatsAppUrl }}" class="pub-btn pub-btn--secondary coverage-whatsapp-action" target="_blank" rel="noopener noreferrer" aria-label="Hubungi Admin WPiTV melalui WhatsApp"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 11.5a8.4 8.4 0 0 1-9 8.5 9.8 9.8 0 0 1-4-.9L3 21l1.7-4.6A8.5 8.5 0 1 1 21 11.5Z"/><path d="M8.5 8.5c.5 3 2 4.5 5 5"/></svg>Hubungi Admin</a>@endif</div>
+            @if($whatsAppUrl)<p class="coverage-success-coordination">Butuh koordinasi lebih lanjut? Hubungi Admin WPiTV melalui WhatsApp dengan detail pengajuan Anda.</p>@endif
+            <a href="{{ route('peliputan.index') }}" class="coverage-success-back">Kembali ke Peliputan</a>
+        </main>
+        <aside class="coverage-success-next" aria-labelledby="coverageNextTitle"><span>LANGKAH BERIKUTNYA</span><h2 id="coverageNextTitle">Apa yang terjadi setelah ini?</h2><ol><li><i>1</i><div><strong>Review informasi</strong><p>Tim memeriksa detail kegiatan dan kesiapan jadwal.</p></div></li><li><i>2</i><div><strong>Koordinasi bila diperlukan</strong><p>WhatsApp dapat digunakan untuk menindaklanjuti pengajuan.</p></div></li><li><i>3</i><div><strong>Pantau status</strong><p>Gunakan kode dan kontak yang Anda daftarkan.</p></div></li></ol></aside>
+    </div></div></section>
 </div>

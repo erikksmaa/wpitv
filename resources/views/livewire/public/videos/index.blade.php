@@ -1,4 +1,4 @@
-<div>
+<div class="public-listing-page public-listing-page--videos">
     <!-- COMPACT HERO -->
     <section class="pub-hero !py-12 md:!py-16 border-b border-[var(--border)]" aria-labelledby="videoIndexTitle">
         <div class="hero-deco" aria-hidden="true"></div>
@@ -106,7 +106,7 @@
 
             <!-- VIDEO GRID -->
             @if($videos->isNotEmpty())
-                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-10" role="list">
+                <div class="public-card-grid public-card-grid--video grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-10" role="list">
                     @foreach($videos as $video)
                         <article class="video-card group" role="listitem">
                             <a href="{{ route('video.show', $video) }}" class="block">
@@ -137,7 +137,7 @@
 
                 <!-- PAGINATION -->
                 <div class="mt-8">
-                    {{ $videos->links() }}
+                    {{ $videos->links('vendor.pagination.public') }}
                 </div>
             @else
                 <!-- EMPTY STATE -->

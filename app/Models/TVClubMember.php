@@ -40,6 +40,22 @@ class TVClubMember extends Model
             ->withTimestamps();
     }
 
+    public function organizationAssignments()
+    {
+        return $this->hasMany(TvClubOrganizationMember::class, 'member_id')
+            ->orderBy('sort_order')
+            ->orderBy('id');
+    }
+
+    public function organizationPositions()
+    {
+        return $this->belongsToMany(TvClubOrganizationPosition::class, 'tvclub_organization_members', 'member_id', 'position_id')
+            ->using(TvClubOrganizationMember::class)
+            ->withPivot('id', 'sort_order')
+            ->withTimestamps()
+            ->orderByPivot('sort_order');
+    }
+
     /**
      * Get the full URL for the member's photo with fallback.
      */

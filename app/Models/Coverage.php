@@ -86,4 +86,9 @@ class Coverage extends Model
 
         return $code;
     }
+
+    public function agendas()
+    {
+        return $this->hasMany(WpitvAgenda::class, 'coverage_id');
+    }
 }

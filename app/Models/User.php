@@ -52,6 +52,11 @@ class User extends Authenticatable
         return $this->hasMany(Video::class, 'user_id');
     }
 
+    public function organizationPositions()
+    {
+        return $this->hasMany(WpitvOrganizationPosition::class, 'user_id');
+    }
+
     public function isSuperAdmin(): bool
     {
         return $this->role && $this->role->name === 'Super Admin';

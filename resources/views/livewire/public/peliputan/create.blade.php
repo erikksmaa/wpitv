@@ -1,234 +1,103 @@
-<div>
-    <!-- HERO / HEADER SECTION -->
-    <section class="pub-hero !py-12 md:!py-16 border-b border-[var(--border)]" aria-labelledby="formTitle">
-        <div class="hero-deco" aria-hidden="true"></div>
-        <div class="pub-container relative z-10">
-            <!-- Breadcrumb -->
-            <nav class="flex items-center gap-2 text-xs text-[var(--text-muted)] mb-4" aria-label="Breadcrumb">
-                <a href="{{ route('public.home') }}" class="hover:text-brand-blue transition-colors">Beranda</a>
-                <span class="text-[var(--text-faint)]">/</span>
-                <a href="{{ route('peliputan.index') }}" class="hover:text-brand-blue transition-colors">Peliputan</a>
-                <span class="text-[var(--text-faint)]">/</span>
-                <span class="text-brand-blue font-medium" aria-current="page">Ajukan Peliputan</span>
-            </nav>
+<div class="coverage-form-page">
+    <section class="coverage-form-hero" aria-labelledby="coverageFormTitle"><div class="pub-container">
+        <nav class="coverage-breadcrumb" aria-label="Breadcrumb"><a href="{{ route('public.home') }}">Beranda</a><span aria-hidden="true">/</span><a href="{{ route('peliputan.index') }}">Peliputan</a><span aria-hidden="true">/</span><span aria-current="page">Ajukan</span></nav>
+        <a href="{{ route('peliputan.index') }}" class="coverage-back-link"><span aria-hidden="true">←</span> Kembali ke Peliputan</a>
+        <p class="coverage-eyebrow"><span aria-hidden="true"></span> Ajukan Peliputan</p>
+        <h1 id="coverageFormTitle">Ceritakan Kegiatan Anda</h1>
+        <p>Lengkapi informasi berikut agar tim WPiTV dapat meninjau kebutuhan peliputan.</p>
+    </div></section>
 
-            <div class="max-w-2xl">
-                <div class="hero-eyebrow !mb-3">
-                    <span class="w-1.5 h-1.5 rounded-full bg-brand-blue" aria-hidden="true"></span>
-                    Permohonan Liputan
-                </div>
-                <h1 class="hero-title !text-3xl md:!text-4xl !mb-2.5" id="formTitle">
-                    Formulir Pengajuan Peliputan
-                </h1>
-                <p class="text-sm md:text-base text-[var(--text-muted)] leading-relaxed">
-                    Silakan lengkapi formulir di bawah ini dengan informasi agenda Anda secara akurat agar tim redaksi dapat segera menindaklanjuti.
-                </p>
-            </div>
-        </div>
-    </section>
+    <section class="pub-section coverage-form-content"><div class="pub-container">
+        @if($errors->has('general'))
+            <div class="coverage-form-alert" role="alert"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg><span>{{ $errors->first('general') }}</span></div>
+        @endif
+        <div class="coverage-form-layout">
+            <form wire:submit.prevent="submit" class="coverage-form-card" novalidate>
+                <p class="coverage-required-note"><span aria-hidden="true">*</span> Wajib diisi</p>
 
-    <!-- FORM SECTION -->
-    <section class="pub-section">
-        <div class="pub-container">
-            <div class="max-w-3xl mx-auto">
-                @if($errors->has('general'))
-                    <div class="mb-6 p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-600 dark:text-red-400 text-sm flex items-center gap-3">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="flex-shrink-0"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-                        <span>{{ $errors->first('general') }}</span>
-                    </div>
-                @endif
-
-                <form wire:submit.prevent="submit" class="peliputan-form-card space-y-8" novalidate>
-                    <!-- SECTION 1: DATA PEMOHON -->
-                    <div>
-                        <div class="flex items-center gap-2 mb-4 pb-2 border-b border-[var(--border)]">
-                            <span class="w-6 h-6 rounded-full bg-brand-blue/10 text-brand-blue font-bold text-xs flex items-center justify-center">1</span>
-                            <h2 class="font-heading font-bold text-base text-[var(--text-primary)]">
-                                Identitas Pemohon
-                            </h2>
+                <section class="coverage-form-section" aria-labelledby="applicantSectionTitle">
+                    <header><span>01</span><div><p>Tentang Pemohon</p><h2 id="applicantSectionTitle">Informasi Kontak</h2></div></header>
+                    <div class="coverage-fields coverage-fields--two">
+                        <div class="coverage-field coverage-field--wide">
+                            <label for="name">Nama Pemohon <span aria-hidden="true">*</span></label>
+                            <input type="text" id="name" wire:model="name" autocomplete="name" placeholder="Nama lengkap pemohon" aria-describedby="nameHelp @error('name') nameError @enderror" @error('name') aria-invalid="true" @enderror>
+                            <small id="nameHelp">Nama pihak yang dapat dihubungi terkait kegiatan.</small>
+                            @error('name')<p class="coverage-field-error" id="nameError">{{ $message }}</p>@enderror
                         </div>
-
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <!-- Nama Pemohon -->
-                            <div class="sm:col-span-2">
-                                <label for="name" class="block text-xs font-semibold text-[var(--text-secondary)] mb-1.5">
-                                    Nama Pemohon / Organisasi / Unit <span class="text-red-500">*</span>
-                                </label>
-                                <input 
-                                    type="text" 
-                                    id="name" 
-                                    wire:model="name"
-                                    placeholder="Contoh: BEM Institut Widya Pratama / Nama Penanggung Jawab"
-                                    class="w-full px-3.5 py-2.5 bg-[var(--bg)] border @error('name') border-red-500 @else border-[var(--border)] @enderror rounded-lg text-sm text-[var(--text-primary)] placeholder-[var(--text-faint)] focus:outline-none focus:border-brand-blue transition-colors"
-                                >
-                                @error('name')
-                                    <p class="text-xs text-red-500 mt-1">{{ $message }}</p>
-                                @enderror
-                            </div>
-
-                            <!-- Email -->
-                            <div>
-                                <label for="email" class="block text-xs font-semibold text-[var(--text-secondary)] mb-1.5">
-                                    Alamat Email Aktif <span class="text-red-500">*</span>
-                                </label>
-                                <input 
-                                    type="email" 
-                                    id="email" 
-                                    wire:model="email"
-                                    placeholder="email@domain.com"
-                                    class="w-full px-3.5 py-2.5 bg-[var(--bg)] border @error('email') border-red-500 @else border-[var(--border)] @enderror rounded-lg text-sm text-[var(--text-primary)] placeholder-[var(--text-faint)] focus:outline-none focus:border-brand-blue transition-colors"
-                                >
-                                @error('email')
-                                    <p class="text-xs text-red-500 mt-1">{{ $message }}</p>
-                                @enderror
-                            </div>
-
-                            <!-- Phone -->
-                            <div>
-                                <label for="phone" class="block text-xs font-semibold text-[var(--text-secondary)] mb-1.5">
-                                    Nomor WhatsApp / Telepon <span class="text-red-500">*</span>
-                                </label>
-                                <input 
-                                    type="tel" 
-                                    id="phone" 
-                                    wire:model="phone"
-                                    placeholder="08123456789"
-                                    class="w-full px-3.5 py-2.5 bg-[var(--bg)] border @error('phone') border-red-500 @else border-[var(--border)] @enderror rounded-lg text-sm text-[var(--text-primary)] placeholder-[var(--text-faint)] focus:outline-none focus:border-brand-blue transition-colors"
-                                >
-                                @error('phone')
-                                    <p class="text-xs text-red-500 mt-1">{{ $message }}</p>
-                                @enderror
-                            </div>
+                        <div class="coverage-field">
+                            <label for="email">Email <span aria-hidden="true">*</span></label>
+                            <input type="email" id="email" wire:model="email" autocomplete="email" placeholder="nama@domain.com" aria-describedby="emailHelp @error('email') emailError @enderror" @error('email') aria-invalid="true" @enderror>
+                            <small id="emailHelp">Gunakan email aktif untuk verifikasi status.</small>
+                            @error('email')<p class="coverage-field-error" id="emailError">{{ $message }}</p>@enderror
+                        </div>
+                        <div class="coverage-field">
+                            <label for="phone">Nomor WhatsApp / Telepon <span aria-hidden="true">*</span></label>
+                            <input type="tel" id="phone" wire:model="phone" autocomplete="tel" inputmode="tel" placeholder="Contoh: 0812 3456 7890" aria-describedby="phoneHelp @error('phone') phoneError @enderror" @error('phone') aria-invalid="true" @enderror>
+                            <small id="phoneHelp">Nomor ini dapat digunakan untuk koordinasi terkait pengajuan.</small>
+                            @error('phone')<p class="coverage-field-error" id="phoneError">{{ $message }}</p>@enderror
                         </div>
                     </div>
+                </section>
 
-                    <!-- SECTION 2: INFORMASI ACARA -->
-                    <div>
-                        <div class="flex items-center gap-2 mb-4 pb-2 border-b border-[var(--border)]">
-                            <span class="w-6 h-6 rounded-full bg-brand-blue/10 text-brand-blue font-bold text-xs flex items-center justify-center">2</span>
-                            <h2 class="font-heading font-bold text-base text-[var(--text-primary)]">
-                                Detail Agenda Kegiatan
-                            </h2>
+                <section class="coverage-form-section" aria-labelledby="eventSectionTitle">
+                    <header><span>02</span><div><p>Tentang Kegiatan</p><h2 id="eventSectionTitle">Jadwal Kegiatan</h2></div></header>
+                    <div class="coverage-fields coverage-fields--two">
+                        <div class="coverage-field coverage-field--wide">
+                            <label for="event_name">Nama Kegiatan <span aria-hidden="true">*</span></label>
+                            <input type="text" id="event_name" wire:model="event_name" placeholder="Contoh: Seminar Nasional Teknologi Informasi" aria-describedby="eventNameHelp @error('event_name') eventNameError @enderror" @error('event_name') aria-invalid="true" @enderror>
+                            <small id="eventNameHelp">Tuliskan nama kegiatan secara ringkas dan jelas.</small>
+                            @error('event_name')<p class="coverage-field-error" id="eventNameError">{{ $message }}</p>@enderror
                         </div>
-
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <!-- Nama Acara -->
-                            <div class="sm:col-span-2">
-                                <label for="event_name" class="block text-xs font-semibold text-[var(--text-secondary)] mb-1.5">
-                                    Nama Kegiatan / Acara <span class="text-red-500">*</span>
-                                </label>
-                                <input 
-                                    type="text" 
-                                    id="event_name" 
-                                    wire:model="event_name"
-                                    placeholder="Contoh: Seminar Nasional Teknologi Informasi 2026"
-                                    class="w-full px-3.5 py-2.5 bg-[var(--bg)] border @error('event_name') border-red-500 @else border-[var(--border)] @enderror rounded-lg text-sm text-[var(--text-primary)] placeholder-[var(--text-faint)] focus:outline-none focus:border-brand-blue transition-colors"
-                                >
-                                @error('event_name')
-                                    <p class="text-xs text-red-500 mt-1">{{ $message }}</p>
-                                @enderror
-                            </div>
-
-                            <!-- Tanggal Acara -->
-                            <div>
-                                <label for="event_date" class="block text-xs font-semibold text-[var(--text-secondary)] mb-1.5">
-                                    Tanggal Kegiatan <span class="text-red-500">*</span>
-                                </label>
-                                <input 
-                                    type="date" 
-                                    id="event_date" 
-                                    wire:model="event_date"
-                                    class="w-full px-3.5 py-2.5 bg-[var(--bg)] border @error('event_date') border-red-500 @else border-[var(--border)] @enderror rounded-lg text-sm text-[var(--text-primary)] focus:outline-none focus:border-brand-blue transition-colors"
-                                >
-                                @error('event_date')
-                                    <p class="text-xs text-red-500 mt-1">{{ $message }}</p>
-                                @enderror
-                            </div>
-
-                            <!-- Waktu Acara -->
-                            <div>
-                                <label for="event_time" class="block text-xs font-semibold text-[var(--text-secondary)] mb-1.5">
-                                    Waktu / Jam Kegiatan <span class="text-[var(--text-faint)] font-normal">(Opsional)</span>
-                                </label>
-                                <input 
-                                    type="time" 
-                                    id="event_time" 
-                                    wire:model="event_time"
-                                    class="w-full px-3.5 py-2.5 bg-[var(--bg)] border @error('event_time') border-red-500 @else border-[var(--border)] @enderror rounded-lg text-sm text-[var(--text-primary)] focus:outline-none focus:border-brand-blue transition-colors"
-                                >
-                                @error('event_time')
-                                    <p class="text-xs text-red-500 mt-1">{{ $message }}</p>
-                                @enderror
-                            </div>
-
-                            <!-- Lokasi Acara -->
-                            <div class="sm:col-span-2">
-                                <label for="location" class="block text-xs font-semibold text-[var(--text-secondary)] mb-1.5">
-                                    Lokasi / Tempat Acara <span class="text-red-500">*</span>
-                                </label>
-                                <input 
-                                    type="text" 
-                                    id="location" 
-                                    wire:model="location"
-                                    placeholder="Contoh: Auditorium Lt. 3 Institut Widya Pratama / Zoom Meeting"
-                                    class="w-full px-3.5 py-2.5 bg-[var(--bg)] border @error('location') border-red-500 @else border-[var(--border)] @enderror rounded-lg text-sm text-[var(--text-primary)] placeholder-[var(--text-faint)] focus:outline-none focus:border-brand-blue transition-colors"
-                                >
-                                @error('location')
-                                    <p class="text-xs text-red-500 mt-1">{{ $message }}</p>
-                                @enderror
-                            </div>
+                        <div class="coverage-field">
+                            <label for="event_date">Tanggal Kegiatan <span aria-hidden="true">*</span></label>
+                            <input type="date" id="event_date" wire:model="event_date" aria-describedby="eventDateHelp @error('event_date') eventDateError @enderror" @error('event_date') aria-invalid="true" @enderror>
+                            <small id="eventDateHelp">Pilih tanggal pelaksanaan kegiatan.</small>
+                            @error('event_date')<p class="coverage-field-error" id="eventDateError">{{ $message }}</p>@enderror
+                        </div>
+                        <div class="coverage-field">
+                            <label for="event_time">Waktu Kegiatan <em>Opsional</em></label>
+                            <input type="time" id="event_time" wire:model="event_time" aria-describedby="eventTimeHelp @error('event_time') eventTimeError @enderror" @error('event_time') aria-invalid="true" @enderror>
+                            <small id="eventTimeHelp">Jika belum pasti, kosongkan dan koordinasikan setelah pengajuan.</small>
+                            @error('event_time')<p class="coverage-field-error" id="eventTimeError">{{ $message }}</p>@enderror
                         </div>
                     </div>
+                </section>
 
-                    <!-- SECTION 3: KEBUTUHAN LIPUTAN -->
-                    <div>
-                        <div class="flex items-center gap-2 mb-4 pb-2 border-b border-[var(--border)]">
-                            <span class="w-6 h-6 rounded-full bg-brand-blue/10 text-brand-blue font-bold text-xs flex items-center justify-center">3</span>
-                            <h2 class="font-heading font-bold text-base text-[var(--text-primary)]">
-                                Kebutuhan Peliputan
-                            </h2>
+                <section class="coverage-form-section" aria-labelledby="detailSectionTitle">
+                    <header><span>03</span><div><p>Detail Peliputan</p><h2 id="detailSectionTitle">Lokasi &amp; Konteks</h2></div></header>
+                    <div class="coverage-fields">
+                        <div class="coverage-field">
+                            <label for="location">Lokasi Kegiatan <span aria-hidden="true">*</span></label>
+                            <input type="text" id="location" wire:model="location" placeholder="Contoh: Auditorium lantai 3" aria-describedby="locationHelp @error('location') locationError @enderror" @error('location') aria-invalid="true" @enderror>
+                            <small id="locationHelp">Sertakan nama ruang atau lokasi yang mudah dikenali.</small>
+                            @error('location')<p class="coverage-field-error" id="locationError">{{ $message }}</p>@enderror
                         </div>
-
-                        <div>
-                            <label for="description" class="block text-xs font-semibold text-[var(--text-secondary)] mb-1.5">
-                                Deskripsi Agenda &amp; Kebutuhan Liputan <span class="text-red-500">*</span>
-                            </label>
-                            <textarea 
-                                id="description" 
-                                wire:model="description"
-                                rows="5"
-                                placeholder="Jelaskan ringkasan acara, susunan agenda penting, kebutuhan khusus (misal: live streaming, rekaman video berita, wawancara narasumber, dokumentasi foto), dan narahubung di lokasi."
-                                class="w-full px-3.5 py-2.5 bg-[var(--bg)] border @error('description') border-red-500 @else border-[var(--border)] @enderror rounded-lg text-sm text-[var(--text-primary)] placeholder-[var(--text-faint)] focus:outline-none focus:border-brand-blue transition-colors"
-                            ></textarea>
-                            @error('description')
-                                <p class="text-xs text-red-500 mt-1">{{ $message }}</p>
-                            @enderror
+                        <div class="coverage-field">
+                            <label for="description">Deskripsi Kegiatan <span aria-hidden="true">*</span></label>
+                            <textarea id="description" wire:model="description" rows="6" maxlength="3000" placeholder="Jelaskan tujuan, rangkaian singkat, atau konteks kegiatan..." aria-describedby="descriptionHelp @error('description') descriptionError @enderror" @error('description') aria-invalid="true" @enderror></textarea>
+                            <small id="descriptionHelp">Jelaskan tujuan, rangkaian singkat, atau konteks kegiatan yang perlu diketahui tim WPiTV.</small>
+                            @error('description')<p class="coverage-field-error" id="descriptionError">{{ $message }}</p>@enderror
                         </div>
                     </div>
+                </section>
 
-                    <!-- SUBMIT BUTTON -->
-                    <div class="pt-4 border-t border-[var(--border)] flex flex-col sm:flex-row items-center justify-between gap-4">
-                        <a href="{{ route('peliputan.index') }}" class="text-xs text-[var(--text-muted)] hover:text-brand-blue transition-colors">
-                            &larr; Batalkan &amp; Kembali
-                        </a>
-
-                        <button 
-                            type="submit" 
-                            wire:loading.attr="disabled"
-                            class="pub-btn pub-btn--primary w-full sm:w-auto inline-flex items-center justify-center gap-2"
-                        >
-                            <span wire:loading.remove>Kirim Permohonan Liputan &rarr;</span>
-                            <span wire:loading class="inline-flex items-center gap-2">
-                                <svg class="animate-spin h-4 w-4 text-white" viewBox="0 0 24 24" fill="none">
-                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
-                                </svg>
-                                Mengirim Pengajuan...
-                            </span>
+                <section class="coverage-form-section coverage-form-review" aria-labelledby="reviewSectionTitle">
+                    <header><span>04</span><div><p>Review &amp; Kirim</p><h2 id="reviewSectionTitle">Periksa Sebelum Dikirim</h2></div></header>
+                    <div class="coverage-review-note"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8v4M12 16h.01"/></svg><div><strong>Pastikan tanggal, kontak, dan detail kegiatan sudah benar.</strong><p>Pengiriman formulir tidak berarti peliputan otomatis disetujui.</p></div></div>
+                    <div class="coverage-submit-row">
+                        <a href="{{ route('peliputan.index') }}" class="coverage-cancel-link">Kembali</a>
+                        <button type="submit" wire:loading.attr="disabled" wire:target="submit" class="pub-btn pub-btn--primary">
+                            <span wire:loading.remove wire:target="submit">Kirim Pengajuan</span>
+                            <span wire:loading wire:target="submit" class="coverage-loading"><i aria-hidden="true"></i> Mengirim...</span>
                         </button>
                     </div>
-                </form>
-            </div>
+                </section>
+            </form>
+
+            <aside class="coverage-form-aside" aria-labelledby="coverageGuideTitle">
+                <div class="coverage-guide-card"><p class="coverage-section-eyebrow">Sebelum Mengirim</p><h2 id="coverageGuideTitle">Pengajuan yang mudah ditinjau</h2><ul><li><span>✓</span> Pastikan kontak aktif</li><li><span>✓</span> Periksa tanggal kegiatan</li><li><span>✓</span> Jelaskan kegiatan dengan ringkas</li><li><span>✓</span> Simpan kode setelah berhasil</li></ul></div>
+                <div class="coverage-guide-status"><strong>Sudah pernah mengajukan?</strong><p>Gunakan kode dan kontak Anda untuk melihat perkembangannya.</p><a href="{{ route('peliputan.status') }}">Cek Status Pengajuan <span aria-hidden="true">→</span></a></div>
+            </aside>
         </div>
-    </section>
+    </div></section>
 </div>

@@ -54,15 +54,37 @@
                             class="nav-link {{ request()->routeIs('news.*') ? 'active' : '' }}">Berita</a></li>
                     <li><a href="{{ route('peliputan.index') }}"
                             class="nav-link {{ request()->routeIs('peliputan.*') ? 'active' : '' }}">Peliputan</a></li>
-                    <li><a href="{{ route('tvclub.index') }}"
-                            class="nav-link {{ request()->routeIs('tvclub.*') ? 'active' : '' }}">TV Club</a></li>
+                    <li><a href="{{ route('agenda.index') }}"
+                            class="nav-link {{ request()->routeIs('agenda.*') ? 'active' : '' }}">Agenda</a></li>
+                    <li class="tvclub-nav-dropdown" data-tvclub-nav>
+                        <button type="button"
+                            class="nav-link tvclub-nav-trigger {{ request()->routeIs('tvclub.*') ? 'active' : '' }}"
+                            aria-expanded="false" aria-controls="tvclubDesktopMenu" data-tvclub-nav-trigger>
+                            TV Club
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+                        </button>
+                        <div class="tvclub-nav-menu" id="tvclubDesktopMenu" aria-label="Navigasi TV Club" aria-hidden="true" data-tvclub-nav-menu>
+                            <a href="{{ route('tvclub.index') }}" class="{{ request()->routeIs('tvclub.index') ? 'active' : '' }}">
+                                <span class="tvclub-nav-menu__icon" aria-hidden="true">01</span><span><strong>Tentang TV Club</strong><small>Mengenal komunitas produksi WPiTV</small></span>
+                            </a>
+                            <a href="{{ route('tvclub.generations.index') }}" class="{{ request()->routeIs('tvclub.generations.*') ? 'active' : '' }}">
+                                <span class="tvclub-nav-menu__icon" aria-hidden="true">02</span><span><strong>Generasi</strong><small>Perjalanan TV Club dari setiap angkatan</small></span>
+                            </a>
+                            <a href="{{ route('tvclub.members.index') }}" class="{{ request()->routeIs('tvclub.members.*') ? 'active' : '' }}">
+                                <span class="tvclub-nav-menu__icon" aria-hidden="true">03</span><span><strong>Kru TV Club</strong><small>Direktori mahasiswa dan kru produksi</small></span>
+                            </a>
+                            <a href="{{ route('tvclub.groups.index') }}" class="{{ request()->routeIs('tvclub.groups.*') ? 'active' : '' }}">
+                                <span class="tvclub-nav-menu__icon" aria-hidden="true">04</span><span><strong>Kelompok Produksi</strong><small>Tim di balik program-program WPiTV</small></span>
+                            </a>
+                        </div>
+                    </li>
                     <li><a href="{{ route('public.about') }}"
                             class="nav-link {{ request()->routeIs('public.about') ? 'active' : '' }}">Tentang</a></li>
                 </ul>
             </nav>
 
             <div class="flex items-center gap-2.5">
-                <button class="nav-icon-btn hide-mobile" id="searchBtn" aria-label="Cari konten" type="button">
+                <button class="nav-icon-btn" id="searchBtn" aria-label="Cari konten" aria-controls="globalPublicSearch" aria-expanded="false" type="button">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                         <circle cx="11" cy="11" r="8" />
@@ -92,15 +114,28 @@
                         class="text-base font-medium text-[var(--text-secondary)] py-2.5 px-2 rounded-lg hover:text-brand-blue hover:bg-brand-blue/10">Berita</a>
                     <a href="{{ route('peliputan.index') }}"
                         class="text-base font-medium text-[var(--text-secondary)] py-2.5 px-2 rounded-lg hover:text-brand-blue hover:bg-brand-blue/10">Peliputan</a>
-                    <a href="{{ route('tvclub.index') }}"
-                        class="text-base font-medium text-[var(--text-secondary)] py-2.5 px-2 rounded-lg hover:text-brand-blue hover:bg-brand-blue/10">TV
-                        Club</a>
+                    <a href="{{ route('agenda.index') }}"
+                        class="text-base font-medium text-[var(--text-secondary)] py-2.5 px-2 rounded-lg hover:text-brand-blue hover:bg-brand-blue/10">Agenda</a>
+                    <div class="tvclub-mobile-accordion" data-tvclub-mobile>
+                        <button type="button" class="tvclub-mobile-trigger {{ request()->routeIs('tvclub.*') ? 'active' : '' }}"
+                            aria-expanded="false" aria-controls="tvclubMobileMenu" data-tvclub-mobile-trigger>
+                            <span>TV Club</span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+                        </button>
+                        <div class="tvclub-mobile-menu" id="tvclubMobileMenu" aria-hidden="true" data-tvclub-mobile-menu>
+                            <a href="{{ route('tvclub.index') }}" class="{{ request()->routeIs('tvclub.index') ? 'active' : '' }}">Tentang TV Club</a>
+                            <a href="{{ route('tvclub.generations.index') }}" class="{{ request()->routeIs('tvclub.generations.*') ? 'active' : '' }}">Generasi</a>
+                            <a href="{{ route('tvclub.members.index') }}" class="{{ request()->routeIs('tvclub.members.*') ? 'active' : '' }}">Kru TV Club</a>
+                            <a href="{{ route('tvclub.groups.index') }}" class="{{ request()->routeIs('tvclub.groups.*') ? 'active' : '' }}">Kelompok Produksi</a>
+                        </div>
+                    </div>
                     <a href="{{ route('public.about') }}"
                         class="text-base font-medium text-[var(--text-secondary)] py-2.5 px-2 rounded-lg hover:text-brand-blue hover:bg-brand-blue/10">Tentang</a>
                 </div>
             </div>
         </div>
     </header>
+
+    <livewire:public.global-search />
 
     <!-- MAIN CONTENT -->
     <main class="flex-grow">
@@ -172,6 +207,7 @@
                         </li>
                         <li><a href="{{ route('peliputan.index') }}"
                                 class="hover:text-white transition-colors">Peliputan</a></li>
+                        <li><a href="{{ route('agenda.index') }}" class="hover:text-white transition-colors">Agenda WPiTV</a></li>
                         <li><a href="{{ route('tvclub.index') }}" class="hover:text-white transition-colors">TV Club</a>
                         </li>
                     </ul>

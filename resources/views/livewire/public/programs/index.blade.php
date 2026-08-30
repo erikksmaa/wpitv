@@ -1,4 +1,4 @@
-<div>
+<div class="public-listing-page public-listing-page--programs">
     <!-- COMPACT HERO -->
     <section class="pub-hero !py-12 md:!py-16 border-b border-[var(--border)]" aria-labelledby="programIndexTitle">
         <div class="hero-deco" aria-hidden="true"></div>
@@ -65,7 +65,7 @@
 
             <!-- PROGRAM GRID -->
             @if($programs->isNotEmpty())
-                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-10" role="list">
+                <div class="public-card-grid public-card-grid--portrait grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-10" role="list">
                     @foreach($programs as $program)
                         <article class="bg-[var(--surface)] border border-[var(--border)] rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 flex flex-col group hover:-translate-y-1" role="listitem">
                             <a href="{{ route('program.show', $program->slug) }}" class="block aspect-[3/4] overflow-hidden relative bg-[var(--surface-muted)]">
@@ -109,7 +109,7 @@
 
                 <!-- PAGINATION -->
                 <div class="mt-8">
-                    {{ $programs->links() }}
+                    {{ $programs->links('vendor.pagination.public') }}
                 </div>
             @else
                 <!-- EMPTY STATE -->

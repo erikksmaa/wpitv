@@ -17,9 +17,9 @@
                 <!-- Left: Poster -->
                 <div class="md:col-span-4 lg:col-span-3 w-full max-w-[250px] mx-auto md:max-w-none">
                     <div class="aspect-[3/4] rounded-2xl overflow-hidden bg-[var(--surface-muted)] border border-[var(--border)] shadow-md">
-                        <img 
-                            src="{{ $program->image_url }}" 
-                            alt="Poster {{ $program->name }}" 
+                        <img
+                            src="{{ $program->image_url }}"
+                            alt="Poster {{ $program->name }}"
                             class="w-full h-full object-cover"
                             loading="eager"
                             fetchpriority="high"
@@ -102,7 +102,7 @@
 
                 <!-- PAGINATION -->
                 <div class="mt-8">
-                    {{ $videos->links() }}
+                    {{ $videos->links('vendor.pagination.public') }}
                 </div>
             @else
                 <div class="text-center py-14 px-4 bg-[var(--surface)] border border-[var(--border)] rounded-2xl max-w-md mx-auto">
@@ -237,9 +237,9 @@
                     @foreach($otherPrograms as $other)
                         <article class="bg-[var(--surface)] border border-[var(--border)] rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 flex flex-col group hover:-translate-y-1">
                             <a href="{{ route('program.show', $other->slug) }}" class="block aspect-[3/4] overflow-hidden relative bg-[var(--surface-muted)]">
-                                <img 
-                                    src="{{ $other->image_url }}" 
-                                    alt="Poster {{ $other->name }}" 
+                                <img
+                                    src="{{ $other->image_url }}"
+                                    alt="Poster {{ $other->name }}"
                                     class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                                     loading="lazy"
                                 >

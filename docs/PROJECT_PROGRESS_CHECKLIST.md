@@ -13,7 +13,7 @@ Dokumen ini menjadi pusat tracking pekerjaan modernisasi portal publik dan admin
 ## Ringkasan Status
 
 - [x] Struktur aplikasi publik dan admin sudah dibangun dengan Laravel, Livewire, dan Vite.
-- [x] Pengujian penuh terakhir lulus: 428 test dan 1.211 assertion.
+- [x] Pengujian penuh terakhir lulus: 459 test dan 1.360 assertion.
 - [x] Laravel Pint, Blade cache, Vite production build, dan `git diff --check` terakhir lulus.
 - [~] Perubahan proyek masih tersebar dalam banyak file modified/untracked dan belum memiliki checkpoint Git khusus modernisasi.
 - [~] Pengujian fungsional otomatis sudah kuat, tetapi audit visual manual setiap halaman dan setiap role belum selesai.
@@ -139,6 +139,32 @@ Dokumen ini menjadi pusat tracking pekerjaan modernisasi portal publik dan admin
 - [x] Halaman daftar dan detail Tayangan tersedia.
 - [x] Halaman daftar dan detail Berita tersedia.
 - [x] Portal TV Club, generasi, dan profil anggota tersedia.
+- [x] `/tv-club` telah diringkas menjadi overview mini portal tanpa direktori, filter, dan pagination yang menumpuk.
+- [x] Arsip generasi, direktori kru, dan kelompok produksi dipisahkan ke route publik khusus.
+- [x] Navigasi TV Club memakai dropdown desktop dan accordion mobile dengan active state serta kontrol keyboard.
+- [x] Breadcrumb detail generasi dan anggota terhubung kembali ke indeks yang sesuai.
+- [x] Enam route TV Club lolos QA browser pada 1440, 1280, 1024, 768, 430, dan 390 px tanpa overflow horizontal.
+- [x] Portal TV Club telah diverifikasi pada light mode dan dark mode.
+- [x] Landing TV Club dipoles dengan konsep editorial “Di Balik Layar WPiTV” yang menonjolkan manusia, produksi, dan komunitas.
+- [x] Hero landing menampilkan kru aktual berbasis database dengan fallback inisial karena aset foto kru belum tersedia.
+- [x] Preview kru dibatasi enam anggota aktif dari generasi aktif, memakai eager loading, jumlah penugasan aktual, dan tautan profil.
+- [x] Kartu generasi aktif, gateway portal, culture strip, dan closing CTA telah dipoles tanpa mengubah IA maupun subpage.
+- [x] Indeks Generasi dipoles menjadi active feature dan arsip timeline semantik yang menonjolkan waktu, kontinuitas, dan komunitas.
+- [x] Detail Generasi kini memiliki hero profil, snapshot aktual, kartu anggota, kelompok produksi, relasi program, dan navigasi tahun sebelumnya/berikutnya.
+- [x] Anggota dan kelompok tidak aktif tetap ditampilkan sebagai konteks historis tanpa mengekspos NIM atau data privat.
+- [x] Indeks serta detail Generasi lolos QA browser pada 1440, 1280, 1024, 768, 430, dan 390 px dalam light/dark mode tanpa overflow.
+- [x] Direktori kru dipoles menjadi people-first crew directory dengan hero ringkas, pencarian nama, filter generasi, ringkasan hasil Indonesia, pagination lokal, dan kartu portrait 4:5.
+- [x] Kartu kru memakai jumlah penugasan aktual dari `withCount('groups')`, status publik yang subtil, fallback inisial penuh, dan tidak menampilkan NIM.
+- [x] Detail anggota dipoles menjadi production portfolio dengan hero identitas, snapshot, penugasan dan role pivot aktual, program terdeduplikasi, konteks generasi, serta maksimal empat kru terkait.
+- [x] Kru tanpa penugasan, role kosong, foto kosong, dan anggota historis memiliki fallback yang aman tanpa bio, social media, skills, atau metrik rekaan.
+- [x] Direktori dan detail kru lolos QA browser pada 1440, 1280, 1024, 768, 430, dan 390 px dalam light/dark mode tanpa overflow horizontal.
+- [x] Regresi tautan profil pada Detail Program dan Detail Generasi, Landing TV Club, Tim Produksi, serta Detail Video telah diverifikasi.
+- [x] Kelompok Produksi dipoles menjadi pengalaman organisasi produksi yang menghubungkan identitas program, tim, generasi, dan kru dalam kartu editorial dua kolom.
+- [x] Query Kelompok Produksi eager-load generasi, program, dan anggota dengan kolom publik minimum serta `withCount('members')` tanpa N+1.
+- [x] Preview kru menampilkan maksimal empat anggota di desktop atau tiga di mobile, indikator `+N`, fallback inisial, role pivot aktual pada label aksesibel, dan tautan profil.
+- [x] Tim historis, tim tanpa kru, deskripsi kosong, serta relasi program/generasi yang hilang memiliki fallback aman tanpa mengekspos NIM.
+- [x] Kelompok Produksi lolos QA browser pada 1440, 1280, 1024, 768, 430, dan 390 px dalam light/dark mode tanpa overflow horizontal.
+- [x] Regresi Landing, Generasi, Crew Directory, Member Detail, Program Detail, dan selector stabil Video Detail telah diverifikasi setelah polish Kelompok Produksi.
 - [x] Alur pengajuan dan pengecekan status peliputan tersedia.
 - [x] Seluruh hero publik menggunakan bahasa visual biru khas WPiTV.
 - [x] Favicon publik/guest menggunakan `public/favicon.png`.
@@ -194,8 +220,9 @@ Dokumen ini menjadi pusat tracking pekerjaan modernisasi portal publik dan admin
 - [x] Test policy dan access control tersedia.
 - [x] Test seluruh modul admin utama tersedia.
 - [x] Test seluruh alur publik utama tersedia.
-- [x] Full test terakhir: 442 test dan 1.266 assertion lulus.
-- [x] Public regression terakhir: 131 test dan 320 assertion lulus.
+- [x] Full test terakhir: 459 test dan 1.360 assertion lulus.
+- [x] Public regression terakhir: 162 test dan 469 assertion lulus.
+- [x] `TVClubPortalTest`: 45 test dan 154 assertion lulus.
 - [x] Laravel Pint terakhir lulus.
 - [x] Vite production build terakhir lulus.
 - [x] Blade view cache terakhir lulus.

@@ -523,6 +523,19 @@
     </section>
 
     <!-- PELIPUTAN CTA -->
+    @if($upcomingAgendas->isNotEmpty())
+    <section class="pub-section pub-section--muted home-agenda" id="agenda" aria-labelledby="agendaH">
+        <div class="pub-container">
+            <div class="sec-head"><div><div class="sec-label">Kalender Publik</div><h2 class="sec-h2" id="agendaH">Agenda Terdekat</h2><p class="sec-sub">Jadwal kegiatan publik WPiTV yang dapat Anda ikuti.</p></div><a href="{{ route('agenda.index') }}" class="pub-btn pub-btn--secondary">Lihat Semua Agenda</a></div>
+            <div class="home-agenda-grid">
+                @foreach($upcomingAgendas as $agenda)
+                    <article class="home-agenda-card"><div class="home-agenda-date"><strong>{{ $agenda->agenda_date->format('d') }}</strong><span>{{ $agenda->agenda_date->locale('id')->translatedFormat('M Y') }}</span></div><div><span>{{ $agenda->type_label }}</span><h3>{{ $agenda->title }}</h3><p><i class="bi bi-clock"></i> {{ $agenda->time_label }} @if($agenda->location) · <i class="bi bi-geo-alt"></i> {{ $agenda->location }} @endif</p></div></article>
+                @endforeach
+            </div>
+        </div>
+    </section>
+    @endif
+
     <section class="pub-section" id="peliputan" aria-labelledby="peliputanH">
         <div class="pub-container">
             <div class="coverage-cta" data-reveal>

@@ -9,6 +9,7 @@ use App\Models\TVClubGeneration;
 use App\Models\TVClubGroup;
 use App\Models\TVClubMember;
 use App\Models\Video;
+use App\Models\WpitvAgenda;
 use App\Services\VisitorTracker;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -25,7 +26,7 @@ class Home extends Component
     {
         $data = app()->environment('testing')
             ? $this->homepageData()
-            : Cache::remember('public.homepage.v3', now()->addSeconds(60), fn () => $this->homepageData());
+            : Cache::remember('public.homepage.v4', now()->addSeconds(60), fn () => $this->homepageData());
 
         return view('livewire.public.home', $data)->layout('layouts.public', [
             'title' => 'WPiTV — Televisi Digital Kampus Institut Widya Pratama',
@@ -106,6 +107,10 @@ class Home extends Component
             ->take(6)
             ->get();
 
+        $upcomingAgendas = WpitvAgenda::publicVisible()->upcoming()
+            ->with(['program' => fn ($query) => $query->where('status', true)->select('id', 'name', 'slug', 'status')])
+            ->orderBy('agenda_date')->orderByRaw('start_time IS NULL')->orderBy('start_time')->orderBy('id')->take(3)->get();
+
         return [
             'heroVideo' => $heroVideo,
             'featuredVideos' => $featuredVideos,
@@ -119,6 +124,7 @@ class Home extends Component
             'sideNews' => $sideNews,
             'tvclubStats' => $tvclubStats,
             'crewMembers' => $crewMembers,
+            'upcomingAgendas' => $upcomingAgendas,
         ];
     }
 

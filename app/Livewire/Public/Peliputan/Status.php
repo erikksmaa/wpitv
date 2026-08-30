@@ -3,6 +3,7 @@
 namespace App\Livewire\Public\Peliputan;
 
 use App\Models\Coverage;
+use App\Support\CoverageWhatsApp;
 use Illuminate\Support\Facades\RateLimiter;
 use Livewire\Component;
 
@@ -60,15 +61,12 @@ class Status extends Component
             return;
         }
 
-        $recordPhone = preg_replace('/[^0-9]/', '', $coverage->phone);
-        $inputPhone = preg_replace('/[^0-9]/', '', $contactInput);
+        $whatsApp = app(CoverageWhatsApp::class);
+        $recordPhone = $whatsApp->normalizePhone($coverage->phone);
+        $inputPhone = $whatsApp->normalizePhone($contactInput);
         $recordEmail = strtolower(trim($coverage->email));
 
-        $phoneMatches = ! empty($inputPhone) && ! empty($recordPhone) && (
-            $inputPhone === $recordPhone
-            || str_ends_with($recordPhone, $inputPhone)
-            || str_ends_with($inputPhone, $recordPhone)
-        );
+        $phoneMatches = $inputPhone && $recordPhone && hash_equals($recordPhone, $inputPhone);
 
         $emailMatches = ! empty($contactInput) && $contactInput === $recordEmail;
 
@@ -110,7 +108,11 @@ class Status extends Component
 
     public function render()
     {
-        return view('livewire.public.peliputan.status')->layout('layouts.public', [
+        return view('livewire.public.peliputan.status', [
+            'whatsAppUrl' => $this->coverageResult
+                ? app(CoverageWhatsApp::class)->publicToAdminUrl($this->coverageResult)
+                : null,
+        ])->layout('layouts.public', [
             'title' => 'Cek Status Peliputan | WPiTV — Televisi Digital Kampus',
             'description' => 'Periksa perkembangan status pengajuan peliputan kegiatan Anda oleh tim redaksi WPiTV.',
         ]);

@@ -1,6 +1,10 @@
 <?php
 
 return [
+    'whatsapp' => [
+        'admin_number' => env('WPITV_WHATSAPP_NUMBER'),
+    ],
+
     /*
     |--------------------------------------------------------------------------
     | Institutional Featured Videos

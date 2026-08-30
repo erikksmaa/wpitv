@@ -48,6 +48,17 @@ class DashboardTest extends TestCase
         }
     }
 
+    public function test_admin_shell_exposes_mobile_sidebar_controls_without_forcing_sidebar_open(): void
+    {
+        $this->actingAs($this->superAdmin)
+            ->get(route('admin.dashboard'))
+            ->assertOk()
+            ->assertSee('class="burger-btn admin-menu-toggle"', false)
+            ->assertSee('aria-controls="sidebar"', false)
+            ->assertSee('aria-expanded="false"', false)
+            ->assertDontSee('<div id="sidebar" class="active"', false);
+    }
+
     public function test_program_kpi_is_database_driven_and_counts_active_programs(): void
     {
         $before = app(AdminDashboardMetrics::class)->get()['kpis']['programs'];

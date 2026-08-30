@@ -1,4 +1,4 @@
-<div>
+<div class="public-listing-page public-listing-page--news">
     <!-- COMPACT HERO -->
     <section class="pub-hero !py-12 md:!py-16 border-b border-[var(--border)]" aria-labelledby="newsIndexTitle">
         <div class="hero-deco" aria-hidden="true"></div>
@@ -172,7 +172,7 @@
 
                 <!-- PAGINATION -->
                 <div class="mt-8">
-                    {{ $newsList->links() }}
+                    {{ $newsList->links('vendor.pagination.public') }}
                 </div>
             @else
                 <!-- EMPTY STATE -->

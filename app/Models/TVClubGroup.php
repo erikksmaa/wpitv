@@ -42,4 +42,9 @@ class TVClubGroup extends Model
             ->withPivot('id', 'role')
             ->withTimestamps();
     }
+
+    public function agendas()
+    {
+        return $this->hasMany(WpitvAgenda::class, 'group_id');
+    }
 }

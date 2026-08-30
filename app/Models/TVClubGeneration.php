@@ -35,4 +35,11 @@ class TVClubGeneration extends Model
     {
         return $this->hasMany(TVClubGroup::class, 'generation_id');
     }
+
+    public function organizationPositions()
+    {
+        return $this->hasMany(TvClubOrganizationPosition::class, 'generation_id')
+            ->orderBy('sort_order')
+            ->orderBy('id');
+    }
 }

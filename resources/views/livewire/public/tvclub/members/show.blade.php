@@ -1,149 +1,66 @@
-<div>
-    <!-- HERO SECTION -->
-    <section class="pub-hero !py-12 md:!py-16 border-b border-[var(--border)]" aria-labelledby="memberProfileTitle">
-        <div class="hero-deco" aria-hidden="true"></div>
-        <div class="pub-container relative z-10">
-            <!-- Breadcrumb -->
-            <nav class="flex items-center gap-2 text-xs text-[var(--text-muted)] mb-6" aria-label="Breadcrumb">
-                <a href="{{ route('public.home') }}" class="hover:text-brand-blue transition-colors">Beranda</a>
-                <span class="text-[var(--text-faint)]">/</span>
-                <a href="{{ route('tvclub.index') }}" class="hover:text-brand-blue transition-colors">TV Club</a>
-                @if($member->generation)
-                    <span class="text-[var(--text-faint)]">/</span>
-                    <a href="{{ route('tvclub.generations.show', $member->generation->id) }}" class="hover:text-brand-blue transition-colors">{{ $member->generation->name }}</a>
-                @endif
-                <span class="text-[var(--text-faint)]">/</span>
-                <span class="text-brand-blue font-medium" aria-current="page">{{ $member->name }}</span>
-            </nav>
+@php
+    $memberGenerationName = $member->generation
+        ? preg_replace('/\s*\('.preg_quote((string) $member->generation->year, '/').'\)\s*$/', '', $member->generation->name)
+        : null;
+@endphp
 
-            <!-- MEMBER PROFILE CARD -->
-            <div class="bg-[var(--surface)] p-6 sm:p-10 rounded-2xl border border-[var(--border)] shadow-sm max-w-4xl">
-                <div class="flex flex-col sm:flex-row items-center sm:items-start gap-6 sm:gap-8 text-center sm:text-left">
-                    <!-- Avatar -->
-                    <div class="tvclub-avatar-circle !w-28 !h-28 !text-2xl !mb-0 flex-shrink-0">
-                        @if($member->photo_url)
-                            <img src="{{ $member->photo_url }}" alt="{{ $member->name }}" loading="eager" fetchpriority="high">
-                        @else
-                            <span>{{ $member->initials }}</span>
-                        @endif
-                    </div>
-
-                    <!-- Info -->
-                    <div class="min-w-0 flex-1">
-                        <div class="flex flex-wrap items-center justify-center sm:justify-start gap-3 mb-2">
-                            <span class="hero-eyebrow !mb-0">
-                                <span class="w-1.5 h-1.5 rounded-full bg-brand-blue" aria-hidden="true"></span>
-                                Kru Broadcasting
-                            </span>
-                            @if($member->status)
-                                <span class="tvclub-badge-active">
-                                    <span class="w-1.5 h-1.5 rounded-full bg-green-600 animate-pulse" aria-hidden="true"></span>
-                                    Anggota Aktif
-                                </span>
-                            @else
-                                <span class="tvclub-badge-inactive">Demisioner</span>
-                            @endif
-                        </div>
-
-                        <h1 class="font-heading font-extrabold text-2xl sm:text-3xl text-[var(--text-primary)] mb-2" id="memberProfileTitle">
-                            {{ $member->name }}
-                        </h1>
-
-                        @if($member->generation)
-                            <p class="text-sm text-[var(--text-muted)] mb-4">
-                                Bagian dari 
-                                <a href="{{ route('tvclub.generations.show', $member->generation->id) }}" class="text-brand-blue dark:text-brand-cyan font-semibold hover:underline">
-                                    {{ $member->generation->name }} ({{ $member->generation->year }})
-                                </a>
-                            </p>
-                        @endif
-
-                        <div class="flex items-center justify-center sm:justify-start gap-3 text-xs text-[var(--text-muted)]">
-                            <span class="px-3 py-1.5 rounded-lg bg-[var(--surface-muted)] border border-[var(--border)] font-medium">
-                                {{ $member->groups->count() }} Penugasan Kelompok
-                            </span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- ASSIGNMENTS SECTION -->
-    <section class="pub-section" aria-labelledby="assignmentsH">
+<div class="tvclub-member-profile">
+    <section class="tvclub-member-hero" aria-labelledby="memberProfileTitle">
+        <div class="tvclub-member-hero__glow" aria-hidden="true"></div>
         <div class="pub-container">
-            <div class="max-w-4xl mx-auto">
-                <div class="flex items-end justify-between gap-5 flex-wrap mb-8">
-                    <div>
-                        <div class="sec-label">Penugasan Produksi</div>
-                        <h2 class="sec-h2" id="assignmentsH">Kelompok &amp; Peran Kru</h2>
-                    </div>
+            <nav class="tvclub-crew-breadcrumb" aria-label="Breadcrumb"><a href="{{ route('public.home') }}">Beranda</a><span aria-hidden="true">/</span><a href="{{ route('tvclub.index') }}">TV Club</a><span aria-hidden="true">/</span><a href="{{ route('tvclub.members.index') }}">Kru TV Club</a><span aria-hidden="true">/</span><span aria-current="page">{{ $member->name }}</span></nav>
+            <div class="tvclub-member-hero__grid">
+                <div class="tvclub-member-hero__portrait">@if($member->photo_url)<img src="{{ $member->photo_url }}" alt="Foto {{ $member->name }}" loading="eager" fetchpriority="high">@else<span aria-hidden="true">{{ $member->initials }}</span>@endif</div>
+                <div class="tvclub-member-hero__identity">
+                    <span class="tvclub-crew-eyebrow"><i aria-hidden="true"></i>TV Club · Kru TV Club</span>
+                    <h1 id="memberProfileTitle">{{ $member->name }}</h1>
+                    <div class="tvclub-member-hero__labels">@if($member->generation)<span>{{ $memberGenerationName }} · {{ $member->generation->year }}</span>@endif<span class="{{ $member->status ? 'is-active' : '' }}"><i aria-hidden="true"></i>{{ $member->status ? 'Aktif' : 'Arsip' }}</span></div>
+                    <p>Rekam jejak produksi anggota dalam tim, program, dan generasi TV Club WPiTV.</p>
+                    @if($member->generation)<a href="{{ route('tvclub.generations.show', $member->generation->id) }}" class="tvclub-member-hero__cta">Lihat Generasi <span aria-hidden="true">→</span></a>@endif
                 </div>
-
-                @if($member->groups->isNotEmpty())
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5" role="list">
-                        @foreach($member->groups as $grp)
-                            <div class="bg-[var(--surface)] p-6 rounded-2xl border border-[var(--border)] shadow-sm flex flex-col justify-between" role="listitem">
-                                <div>
-                                    <div class="flex items-center justify-between gap-2 mb-3">
-                                        <span class="text-xs font-bold text-brand-blue dark:text-brand-cyan uppercase tracking-wider">
-                                            {{ $grp->pivot->role ?: 'Anggota Kru' }}
-                                        </span>
-                                        @if($grp->status)
-                                            <span class="tvclub-badge-active">Aktif</span>
-                                        @else
-                                            <span class="tvclub-badge-inactive">Selesai</span>
-                                        @endif
-                                    </div>
-
-                                    <h3 class="font-heading font-bold text-lg text-[var(--text-primary)] mb-2">
-                                        {{ $grp->name }}
-                                    </h3>
-
-                                    @if($grp->program)
-                                        <div class="mb-3">
-                                            <span class="text-[10px] text-[var(--text-faint)] block">Program Terkait:</span>
-                                            <a href="{{ route('program.show', $grp->program->slug) }}" class="text-xs text-brand-blue dark:text-brand-cyan hover:underline font-semibold inline-flex items-center gap-1">
-                                                {{ $grp->program->name }} &rarr;
-                                            </a>
-                                        </div>
-                                    @endif
-
-                                    @if($grp->description)
-                                        <p class="text-xs text-[var(--text-secondary)] leading-relaxed line-clamp-3 mb-4">
-                                            {{ $grp->description }}
-                                        </p>
-                                    @endif
-                                </div>
-
-                                @if($grp->generation)
-                                    <div class="pt-3 border-t border-[var(--border)] text-xs text-[var(--text-muted)] flex items-center justify-between">
-                                        <span>{{ $grp->generation->name }}</span>
-                                        <a href="{{ route('tvclub.generations.show', $grp->generation->id) }}" class="text-brand-blue dark:text-brand-cyan font-semibold hover:underline">
-                                            Lihat Generasi &rarr;
-                                        </a>
-                                    </div>
-                                @endif
-                            </div>
-                        @endforeach
-                    </div>
-                @else
-                    <div class="text-center py-12 px-4 bg-[var(--surface)] border border-[var(--border)] rounded-2xl">
-                        <p class="text-sm text-[var(--text-muted)]">Belum ada penugasan kelompok produksi yang tercatat untuk anggota ini.</p>
-                    </div>
-                @endif
-
-                <div class="mt-10 pt-6 border-t border-[var(--border)] flex justify-between items-center">
-                    <a href="{{ route('tvclub.index') }}" class="pub-btn pub-btn--ghost !text-xs !py-2 !px-4 inline-flex items-center gap-2">
-                        &larr; Kembali ke TV Club
-                    </a>
-                    @if($member->generation)
-                        <a href="{{ route('tvclub.generations.show', $member->generation->id) }}" class="text-xs text-brand-blue dark:text-brand-cyan font-semibold hover:underline">
-                            Lihat {{ $member->generation->name }} &rarr;
-                        </a>
-                    @endif
-                </div>
+                <dl class="tvclub-member-snapshot" aria-label="Ringkasan produksi"><div><dt>Penugasan</dt><dd>{{ $member->groups->count() }}</dd><span>Tim produksi</span></div><div><dt>Program</dt><dd>{{ $programs->count() }}</dd><span>Program terkait</span></div><div><dt>Generasi</dt><dd>{{ $member->generation?->year ?? '—' }}</dd><span>{{ $memberGenerationName ?? 'Belum tercatat' }}</span></div></dl>
             </div>
         </div>
     </section>
+
+    <section class="pub-section tvclub-member-assignments" aria-labelledby="assignmentsH"><div class="pub-container">
+        <div class="tvclub-member-section-heading"><div><span>Rekam Jejak Kru</span><h2 id="assignmentsH">Penugasan Produksi</h2><p>Peran dan tim produksi yang pernah dijalankan oleh anggota ini.</p></div><strong>{{ $member->groups->count() }} Penugasan</strong></div>
+        @if($member->groups->isNotEmpty())
+            <div class="tvclub-member-assignments__grid" role="list">
+                @foreach($member->groups as $group)
+                    @php($role = filled(trim((string) $group->pivot?->role)) ? trim($group->pivot->role) : 'Anggota Kru')
+                    <article class="tvclub-assignment-card" role="listitem">
+                        <div class="tvclub-assignment-card__top"><span>{{ $group->program?->name ?? 'Produksi WPiTV' }}</span><small class="{{ $group->status ? 'is-active' : '' }}">{{ $group->status ? 'Aktif' : 'Arsip' }}</small></div>
+                        <h3>{{ $group->name }}</h3>
+                        <dl><div><dt>Peran</dt><dd>{{ $role }}</dd></div><div><dt>Generasi</dt><dd>{{ $group->generation?->name ?? $member->generation?->name ?? 'TV Club WPiTV' }}</dd></div></dl>
+                        <div class="tvclub-assignment-card__footer"><span>{{ $group->members_count }} Kru dalam Tim</span>@if($group->program)<a href="{{ route('program.show', $group->program->slug) }}">Lihat Program <span aria-hidden="true">→</span></a>@endif</div>
+                    </article>
+                @endforeach
+            </div>
+        @else<div class="tvclub-member-assignments__empty"><span aria-hidden="true">◎</span><p>Belum ada penugasan produksi yang tercatat.</p></div>@endif
+    </div></section>
+
+    @if($programs->isNotEmpty())
+        <section class="pub-section tvclub-member-programs" aria-labelledby="memberProgramsH"><div class="pub-container">
+            <div class="tvclub-member-section-heading"><div><span>Portofolio Program</span><h2 id="memberProgramsH">Program yang Dikerjakan</h2><p>Program WPiTV yang terhubung dengan penugasan produksi anggota ini.</p></div></div>
+            <div class="tvclub-member-programs__grid" role="list">@foreach($programs as $program)<article class="tvclub-member-program-card" role="listitem"><a href="{{ route('program.show', $program->slug) }}" aria-label="Lihat program {{ $program->name }}"><span class="tvclub-member-program-card__image"><img src="{{ $program->image_url }}" alt="Sampul program {{ $program->name }}" loading="lazy"></span><span class="tvclub-member-program-card__body"><small>Program WPiTV</small><strong>{{ $program->name }}</strong>@if($program->description)<span>{{ Str::limit(strip_tags($program->description), 95) }}</span>@endif<i>Lihat Program <b aria-hidden="true">→</b></i></span></a></article>@endforeach</div>
+        </div></section>
+    @endif
+
+    @if($member->generation)
+        <section class="pub-section tvclub-member-generation" aria-labelledby="memberGenerationH"><div class="pub-container"><div class="tvclub-member-generation__card">
+            <div><span>Komunitas &amp; Regenerasi</span><h2 id="memberGenerationH">Bagian dari {{ $memberGenerationName }}</h2><p>{{ $member->generation->year }} · {{ $member->generation->status ? 'Generasi Aktif' : 'Arsip Generasi' }}</p></div>
+            <dl><div><dt>Kru</dt><dd>{{ $member->generation->members_count }}</dd></div><div><dt>Tim Produksi</dt><dd>{{ $member->generation->groups_count }}</dd></div></dl>
+            <a href="{{ route('tvclub.generations.show', $member->generation->id) }}">Lihat Generasi <span aria-hidden="true">→</span></a>
+        </div></div></section>
+    @endif
+
+    @if($relatedCrew->isNotEmpty())
+        <section class="pub-section tvclub-related-crew" aria-labelledby="relatedCrewH"><div class="pub-container">
+            <div class="tvclub-member-section-heading"><div><span>Satu Generasi</span><h2 id="relatedCrewH">Kru Lain dari Generasi Ini</h2></div><a href="{{ route('tvclub.members.index', ['generationId' => $member->generation_id]) }}">Lihat Semua Kru <span aria-hidden="true">→</span></a></div>
+            <div class="tvclub-related-crew__grid" role="list">@foreach($relatedCrew as $crew)<article class="tvclub-related-crew__card" role="listitem"><a href="{{ route('tvclub.members.show', $crew->id) }}"><span class="tvclub-related-crew__portrait">@if($crew->photo_url)<img src="{{ $crew->photo_url }}" alt="Foto {{ $crew->name }}" loading="lazy">@else<span aria-hidden="true">{{ $crew->initials }}</span>@endif</span><span><strong>{{ $crew->name }}</strong><small>{{ $crew->groups_count }} Penugasan Produksi</small></span><i aria-hidden="true">→</i></a></article>@endforeach</div>
+        </div></section>
+    @endif
+
+    <div class="tvclub-member-profile__back"><div class="pub-container"><a href="{{ route('tvclub.members.index') }}">← Kembali ke Kru TV Club</a></div></div>
 </div>

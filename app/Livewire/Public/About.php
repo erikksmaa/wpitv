@@ -6,6 +6,8 @@ use App\Models\News;
 use App\Models\Program;
 use App\Models\TVClubMember;
 use App\Models\Video;
+use App\Models\WpitvOrganizationPosition;
+use App\Support\OrganizationTree;
 use Illuminate\Support\Facades\Cache;
 use Livewire\Component;
 
@@ -15,7 +17,7 @@ class About extends Component
     {
         $data = app()->environment('testing')
             ? $this->aboutData()
-            : Cache::remember('public.about.v1', now()->addSeconds(60), fn () => $this->aboutData());
+            : Cache::remember('public.about.v2', now()->addSeconds(60), fn () => $this->aboutData());
 
         return view('livewire.public.about', $data)->layout('layouts.public', [
             'title' => 'Tentang WPiTV | WPiTV — Televisi Digital Kampus',
@@ -25,6 +27,13 @@ class About extends Component
 
     private function aboutData(): array
     {
+        $organizationPositions = WpitvOrganizationPosition::query()
+            ->with('user:id,name')
+            ->where('status', true)
+            ->orderBy('sort_order')
+            ->orderBy('id')
+            ->get();
+
         return [
             'heroVideo' => Video::query()
                 ->with('program:id,name')
@@ -42,6 +51,7 @@ class About extends Component
                 ->latest('id')
                 ->limit(6)
                 ->get(['id', 'generation_id', 'name', 'photo', 'status']),
+            'organizationTree' => OrganizationTree::build($organizationPositions),
         ];
     }
 }

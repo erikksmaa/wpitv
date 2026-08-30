@@ -400,4 +400,146 @@ class PeliputanManagementTest extends TestCase
             ->set('perPage', 25)
             ->assertSet('perPage', 25);
     }
+
+    public function test_authorized_admin_can_open_contextual_whatsapp_action_from_detail(): void
+    {
+        $coverage = Coverage::create([
+            'submission_code' => 'PLP-WA-DETAIL',
+            'name' => 'Pemohon Detail WhatsApp',
+            'email' => 'detail-wa@example.test',
+            'phone' => '+62 813-4444-5555',
+            'event_name' => 'Agenda Detail WhatsApp',
+            'event_date' => '2026-09-30',
+            'location' => 'Aula Detail',
+            'description' => 'Kebutuhan peliputan.',
+            'status' => Coverage::STATUS_PENDING,
+            'admin_note' => 'Catatan internal yang tidak boleh terkirim',
+        ]);
+
+        $component = Livewire::actingAs($this->superAdmin)
+            ->test(Index::class)
+            ->call('openDetailModal', $coverage->id)
+            ->assertSee('Hubungi Pemohon')
+            ->assertSee('https://wa.me/6281344445555?text=', false);
+
+        $this->assertStringNotContainsString(
+            rawurlencode('Catatan internal yang tidak boleh terkirim'),
+            $component->html()
+        );
+    }
+
+    public function test_read_only_admin_cannot_see_or_prepare_whatsapp_actions(): void
+    {
+        $coverage = Coverage::create([
+            'submission_code' => 'PLP-WA-DENIED',
+            'name' => 'Pemohon WhatsApp Denied',
+            'email' => 'denied-wa@example.test',
+            'phone' => '081344445556',
+            'event_name' => 'Agenda WhatsApp Denied',
+            'event_date' => '2026-09-30',
+            'location' => 'Aula Denied',
+            'description' => 'Kebutuhan peliputan.',
+            'status' => Coverage::STATUS_PENDING,
+        ]);
+
+        Livewire::actingAs($this->adminNews)
+            ->test(Index::class)
+            ->call('openDetailModal', $coverage->id)
+            ->assertDontSee('Hubungi Pemohon')
+            ->call('openStatusModal', $coverage->id)
+            ->assertStatus(403);
+    }
+
+    public function test_status_is_persisted_before_whatsapp_draft_becomes_available(): void
+    {
+        $coverage = Coverage::create([
+            'submission_code' => 'PLP-WA-SAVE-FIRST',
+            'name' => 'Pemohon Save First',
+            'email' => 'save-first@example.test',
+            'phone' => '081355556666',
+            'event_name' => 'Agenda Save First',
+            'event_date' => '2026-09-30',
+            'location' => 'Aula Save First',
+            'description' => 'Kebutuhan peliputan.',
+            'status' => Coverage::STATUS_PENDING,
+            'admin_note' => 'Catatan rahasia sebelum update',
+        ]);
+
+        $component = Livewire::actingAs($this->adminProduction)
+            ->test(Index::class)
+            ->call('openStatusModal', $coverage->id)
+            ->set('newStatus', Coverage::STATUS_IN_PROGRESS)
+            ->set('adminNote', 'Catatan rahasia sesudah update')
+            ->call('updateStatusAndPrepareWhatsApp')
+            ->assertHasNoErrors()
+            ->assertSet('preparedWhatsAppCode', 'PLP-WA-SAVE-FIRST');
+
+        $coverage->refresh();
+        $url = $component->get('preparedWhatsAppUrl');
+
+        $this->assertSame(Coverage::STATUS_IN_PROGRESS, $coverage->status);
+        $this->assertSame('Catatan rahasia sesudah update', $coverage->admin_note);
+        $this->assertStringStartsWith('https://wa.me/6281355556666?text=', $url);
+        $this->assertStringContainsString(rawurlencode('Sedang Diproses'), $url);
+        $this->assertStringNotContainsString(rawurlencode('Catatan rahasia sesudah update'), $url);
+    }
+
+    public function test_invalid_client_phone_never_generates_whatsapp_url_but_keeps_saved_status(): void
+    {
+        $coverage = Coverage::create([
+            'submission_code' => 'PLP-WA-BAD-PHONE',
+            'name' => 'Pemohon Nomor Invalid',
+            'email' => 'bad-phone@example.test',
+            'phone' => 'nomor invalid',
+            'event_name' => 'Agenda Nomor Invalid',
+            'event_date' => '2026-09-30',
+            'location' => 'Aula Invalid',
+            'description' => 'Kebutuhan peliputan.',
+            'status' => Coverage::STATUS_PENDING,
+        ]);
+
+        Livewire::actingAs($this->superAdmin)
+            ->test(Index::class)
+            ->call('openStatusModal', $coverage->id)
+            ->set('newStatus', Coverage::STATUS_REJECTED)
+            ->call('updateStatusAndPrepareWhatsApp')
+            ->assertHasErrors(['whatsapp'])
+            ->assertSet('preparedWhatsAppUrl', null);
+
+        $this->assertDatabaseHas('tr_perliputan', [
+            'id' => $coverage->id,
+            'status' => Coverage::STATUS_REJECTED,
+        ]);
+    }
+
+    public function test_edit_form_can_save_latest_status_then_prepare_whatsapp_draft(): void
+    {
+        $coverage = Coverage::create([
+            'submission_code' => 'PLP-WA-EDIT-FORM',
+            'name' => 'Pemohon Edit Form',
+            'email' => 'edit-form@example.test',
+            'phone' => '081366667777',
+            'event_name' => 'Agenda Edit Form',
+            'event_date' => '2026-09-30',
+            'location' => 'Aula Edit',
+            'description' => 'Kebutuhan peliputan.',
+            'status' => Coverage::STATUS_PENDING,
+        ]);
+
+        $component = Livewire::actingAs($this->superAdmin)
+            ->test(Form::class, ['coverage' => $coverage])
+            ->assertSee('Hubungi Pemohon')
+            ->set('status', Coverage::STATUS_COMPLETED)
+            ->set('admin_note', 'Catatan internal edit form')
+            ->call('saveAndPrepareWhatsApp')
+            ->assertHasNoErrors();
+
+        $coverage->refresh();
+        $url = $component->get('preparedWhatsAppUrl');
+
+        $this->assertSame(Coverage::STATUS_COMPLETED, $coverage->status);
+        $this->assertStringStartsWith('https://wa.me/6281366667777?text=', $url);
+        $this->assertStringContainsString(rawurlencode('Selesai'), $url);
+        $this->assertStringNotContainsString(rawurlencode('Catatan internal edit form'), $url);
+    }
 }
