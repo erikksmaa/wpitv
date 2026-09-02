@@ -1,116 +1,302 @@
 # PANDUAN DEPLOYMENT WPiTV MODERNIZATION
 
-Panduan ini melengkapi release gate di `docs/PRODUCTION_CHECKLIST.md`. Ganti setiap placeholder dengan nilai infrastruktur produksi yang disetujui.
+Dokumen ini berisi panduan praktis langkah demi langkah untuk melakukan deployment proyek **WPiTV Modernization** (Laravel 12 + Livewire + Vite) ke server produksi (seperti cPanel / Shared Hosting / VPS / Cloud Server) secara aman, terstruktur, dan mudah dipahami.
 
-## 1. Prasyarat
+---
 
-- PHP 8.2+ dengan ekstensi yang diwajibkan `composer.json`, MySQL 8.0+ atau MariaDB 10.6+, Composer 2.x.
-- Nginx atau Apache 2.4+; DocumentRoot wajib `<project>/public`.
-- Node.js/npm hanya diperlukan bila aset dibangun pada server.
-- Backup database dan `storage/app/public` sudah diuji untuk restore.
+## 1. Kebutuhan Server
 
-Database existing adalah source of truth. Jangan jalankan `migrate:fresh`, `migrate:reset`, `db:wipe`, atau migrasi destruktif. Rilis ini tidak memerlukan migrasi.
+Spesifikasi minimum server yang dibutuhkan:
 
-## 2. Environment
+- **PHP**: Versi 8.2 atau lebih baru
+- **Ekstensi PHP**: `pdo_mysql`, `mbstring`, `openssl`, `tokenizer`, `xml`, `ctype`, `json`, `curl`, `fileinfo`, `gd`, `bcmath`
+- **Database**: MySQL 8.x atau MariaDB 10.6+ yang kompatibel
+- **Composer**: Composer 2.x
+- **Web Server**: Apache (dengan modul `mod_rewrite` aktif) atau Nginx
+- **Protokol**: SSL / HTTPS aktif
+- **Node.js & npm**: **Hanya diperlukan** jika kompilasi aset frontend dilakukan langsung di server. Jika folder `public/build` sudah disertakan dalam paket rilis, Node.js tidak wajib dipasang di server.
+
+---
+
+## 2. Upload Project
+
+1. Unggah dan ekstrak seluruh folder project ke direktori server (contoh: `/var/www/wpitv` pada VPS atau direktori di luar `public_html` pada cPanel).
+2. **PENTING**: Konfigurasikan Document Root web server agar **WAJIB** mengarah ke subfolder `<project>/public` (bukan ke root project).
+   - **Contoh Apache VirtualHost:** `DocumentRoot "/var/www/wpitv/public"`
+   - **Contoh cPanel / Plesk:** Arahkan Document Root domain/subdomain ke path `wpitv/public`.
+
+> Mengarahkan Document Root ke subfolder `public` menjamin keamanan agar file `.env`, folder `storage`, dan source code aplikasi tidak dapat diakses atau diunduh langsung dari browser.
+
+---
+
+## 3. Install Dependency
+
+Jalankan perintah Composer di dalam direktori project untuk memasang paket dependensi PHP produksi:
+
+```bash
+composer install --no-dev --optimize-autoloader
+```
+
+> **Catatan:**
+> - Jangan gunakan `composer update` saat proses deployment produksi agar versi paket tetap stabil dan sesuai dengan yang telah diuji.
+> - Jika folder `vendor` sudah disertakan lengkap di dalam paket project dan server tidak memiliki akses Composer (misal shared hosting sederhana), langkah ini dapat dilewati.
+
+---
+
+## 4. Frontend Asset
+
+Aplikasi WPiTV menggunakan antarmuka modern yang dikompilasi menggunakan Tailwind CSS dan Vite.
+
+- **Mode Development (Hanya saat pengembangan lokal):**
+  Menggunakan `npm run dev`.
+- **Mode Production (Server / Siap Pakai):**
+  Menggunakan file statis hasil kompilasi dari `npm run build`.
+
+> **PENTING UNTUK PRODUKSI:**
+> 1. Jika folder `public/build` sudah ada dan disertakan dalam paket rilis, Anda **TIDAK PERLU** menjalankan Node.js atau npm di server produksi.
+> 2. **JANGAN** menjalankan `npm run dev` di server produksi. Vite tidak perlu aktif sebagai background service di server.
+> 3. Jika Anda perlu membangun ulang aset langsung di server:
+>    ```bash
+>    npm ci
+>    npm run build
+>    ```
+
+---
+
+## 5. Database
+
+1. Buat database baru di MySQL/MariaDB (misal: `wpitv`).
+2. Buat user database dengan hak akses yang sesuai ke database tersebut.
+3. Import file SQL dump final WPiTV yang telah disediakan ke dalam database tersebut (melalui phpMyAdmin, MySQL Workbench, atau terminal `mysql -u user -p wpitv < dump.sql`).
+4. Masukkan nama database, username, dan password ke file `.env`.
+
+> ⚠️ **PERINGATAN PENTING MENGENAI DATABASE:**
+> Database existing adalah **source of truth** untuk seluruh data dan skema WPiTV.
+>
+> **JANGAN PERNAH** menjalankan perintah migrasi Laravel berikut pada server produksi:
+> - `php artisan migrate`
+> - `php artisan migrate:fresh`
+> - `php artisan db:wipe`
+> - `php artisan migrate:reset`
+>
+> Menjalankan perintah migrasi di atas dapat merusak atau menghapus struktur serta data historis yang sudah ada.
+
+---
+
+## 6. Konfigurasi .env
+
+Salin file `.env.example` menjadi `.env` jika belum tersedia, lalu sesuaikan nilai variabel berikut dengan konfigurasi server produksi Anda:
 
 ```ini
 APP_NAME=WPiTV
 APP_ENV=production
 APP_DEBUG=false
-APP_URL=https://<domain-produksi>
-APP_KEY=<kunci-aplikasi-yang-valid>
+APP_URL=https://domain-anda.com
 
 DB_CONNECTION=mysql
-DB_HOST=<host-database>
+DB_HOST=127.0.0.1
 DB_PORT=3306
-DB_DATABASE=wpitv
-DB_USERNAME=<akun-khusus-aplikasi-bukan-root>
-DB_PASSWORD=<password-kuat-dan-unik>
+DB_DATABASE=nama_database_anda
+DB_USERNAME=user_database_anda
+DB_PASSWORD=password_database_anda
 
 SESSION_DRIVER=file
 SESSION_LIFETIME=30
 SESSION_SECURE_COOKIE=true
 SESSION_HTTP_ONLY=true
 SESSION_SAME_SITE=lax
+
 ADMIN_SESSION_IDLE_TIMEOUT=30
 ADMIN_SESSION_ABSOLUTE_LIFETIME=8
 
-TRUSTED_HOSTS=<domain-produksi>
+TRUSTED_HOSTS=domain-anda.com
 TRUSTED_PROXIES=
-SECURITY_CSP_REPORT_ONLY=true
 ```
 
-Isi `TRUSTED_PROXIES` hanya dengan IP/CIDR proxy yang dikelola. Jangan percaya semua proxy. Jangan membuat `APP_KEY` baru pada instalasi yang sudah memakai data terenkripsi atau sesi aktif tanpa rencana rotasi.
+> **Hal Penting:**
+> - Pastikan `APP_DEBUG=false` agar detail error teknis atau informasi rahasia tidak bocor ke publik.
+> - Variabel `ADMIN_SESSION_IDLE_TIMEOUT=30` (timeout idle admin 30 menit) dan `ADMIN_SESSION_ABSOLUTE_LIFETIME=8` (maksimal sesi admin 8 jam) adalah variabel pengaman sesi yang aktif di aplikasi ini.
 
-## 3. Instalasi release
+---
+
+## 7. APP_KEY
+
+Aplikasi membutuhkan kunci enkripsi yang valid untuk keamanan sesi dan cookie.
+
+Jika nilai `APP_KEY` pada file `.env` masih kosong, jalankan perintah:
 
 ```bash
-composer install --no-dev --optimize-autoloader
-npm ci
-npm run build
-php artisan storage:link
+php artisan key:generate
+```
+
+> **Catatan:** Jangan menjalankan perintah generate kunci ini jika aplikasi sudah beroperasi di produksi dan memiliki sesi aktif, karena akan mereset kunci enkripsi aplikasi.
+
+---
+
+## 8. Storage dan Gambar
+
+Pengelolaan media gambar (Program, Berita, dan TV Club) menggunakan sistem storage publik Laravel.
+
+1. **Jalankan Perintah Symlink Storage:**
+   ```bash
+   php artisan storage:link
+   ```
+   Perintah ini akan membuat shortcut/symlink dari folder `public/storage` ke `storage/app/public`.
+
+2. **Struktur Folder Media di Laravel:**
+   - **Program:** `storage/app/public/programs/`
+   - **Berita (News):** `storage/app/public/news/`
+   - **Foto Anggota TV Club:** `storage/app/public/tvclub/members/`
+
+   Semua media tersebut dapat diakses oleh publik melalui URL `/storage/...` (contoh: `/storage/programs/nama-file.webp`).
+
+3. **Cara Kerja Penyimpanan di Database:**
+   - Kolom database (`image` pada tabel `ms_program` dan `ms_news`, serta `photo` pada `tvclub_members`) **hanya menyimpan nama file saja** (contoh: `01 AKTUAL.jpg` atau `berita-1788361740-tbpcj9.webp`), bukan path folder.
+   - Saat admin mengunggah gambar baru, sistem otomatis mengoptimasi ukuran gambar menjadi format WebP dan menyimpan nama filenya ke database.
+
+4. **Catatan Gambar Historis (Data Lama):**
+   - File fisik gambar lama dari website WPiTV harus diletakkan di dalam direktori storage yang sesuai (`storage/app/public/programs/`, `storage/app/public/news/`, dll.) dengan nama file yang **cocok persis** dengan yang tersimpan di database.
+   - Jika suatu record di database memiliki nama file gambar tetapi file fisiknya belum disalin ke server, sistem akan secara otomatis menampilkan gambar placeholder bawaan tanpa menimbulkan error.
+
+---
+
+## 9. Permission Folder
+
+Pastikan pengguna web server memiliki izin baca dan tulis (*write permission*) pada folder berikut:
+- `storage/`
+- `bootstrap/cache/`
+
+Contoh perintah permission pada server Linux / VPS:
+```bash
+chmod -R 775 storage bootstrap/cache
+chown -R www-data:www-data storage bootstrap/cache
+```
+
+> **Catatan:** Hindari memberikan izin `777` demi keamanan server, kecuali jika lingkungan hosting Anda memang memiliki batasan khusus yang mengharuskannya.
+
+---
+
+## 10. Cache Laravel
+
+Setelah file `.env` selesai dikonfigurasi dan dipastikan benar, jalankan rangkaian perintah berikut untuk mengoptimalkan performa aplikasi di lingkungan produksi:
+
+```bash
 php artisan optimize:clear
 php artisan config:cache
 php artisan route:cache
 php artisan view:cache
 ```
 
-Alternatifnya, build `public/build` di CI dan deploy artifact yang tervalidasi. Pastikan `public/hot` tidak ikut dalam release. User web server hanya memerlukan hak tulis pada `storage` dan `bootstrap/cache`; jangan gunakan `777`.
+> **Tip:** Jika Anda melakukan perubahan pada file `.env` di kemudian hari, jalankan kembali perintah `php artisan optimize:clear` dan `php artisan config:cache` agar perubahan diterapkan.
 
-## 4. Web server
+---
 
-Contoh Nginx berikut memakai placeholder dan menolak eksekusi upload. Sesuaikan socket PHP, sertifikat, dan batas ukuran request dengan server.
+## 11. HTTPS
 
-```nginx
-server {
-    listen 80;
-    server_name <domain-produksi>;
-    return 301 https://$host$request_uri;
-}
+1. Pastikan sertifikat SSL (HTTPS) sudah aktif pada domain server Anda.
+2. Pastikan nilai `APP_URL` pada file `.env` menggunakan protokol `https://` (contoh: `https://wpitv.example.com`).
+3. Pastikan `SESSION_SECURE_COOKIE=true` pada `.env` agar cookie sesi hanya dikirimkan melalui koneksi aman HTTPS.
 
-server {
-    listen 443 ssl http2;
-    server_name <domain-produksi>;
-    root /var/www/wpitv/public;
-    index index.php;
+*(Untuk verifikasi keamanan server lebih rinci seperti Content Security Policy dan HTTP Security Headers, lihat panduan di `docs/PRODUCTION_CHECKLIST.md`).*
 
-    ssl_certificate <path-fullchain>;
-    ssl_certificate_key <path-private-key>;
+---
 
-    add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
-    add_header X-Content-Type-Options "nosniff" always;
-    add_header X-Frame-Options "SAMEORIGIN" always;
-    add_header Referrer-Policy "strict-origin-when-cross-origin" always;
-    add_header Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=(), usb=(), browsing-topics=()" always;
+## 12. Pengecekan Setelah Deployment
 
-    location / {
-        try_files $uri $uri/ /index.php?$query_string;
-    }
+Lakukan pengujian cepat (*smoke test*) untuk memastikan semua fungsi berjalan normal:
 
-    location ~* ^/storage/.*\.(php[0-9]?|phtml|phar)$ {
-        deny all;
-    }
+### Halaman Publik
+- [ ] **Home** (`/`) — Carousel program, video terbaru, dan counter pengunjung tampil.
+- [ ] **Program** (`/program` dan detail `/program/{slug}`) — Daftar dan halaman detail program terbuka dengan baik.
+- [ ] **Tayangan** (`/tayangan` dan detail `/tayangan/{slug}`) — Video YouTube terintegrasi dan dapat diputar.
+- [ ] **Berita** (`/berita` dan detail `/berita/{slug}`) — Artikel berita dan gambar cover tampil rapi.
+- [ ] **Peliputan** (`/peliputan`, `/peliputan/ajukan`, `/peliputan/status`) — Form pengajuan peliputan dan fitur cek status dengan kode permohonan berfungsi.
+- [ ] **Agenda** (`/agenda`) — Jadwal agenda kegiatan tampil.
+- [ ] **TV Club** (`/tv-club`, `/tv-club/anggota`, `/tv-club/generasi`, `/tv-club/tim-produksi`) — Profil generasi dan daftar kru TV Club tampil.
 
-    location ~ \.php$ {
-        try_files $uri =404;
-        include fastcgi_params;
-        fastcgi_param SCRIPT_FILENAME $realpath_root$fastcgi_script_name;
-        fastcgi_pass unix:/var/run/php/php8.4-fpm.sock;
-        fastcgi_hide_header X-Powered-By;
-    }
+### Panel Admin (`/login`)
+- [ ] **Login & Logout** — Berhasil login dengan akun pengelola.
+- [ ] **Dashboard** — Ringkasan data tampil.
+- [ ] **CRUD Data** — Tambah, edit, dan hapus data sesuai hak akses peran (Program, Video, Berita, TV Club, Peliputan, Agenda, Users, Roles).
+- [ ] **Interaktivitas Livewire** — Fitur filter, pencarian, dan pagination berfungsi responsif tanpa reload halaman.
+- [ ] **Upload Gambar** — Unggah gambar baru di Program atau Berita berhasil diproses dan tampil.
 
-    location ~ /\.(?!well-known).* {
-        deny all;
-    }
-}
+### Verifikasi Teknis
+- [ ] Tampilan CSS dan JavaScript rapi dan tidak berantakan.
+- [ ] Gambar tampil normal (atau placeholder muncul jika gambar historis belum disalin).
+- [ ] Tidak ada error HTTP 500, error 404 pada aset, atau error 419 (Page Expired).
+- [ ] Request interaktif Livewire (`/livewire/update`) berhasil dengan status 200 OK.
+
+---
+
+## 13. Troubleshooting Singkat
+
+### CSS / JS Tidak Tampil atau Tampilan Rusak
+- **Penyebab:** Folder `public/build` belum ada atau belum dikompilasi untuk produksi.
+- **Solusi:** Jalankan `npm run build` di komputer lokal, lalu unggah folder `public/build` ke dalam folder `public/` di server. Pastikan file `public/hot` tidak ada di server.
+
+### Gambar Tidak Tampil
+- **Penyebab:** Symlink storage belum dibuat atau file gambar belum berada di folder yang tepat.
+- **Solusi:**
+  1. Jalankan `php artisan storage:link`.
+  2. Pastikan file gambar berada di `storage/app/public/programs/`, `storage/app/public/news/`, atau `storage/app/public/tvclub/members/`.
+  3. Pastikan nama file fisik di folder storage sama persis dengan yang ada di database.
+
+### Error 500 (Internal Server Error)
+- **Penyebab:** Kesalahan konfigurasi database di `.env`, `APP_KEY` kosong, atau permission folder storage bermasalah.
+- **Solusi:**
+  1. Periksa kredensial database di `.env`.
+  2. Pastikan permission folder `storage/` dan `bootstrap/cache/` dapat ditulis oleh web server (`chmod -R 775`).
+  3. Periksa file log di `storage/logs/laravel.log` untuk melihat detail penyebab error.
+
+### Livewire Error / 419 Page Expired
+- **Penyebab:** Nilai `APP_URL` di `.env` tidak cocok dengan URL domain di browser, konfigurasi HTTPS mismatch, atau domain tidak mengarah ke subfolder `/public`.
+- **Solusi:**
+  1. Pastikan `APP_URL` di `.env` sesuai dengan URL yang dibuka (termasuk protokol `https://`).
+  2. Jika menggunakan HTTPS, pastikan `SESSION_SECURE_COOKIE=true`.
+  3. Pastikan Document Root domain mengarah tepat ke subfolder `<project>/public`.
+  4. Jalankan `php artisan optimize:clear` kemudian bangun ulang cache dengan `php artisan config:cache`.
+
+---
+
+## 14. Ringkasan Command
+
+### Perintah Utama di Server Produksi
+```bash
+# 1. Pasang dependensi PHP produksi (jika vendor belum disertakan)
+composer install --no-dev --optimize-autoloader
+
+# 2. Buat APP_KEY aplikasi (jika masih kosong di .env)
+php artisan key:generate
+
+# 3. Hubungkan folder storage publik
+php artisan storage:link
+
+# 4. Bersihkan dan bangun cache produksi
+php artisan optimize:clear
+php artisan config:cache
+php artisan route:cache
+php artisan view:cache
 ```
 
-Untuk Apache, aktifkan `mod_rewrite` dan `mod_headers`, arahkan `DocumentRoot` ke `public`, gunakan `AllowOverride All`, nonaktifkan directory listing, dan pertahankan `public/.htaccess`. Pada PHP, set `expose_php=Off`.
+### Jika Frontend Perlu Dikompilasi di Server
+```bash
+npm ci
+npm run build
+```
 
-Aplikasi mengirim CSP dalam mode report-only pada cutover awal karena editor lokal dan beberapa komponen saat ini masih memakai script/style inline. Uji seluruh alur di preproduction, tinjau semua pelanggaran, lalu set `SECURITY_CSP_REPORT_ONLY=false` ketika tidak ada fungsi yang rusak. Jangan menambahkan wildcard, `unsafe-eval`, atau origin pihak ketiga tanpa bukti kebutuhan.
+---
 
-## 5. Verifikasi dan rollback
+### ⛔ JANGAN DIJALANKAN DI SERVER PRODUKSI
 
-Ikuti semua langkah POST-DEPLOY di `docs/PRODUCTION_CHECKLIST.md`, termasuk QA empat peran, alur publik desktop/mobile, Peliputan, upload, header, CSP report, log, dan audit rute. Modul Banner sudah dihentikan dan tidak boleh muncul sebagai rute, menu, model, atau smoke test.
+```bash
+# Jangan jalankan server development di produksi:
+php artisan serve
+npm run dev
 
-Jika rilis gagal, aktifkan maintenance mode, kembalikan release/tag sebelumnya, pulihkan dependency sesuai lockfile, dan restore database/media hanya jika diperlukan serta setelah dampak data baru dianalisis. Bersihkan lalu bangun ulang cache sebelum health check dan membuka trafik kembali.
+# Jangan jalankan migrasi yang dapat menghapus data:
+php artisan migrate
+php artisan migrate:fresh
+php artisan db:wipe
+php artisan migrate:reset
+```
