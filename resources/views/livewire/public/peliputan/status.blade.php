@@ -54,17 +54,19 @@
 
                             <!-- Kontak Verifikasi -->
                             <div>
-                                <label for="contact" class="block text-xs font-semibold text-[var(--text-secondary)] mb-1.5">
-                                    No. WhatsApp / Email Pemohon <span class="text-red-500">*</span>
+                                <label for="phone" class="block text-xs font-semibold text-[var(--text-secondary)] mb-1.5">
+                                    No. WhatsApp / Telepon Pemohon <span class="text-red-500">*</span>
                                 </label>
                                 <input 
                                     type="text" 
-                                    id="contact" 
-                                    wire:model="contact"
-                                    placeholder="Nomor WA atau email saat pengajuan"
-                                    class="w-full px-3.5 py-2.5 bg-[var(--bg)] border @error('contact') border-red-500 @else border-[var(--border)] @enderror rounded-lg text-sm text-[var(--text-primary)] placeholder-[var(--text-faint)] focus:outline-none focus:border-brand-blue transition-colors"
+                                    id="phone"
+                                    wire:model="phone"
+                                    inputmode="tel"
+                                    autocomplete="tel"
+                                    placeholder="Nomor WA saat pengajuan"
+                                    class="w-full px-3.5 py-2.5 bg-[var(--bg)] border @error('phone') border-red-500 @else border-[var(--border)] @enderror rounded-lg text-sm text-[var(--text-primary)] placeholder-[var(--text-faint)] focus:outline-none focus:border-brand-blue transition-colors"
                                 >
-                                @error('contact')
+                                @error('phone')
                                     <p class="text-xs text-red-500 mt-1">{{ $message }}</p>
                                 @enderror
                             </div>

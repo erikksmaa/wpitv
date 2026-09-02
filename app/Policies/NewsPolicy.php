@@ -12,7 +12,7 @@ class NewsPolicy
      */
     public function viewAny(User $user): bool
     {
-        return (bool) $user->status;
+        return $this->manage($user);
     }
 
     /**
@@ -20,7 +20,7 @@ class NewsPolicy
      */
     public function view(User $user, News $news): bool
     {
-        return (bool) $user->status;
+        return $this->manage($user);
     }
 
     /**
@@ -29,7 +29,7 @@ class NewsPolicy
      */
     public function create(User $user): bool
     {
-        return $user->status && ($user->isSuperAdmin() || $user->isAdminNews());
+        return $this->manage($user);
     }
 
     /**
@@ -38,7 +38,7 @@ class NewsPolicy
      */
     public function update(User $user, News $news): bool
     {
-        return $user->status && ($user->isSuperAdmin() || $user->isAdminNews());
+        return $this->manage($user);
     }
 
     /**
@@ -46,6 +46,11 @@ class NewsPolicy
      * Super Admin and Admin News can delete news.
      */
     public function delete(User $user, News $news): bool
+    {
+        return $this->manage($user);
+    }
+
+    private function manage(User $user): bool
     {
         return $user->status && ($user->isSuperAdmin() || $user->isAdminNews());
     }

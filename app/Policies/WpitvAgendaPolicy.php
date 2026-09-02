@@ -9,12 +9,12 @@ class WpitvAgendaPolicy
 {
     public function viewAny(User $user): bool
     {
-        return (bool) $user->status;
+        return $this->manage($user);
     }
 
     public function view(User $user, WpitvAgenda $agenda): bool
     {
-        return (bool) $user->status;
+        return $this->manage($user);
     }
 
     public function create(User $user): bool

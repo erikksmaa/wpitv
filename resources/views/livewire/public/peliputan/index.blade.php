@@ -48,12 +48,12 @@
 
     <section class="pub-section coverage-preparation" aria-labelledby="coveragePreparationTitle"><div class="pub-container coverage-preparation-grid">
         <div><p class="coverage-section-eyebrow">Sebelum Mengajukan</p><h2 id="coveragePreparationTitle">Siapkan Informasi Kegiatan</h2><p>Semakin jelas informasi kegiatan yang diberikan, semakin mudah tim WPiTV melakukan review dan koordinasi.</p><div class="coverage-code-education"><strong>Setelah pengajuan berhasil</strong><span>Anda akan menerima kode pengajuan yang perlu disimpan untuk mengecek status.</span></div></div>
-        <ul class="coverage-preparation-list"><li><span>01</span> Nama pemohon</li><li><span>02</span> Email</li><li><span>03</span> Nomor WhatsApp / telepon</li><li><span>04</span> Nama kegiatan</li><li><span>05</span> Tanggal</li><li><span>06</span> Waktu jika sudah ditentukan</li><li><span>07</span> Lokasi</li><li><span>08</span> Deskripsi kegiatan</li></ul>
+        <ul class="coverage-preparation-list"><li><span>01</span> Nama pemohon</li><li><span>02</span> Nomor WhatsApp / telepon</li><li><span>03</span> Nama kegiatan</li><li><span>04</span> Tanggal</li><li><span>05</span> Waktu jika sudah ditentukan</li><li><span>06</span> Lokasi</li><li><span>07</span> Deskripsi kegiatan</li></ul>
     </div></section>
 
     <section class="pub-section coverage-status-section" aria-labelledby="coverageStatusTitle"><div class="pub-container"><div class="coverage-status-callout">
         <div class="coverage-status-icon" aria-hidden="true"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/><path d="M8 11h6M11 8v6"/></svg></div>
-        <div><p class="coverage-section-eyebrow">Lacak Pengajuan</p><h2 id="coverageStatusTitle">Sudah pernah mengajukan?</h2><p>Cek status menggunakan kode pengajuan dan nomor telepon atau email yang digunakan saat mengajukan.</p></div>
+        <div><p class="coverage-section-eyebrow">Lacak Pengajuan</p><h2 id="coverageStatusTitle">Sudah pernah mengajukan?</h2><p>Cek status menggunakan kode pengajuan dan nomor telepon yang digunakan saat mengajukan.</p></div>
         <a href="{{ route('peliputan.status') }}" class="pub-btn pub-btn--primary">Cek Status Pengajuan</a>
     </div></div></section>
 

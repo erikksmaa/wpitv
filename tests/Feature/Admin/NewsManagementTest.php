@@ -31,9 +31,9 @@ class NewsManagementTest extends TestCase
 
         Storage::fake('public');
 
-        $superAdminRole = Role::where('name', 'Super Admin')->first() ?? Role::find(1);
-        $prodRole = Role::where('name', 'Admin Production')->first() ?? Role::find(2);
-        $newsRole = Role::where('name', 'Admin News')->first() ?? Role::find(3);
+        $superAdminRole = Role::where('name', 'Super Admin')->firstOrFail();
+        $prodRole = Role::where('name', 'Admin Production')->firstOrFail();
+        $newsRole = Role::where('name', 'Admin News')->firstOrFail();
 
         $this->superAdmin = User::factory()->create([
             'name' => 'Super Admin Tester',
@@ -87,20 +87,14 @@ class NewsManagementTest extends TestCase
         $response->assertSee('Tambah Berita');
     }
 
-    public function test_admin_production_can_view_news_index_but_cannot_see_create_button(): void
+    public function test_admin_production_cannot_view_news_index(): void
     {
-        $response = $this->actingAs($this->adminProduction)->get(route('admin.news.index'));
-        $response->assertStatus(200);
-        $response->assertSee('Daftar Artikel Berita');
-        $response->assertDontSee('Tambah Berita');
+        $this->actingAs($this->adminProduction)->get(route('admin.news.index'))->assertForbidden();
     }
 
-    public function test_admin_production_does_not_see_edit_or_delete_buttons(): void
+    public function test_admin_production_cannot_enter_news_component(): void
     {
-        Livewire::actingAs($this->adminProduction)
-            ->test(Index::class)
-            ->assertDontSeeHtml('wire:click="delete(')
-            ->assertDontSeeHtml('title="Edit Berita"');
+        $this->actingAs($this->adminProduction)->get(route('admin.news.index'))->assertForbidden();
     }
 
     public function test_super_admin_can_open_create_form(): void
@@ -150,9 +144,37 @@ class NewsManagementTest extends TestCase
         Storage::disk('public')->assertExists('news/'.$created->image);
     }
 
+    public function test_new_and_edited_news_content_is_sanitized_before_persistence(): void
+    {
+        Livewire::actingAs($this->adminNews)
+            ->test(Form::class)
+            ->set('title', 'Batas XSS Berita Baru')
+            ->set('slug', 'batas-xss-berita-baru')
+            ->set('content', '<p onclick="alert(1)">Aman <strong>tebal</strong></p><script>alert(2)</script>')
+            ->call('save');
+
+        $created = News::where('slug', 'batas-xss-berita-baru')->firstOrFail();
+        $this->assertStringContainsString('<strong>tebal</strong>', $created->content);
+        $this->assertStringNotContainsString('onclick', $created->content);
+        $this->assertStringNotContainsString('<script', $created->content);
+
+        $legacy = News::create([
+            'title' => 'Legacy XSS Edit',
+            'slug' => 'legacy-xss-edit',
+            'content' => '<p>Konten lama belum disentuh.</p>',
+        ]);
+
+        Livewire::actingAs($this->adminNews)
+            ->test(Form::class, ['news' => $legacy])
+            ->set('content', '<p>Konten diedit</p><iframe src="https://example.test"></iframe>')
+            ->call('save');
+
+        $this->assertSame('<p>Konten diedit</p>', $legacy->fresh()->content);
+    }
+
     public function test_duplicate_slug_is_rejected_by_validation(): void
     {
-        $existing = News::first();
+        $existing = News::create(['title' => 'Berita Uji', 'slug' => 'berita-uji', 'content' => '<p>Konten uji</p>']);
 
         Livewire::actingAs($this->adminNews)
             ->test(Form::class)
@@ -191,8 +213,7 @@ class NewsManagementTest extends TestCase
 
     public function test_edit_news_preserves_null_user_id_on_legacy_records(): void
     {
-        // Legacy record (ID 265) has user_id = null
-        $legacyNews = News::whereNull('user_id')->firstOrFail();
+        $legacyNews = News::create(['title' => 'Berita Uji Lama', 'slug' => 'berita-uji-lama', 'content' => '<p>Konten uji</p>', 'user_id' => null]);
 
         Livewire::actingAs($this->adminNews)
             ->test(Form::class, ['news' => $legacyNews])
@@ -249,10 +270,7 @@ class NewsManagementTest extends TestCase
             'content' => '<p>Konten</p>',
         ]);
 
-        Livewire::actingAs($this->adminProduction)
-            ->test(Index::class)
-            ->call('delete', $news->id)
-            ->assertStatus(403);
+        $this->actingAs($this->adminProduction)->get(route('admin.news.index'))->assertForbidden();
 
         $this->assertDatabaseHas('ms_news', [
             'id' => $news->id,
@@ -280,20 +298,29 @@ class NewsManagementTest extends TestCase
             ->assertDontSee('Kucing Anggora Lucu Sekali');
     }
 
+    public function test_search_length_and_pagination_are_bounded(): void
+    {
+        Livewire::actingAs($this->superAdmin)
+            ->test(Index::class)
+            ->set('search', str_repeat('a', 500))
+            ->set('perPage', 999)
+            ->assertSet('search', str_repeat('a', 150))
+            ->assertSet('perPage', 10);
+    }
+
     public function test_filter_by_year(): void
     {
-        $news2020 = News::whereYear('created_at', 2020)->latest('created_at')->first();
-        if ($news2020) {
-            Livewire::actingAs($this->superAdmin)
-                ->test(Index::class)
-                ->set('year', '2020')
-                ->assertSee($news2020->title);
-        }
+        $news2020 = News::create(['title' => 'Berita Uji 2020', 'slug' => 'berita-uji-2020', 'content' => '<p>Konten uji</p>', 'created_at' => '2020-06-01 12:00:00']);
+        $news2020->forceFill(['created_at' => '2020-06-01 12:00:00'])->save();
+        Livewire::actingAs($this->superAdmin)
+            ->test(Index::class)
+            ->set('year', '2020')
+            ->assertSee($news2020->title);
     }
 
     public function test_legacy_news_with_missing_image_uses_fallback_placeholder(): void
     {
-        $legacyNews = News::where('image', '!=', '')->firstOrFail();
+        $legacyNews = News::create(['title' => 'Berita Uji Gambar', 'slug' => 'berita-uji-gambar', 'content' => '<p>Konten uji</p>', 'image' => 'missing-test-news.jpg']);
         $this->assertStringContainsString('program-placeholder.svg', $legacyNews->image_url);
     }
 

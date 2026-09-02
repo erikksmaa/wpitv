@@ -3,8 +3,9 @@
 namespace App\Livewire\Admin\Programs;
 
 use App\Models\Program;
+use App\Services\OptimizedImageStorage;
+use App\Support\InputBounds;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
-use Illuminate\Support\Facades\Storage;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Attributes\Url;
@@ -64,7 +65,7 @@ class Index extends Component
         }
     }
 
-    public function delete(int $id): void
+    public function delete(int $id, OptimizedImageStorage $imageStorage): void
     {
         $program = Program::withCount(['videos', 'tvClubGroups'])->findOrFail($id);
 
@@ -85,13 +86,10 @@ class Index extends Component
             return;
         }
 
-        // Safe physical media cleanup if stored in public storage
-        if ($program->image && Storage::disk('public')->exists('programs/'.$program->image)) {
-            Storage::disk('public')->delete('programs/'.$program->image);
-        }
-
+        $oldFilename = $program->image;
         $programName = $program->name;
         $program->delete();
+        $imageStorage->deleteOwned(OptimizedImageStorage::PROGRAMS, $oldFilename, 'Program', $program->id);
 
         session()->flash('success', "Program \"{$programName}\" berhasil dihapus.");
     }
@@ -99,6 +97,8 @@ class Index extends Component
     public function render()
     {
         $this->authorize('viewAny', Program::class);
+        $this->search = InputBounds::search($this->search);
+        $this->perPage = InputBounds::perPage($this->perPage);
 
         $programs = Program::query()
             ->withCount(['videos', 'tvClubGroups'])

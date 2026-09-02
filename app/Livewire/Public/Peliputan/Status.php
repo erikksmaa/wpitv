@@ -11,7 +11,7 @@ class Status extends Component
 {
     public string $submission_code = '';
 
-    public string $contact = '';
+    public string $phone = '';
 
     public ?Coverage $coverageResult = null;
 
@@ -23,7 +23,14 @@ class Status extends Component
     {
         return [
             'submission_code' => ['required', 'string', 'max:30'],
-            'contact' => ['required', 'string', 'max:150'],
+            'phone' => [
+                'required',
+                'string',
+                'max:25',
+                fn ($attribute, $value, $fail) => app(CoverageWhatsApp::class)->normalizePhone($value)
+                    ? null
+                    : $fail('Nomor Telepon / WhatsApp tidak valid.'),
+            ],
         ];
     }
 
@@ -31,7 +38,7 @@ class Status extends Component
     {
         return [
             'submission_code' => 'Kode Pengajuan',
-            'contact' => 'Nomor Telepon / WhatsApp / Email',
+            'phone' => 'Nomor Telepon / WhatsApp',
         ];
     }
 
@@ -45,14 +52,14 @@ class Status extends Component
             return;
         }
 
+        RateLimiter::hit($throttleKey, 60);
+
         $this->validate();
 
         $code = trim($this->submission_code);
-        $contactInput = strtolower(trim($this->contact));
+        $inputPhone = app(CoverageWhatsApp::class)->normalizePhone($this->phone);
 
         $coverage = Coverage::where('submission_code', $code)->first();
-
-        RateLimiter::hit($throttleKey, 60);
 
         if (! $coverage) {
             $this->coverageResult = null;
@@ -63,14 +70,9 @@ class Status extends Component
 
         $whatsApp = app(CoverageWhatsApp::class);
         $recordPhone = $whatsApp->normalizePhone($coverage->phone);
-        $inputPhone = $whatsApp->normalizePhone($contactInput);
-        $recordEmail = strtolower(trim($coverage->email));
-
         $phoneMatches = $inputPhone && $recordPhone && hash_equals($recordPhone, $inputPhone);
 
-        $emailMatches = ! empty($contactInput) && $contactInput === $recordEmail;
-
-        if (! $phoneMatches && ! $emailMatches) {
+        if (! $phoneMatches) {
             $this->coverageResult = null;
             $this->addError('lookup', 'Pengajuan dengan kode dan kontak tersebut tidak ditemukan. Pastikan data yang dimasukkan sesuai saat pengajuan.');
 
@@ -91,19 +93,6 @@ class Status extends Component
         $end = substr($phone, -2);
 
         return $start.str_repeat('*', max(3, $len - 6)).$end;
-    }
-
-    public function maskEmail(string $email): string
-    {
-        $parts = explode('@', $email);
-        if (count($parts) !== 2) {
-            return '***@***';
-        }
-        $name = $parts[0];
-        $domain = $parts[1];
-        $maskedName = substr($name, 0, 1).str_repeat('*', max(3, strlen($name) - 1));
-
-        return $maskedName.'@'.$domain;
     }
 
     public function render()

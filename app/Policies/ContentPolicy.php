@@ -8,7 +8,7 @@ class ContentPolicy
 {
     public function viewAdmin(User $user): bool
     {
-        return $user->status && $user->role !== null;
+        return $user->canAccessAdmin();
     }
 
     public function manageProduction(User $user): bool

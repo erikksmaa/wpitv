@@ -18,22 +18,16 @@
                 <section class="coverage-form-section" aria-labelledby="applicantSectionTitle">
                     <header><span>01</span><div><p>Tentang Pemohon</p><h2 id="applicantSectionTitle">Informasi Kontak</h2></div></header>
                     <div class="coverage-fields coverage-fields--two">
-                        <div class="coverage-field coverage-field--wide">
+                        <div class="coverage-field">
                             <label for="name">Nama Pemohon <span aria-hidden="true">*</span></label>
                             <input type="text" id="name" wire:model="name" autocomplete="name" placeholder="Nama lengkap pemohon" aria-describedby="nameHelp @error('name') nameError @enderror" @error('name') aria-invalid="true" @enderror>
                             <small id="nameHelp">Nama pihak yang dapat dihubungi terkait kegiatan.</small>
                             @error('name')<p class="coverage-field-error" id="nameError">{{ $message }}</p>@enderror
                         </div>
                         <div class="coverage-field">
-                            <label for="email">Email <span aria-hidden="true">*</span></label>
-                            <input type="email" id="email" wire:model="email" autocomplete="email" placeholder="nama@domain.com" aria-describedby="emailHelp @error('email') emailError @enderror" @error('email') aria-invalid="true" @enderror>
-                            <small id="emailHelp">Gunakan email aktif untuk verifikasi status.</small>
-                            @error('email')<p class="coverage-field-error" id="emailError">{{ $message }}</p>@enderror
-                        </div>
-                        <div class="coverage-field">
                             <label for="phone">Nomor WhatsApp / Telepon <span aria-hidden="true">*</span></label>
                             <input type="tel" id="phone" wire:model="phone" autocomplete="tel" inputmode="tel" placeholder="Contoh: 0812 3456 7890" aria-describedby="phoneHelp @error('phone') phoneError @enderror" @error('phone') aria-invalid="true" @enderror>
-                            <small id="phoneHelp">Nomor ini dapat digunakan untuk koordinasi terkait pengajuan.</small>
+                            <small id="phoneHelp">Nomor ini digunakan untuk koordinasi dan verifikasi status pengajuan.</small>
                             @error('phone')<p class="coverage-field-error" id="phoneError">{{ $message }}</p>@enderror
                         </div>
                     </div>

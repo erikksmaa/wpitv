@@ -168,6 +168,8 @@ class Form extends Component
 
     public function render()
     {
+        $this->authorize($this->video?->exists ? 'update' : 'create', $this->video?->exists ? $this->video : Video::class);
+
         $isEdit = (bool) $this->videoId;
         $programs = Program::orderBy('name')->get(['id', 'name']);
 

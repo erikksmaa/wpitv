@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Support\AuthenticationRateLimiter;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -22,17 +23,22 @@ class ConfirmablePasswordController extends Controller
     /**
      * Confirm the user's password.
      */
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request, AuthenticationRateLimiter $limiter): RedirectResponse
     {
+        $limiter->ensureNotLimited($request, 'confirm-password');
+
         if (! Auth::guard('web')->validate([
             'username' => $request->user()->username,
             'password' => $request->password,
         ])) {
+            $limiter->hit($request, 'confirm-password');
+
             throw ValidationException::withMessages([
                 'password' => __('auth.password'),
             ]);
         }
 
+        $limiter->clear($request, 'confirm-password');
         $request->session()->put('auth.password_confirmed_at', time());
 
         return redirect()->intended(route('admin.dashboard', absolute: false));

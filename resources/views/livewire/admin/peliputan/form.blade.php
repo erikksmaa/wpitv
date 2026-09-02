@@ -135,7 +135,7 @@
                                 </h6>
                             </div>
 
-                            <div class="col-12 col-md-4">
+                            <div class="col-12 col-md-6">
                                 <label for="name" class="form-label fw-semibold text-dark">
                                     Nama Pemohon <span class="text-danger">*</span>
                                 </label>
@@ -149,7 +149,7 @@
                                 @enderror
                             </div>
 
-                            <div class="col-12 col-md-4">
+                            <div class="col-12 col-md-6">
                                 <label for="phone" class="form-label fw-semibold text-dark">
                                     No. Telepon / WhatsApp <span class="text-danger">*</span>
                                 </label>
@@ -159,20 +159,6 @@
                                        class="form-control @error('phone') is-invalid @enderror" 
                                        placeholder="08xxxxxxxxxx">
                                 @error('phone')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
-
-                            <div class="col-12 col-md-4">
-                                <label for="email" class="form-label fw-semibold text-dark">
-                                    Email Pemohon <span class="text-danger">*</span>
-                                </label>
-                                <input type="email" 
-                                       id="email" 
-                                       wire:model="email" 
-                                       class="form-control @error('email') is-invalid @enderror" 
-                                       placeholder="pic@instansi.ac.id">
-                                @error('email')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>

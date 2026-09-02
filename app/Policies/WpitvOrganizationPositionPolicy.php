@@ -9,12 +9,12 @@ class WpitvOrganizationPositionPolicy
 {
     public function viewAny(User $user): bool
     {
-        return (bool) $user->status;
+        return $this->canManage($user);
     }
 
     public function view(User $user, WpitvOrganizationPosition $position): bool
     {
-        return (bool) $user->status;
+        return $this->canManage($user);
     }
 
     public function create(User $user): bool

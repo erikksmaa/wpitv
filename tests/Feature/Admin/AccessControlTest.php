@@ -3,11 +3,8 @@
 namespace Tests\Feature\Admin;
 
 use App\Livewire\Admin\TVClub\Generations\Form as GenerationForm;
-use App\Livewire\Admin\TVClub\Generations\Index as GenerationIndex;
 use App\Livewire\Admin\TVClub\Groups\Form as GroupForm;
-use App\Livewire\Admin\TVClub\Groups\Index as GroupIndex;
 use App\Livewire\Admin\TVClub\Members\Form as MemberForm;
-use App\Livewire\Admin\TVClub\Members\Index as MemberIndex;
 use App\Models\Program;
 use App\Models\Role;
 use App\Models\TVClubGeneration;
@@ -38,9 +35,9 @@ class AccessControlTest extends TestCase
     {
         parent::setUp();
 
-        $superAdminRole = Role::where('name', 'Super Admin')->first() ?? Role::find(1);
-        $prodRole = Role::where('name', 'Admin Production')->first() ?? Role::find(2);
-        $newsRole = Role::where('name', 'Admin News')->first() ?? Role::find(3);
+        $superAdminRole = Role::where('name', 'Super Admin')->firstOrFail();
+        $prodRole = Role::where('name', 'Admin Production')->firstOrFail();
+        $newsRole = Role::where('name', 'Admin News')->firstOrFail();
 
         $this->superAdmin = User::factory()->create([
             'name' => 'Super Admin Test',
@@ -100,7 +97,6 @@ class AccessControlTest extends TestCase
         $this->actingAs($this->superAdmin)->get(route('admin.programs.index'))->assertStatus(200);
         $this->actingAs($this->superAdmin)->get(route('admin.videos.index'))->assertStatus(200);
         $this->actingAs($this->superAdmin)->get(route('admin.news.index'))->assertStatus(200);
-        $this->actingAs($this->superAdmin)->get(route('admin.banners.index'))->assertStatus(200);
         $this->actingAs($this->superAdmin)->get(route('admin.visitor-statistics.index'))->assertStatus(200);
         $this->actingAs($this->superAdmin)->get(route('admin.tvclub.generations.index'))->assertStatus(200);
         $this->actingAs($this->superAdmin)->get(route('admin.tvclub.members.index'))->assertStatus(200);
@@ -112,17 +108,16 @@ class AccessControlTest extends TestCase
         $this->actingAs($this->adminProduction)->get(route('admin.dashboard'))->assertStatus(200);
         $this->actingAs($this->adminProduction)->get(route('admin.programs.index'))->assertStatus(200);
         $this->actingAs($this->adminProduction)->get(route('admin.videos.index'))->assertStatus(200);
-        $this->actingAs($this->adminProduction)->get(route('admin.banners.index'))->assertStatus(200);
         $this->actingAs($this->adminProduction)->get(route('admin.tvclub.generations.index'))->assertStatus(200);
         $this->actingAs($this->adminProduction)->get(route('admin.tvclub.members.index'))->assertStatus(200);
         $this->actingAs($this->adminProduction)->get(route('admin.tvclub.groups.index'))->assertStatus(200);
     }
 
-    public function test_admin_news_can_view_tv_club_index_pages(): void
+    public function test_admin_news_cannot_view_tv_club_index_pages(): void
     {
-        $this->actingAs($this->adminNews)->get(route('admin.tvclub.generations.index'))->assertStatus(200);
-        $this->actingAs($this->adminNews)->get(route('admin.tvclub.members.index'))->assertStatus(200);
-        $this->actingAs($this->adminNews)->get(route('admin.tvclub.groups.index'))->assertStatus(200);
+        $this->actingAs($this->adminNews)->get(route('admin.tvclub.generations.index'))->assertForbidden();
+        $this->actingAs($this->adminNews)->get(route('admin.tvclub.members.index'))->assertForbidden();
+        $this->actingAs($this->adminNews)->get(route('admin.tvclub.groups.index'))->assertForbidden();
     }
 
     public function test_admin_news_cannot_access_create_generation_direct_url(): void
@@ -137,10 +132,8 @@ class AccessControlTest extends TestCase
 
     public function test_admin_news_cannot_delete_generation_via_livewire(): void
     {
-        Livewire::actingAs($this->adminNews)
-            ->test(GenerationIndex::class)
-            ->call('delete', $this->generation->id)
-            ->assertStatus(403);
+        $this->actingAs($this->adminNews)->get(route('admin.tvclub.generations.index'))->assertForbidden();
+        $this->assertDatabaseHas('tvclub_generations', ['id' => $this->generation->id]);
     }
 
     public function test_admin_news_cannot_access_create_member_direct_url(): void
@@ -169,10 +162,8 @@ class AccessControlTest extends TestCase
             'status' => 1,
         ]);
 
-        Livewire::actingAs($this->adminNews)
-            ->test(MemberIndex::class)
-            ->call('delete', $member->id)
-            ->assertStatus(403);
+        $this->actingAs($this->adminNews)->get(route('admin.tvclub.members.index'))->assertForbidden();
+        $this->assertDatabaseHas('tvclub_members', ['id' => $member->id]);
     }
 
     public function test_admin_news_cannot_access_create_group_direct_url(): void
@@ -201,10 +192,8 @@ class AccessControlTest extends TestCase
             'status' => 1,
         ]);
 
-        Livewire::actingAs($this->adminNews)
-            ->test(GroupIndex::class)
-            ->call('delete', $group->id)
-            ->assertStatus(403);
+        $this->actingAs($this->adminNews)->get(route('admin.tvclub.groups.index'))->assertForbidden();
+        $this->assertDatabaseHas('tvclub_groups', ['id' => $group->id]);
     }
 
     public function test_admin_news_cannot_access_create_or_edit_forms_to_assign_members(): void
@@ -229,7 +218,7 @@ class AccessControlTest extends TestCase
         $this->actingAs($this->adminProduction)->get(route('admin.news.create'))->assertStatus(403);
     }
 
-    public function test_unauthorized_livewire_deletions_return_403(): void
+    public function test_unauthorized_module_access_cannot_delete_records(): void
     {
         $member = TVClubMember::create([
             'generation_id' => $this->generation->id,
@@ -245,20 +234,12 @@ class AccessControlTest extends TestCase
             'status' => 1,
         ]);
 
-        Livewire::actingAs($this->adminNews)
-            ->test(GenerationIndex::class)
-            ->call('delete', $this->generation->id)
-            ->assertStatus(403);
-
-        Livewire::actingAs($this->adminNews)
-            ->test(MemberIndex::class)
-            ->call('delete', $member->id)
-            ->assertStatus(403);
-
-        Livewire::actingAs($this->adminNews)
-            ->test(GroupIndex::class)
-            ->call('delete', $group->id)
-            ->assertStatus(403);
+        $this->actingAs($this->adminNews)->get(route('admin.tvclub.generations.index'))->assertForbidden();
+        $this->actingAs($this->adminNews)->get(route('admin.tvclub.members.index'))->assertForbidden();
+        $this->actingAs($this->adminNews)->get(route('admin.tvclub.groups.index'))->assertForbidden();
+        $this->assertDatabaseHas('tvclub_generations', ['id' => $this->generation->id]);
+        $this->assertDatabaseHas('tvclub_members', ['id' => $member->id]);
+        $this->assertDatabaseHas('tvclub_groups', ['id' => $group->id]);
     }
 
     public function test_authorized_user_can_perform_permitted_mutations(): void

@@ -3,15 +3,18 @@
 namespace App\Livewire\Admin\News;
 
 use App\Models\News;
+use App\Services\NewsHtmlSanitizer;
 use App\Services\OptimizedImageStorage;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Livewire\Attributes\Layout;
+use Livewire\Attributes\Locked;
 use Livewire\Component;
 use Livewire\WithFileUploads;
+use Throwable;
 
 #[Layout('layouts.admin')]
 class Form extends Component
@@ -21,6 +24,7 @@ class Form extends Component
 
     public ?News $news = null;
 
+    #[Locked]
     public ?int $newsId = null;
 
     public string $title = '';
@@ -32,10 +36,6 @@ class Form extends Component
     public string $content = '';
 
     public $image = null;
-
-    public ?string $existingImage = null;
-
-    public ?string $existingImageUrl = null;
 
     public bool $slugManuallyEdited = false;
 
@@ -57,8 +57,6 @@ class Form extends Component
             $this->slug = $news->slug;
             $this->author_name = $news->author_name ?? '';
             $this->content = $news->content;
-            $this->existingImage = $news->image;
-            $this->existingImageUrl = $news->image_url;
             $this->slugManuallyEdited = true; // Keep existing slug intact on edit
 
             $this->uploaderName = $news->user ? $news->user->name : ($news->author_name ?: 'Legacy / System');
@@ -111,37 +109,55 @@ class Form extends Component
         ];
     }
 
-    public function save(OptimizedImageStorage $imageStorage)
+    public function save(OptimizedImageStorage $imageStorage, NewsHtmlSanitizer $sanitizer)
     {
-        if ($this->newsId) {
-            $this->authorize('update', $this->news);
+        $news = null;
+        if ($this->newsId !== null) {
+            $news = News::findOrFail($this->newsId);
+            $this->authorize('update', $news);
         } else {
             $this->authorize('create', News::class);
         }
 
         $validated = $this->validate();
+        $validated['content'] = $sanitizer->sanitize($validated['content']);
+        $oldFilename = $news?->image;
+        $newFilename = null;
 
-        // Handle Image Upload safely
-        if ($this->image) {
-            $safeSlug = Str::slug($this->slug ?: $this->title);
-            $newFilename = $imageStorage->store($this->image, 'news', $safeSlug, 1600, 1000, 82);
-            $validated['image'] = $newFilename;
-
-            // Safe replacement: Delete old image if it was managed locally in storage
-            if ($this->existingImage && Storage::disk('public')->exists('news/'.$this->existingImage)) {
-                Storage::disk('public')->delete('news/'.$this->existingImage);
+        try {
+            if ($this->image) {
+                $safeSlug = Str::slug($this->slug ?: $this->title);
+                $newFilename = $imageStorage->store($this->image, OptimizedImageStorage::NEWS, $safeSlug, 1600, 1000, 82);
             }
-        } else {
-            $validated['image'] = $this->existingImage;
+
+            $validated['image'] = $newFilename ?? $oldFilename;
+
+            if (! $news) {
+                $validated['user_id'] = Auth::id();
+            }
+
+            DB::transaction(function () use ($news, $validated): void {
+                if ($news) {
+                    $news->update($validated);
+                } else {
+                    News::create($validated);
+                }
+            });
+        } catch (Throwable $exception) {
+            if ($newFilename !== null) {
+                $imageStorage->deleteOwned(OptimizedImageStorage::NEWS, $newFilename, 'News', $news?->id);
+            }
+
+            throw $exception;
         }
 
-        if ($this->newsId) {
-            // Preserve original user_id on edit
-            $this->news->update($validated);
+        if ($newFilename !== null) {
+            $imageStorage->deleteOwned(OptimizedImageStorage::NEWS, $oldFilename, 'News', $news?->id);
+        }
+
+        if ($news) {
             session()->flash('success', "Artikel berita \"{$this->title}\" berhasil diperbarui.");
         } else {
-            $validated['user_id'] = Auth::id();
-            News::create($validated);
             session()->flash('success', "Artikel berita \"{$this->title}\" berhasil ditambahkan.");
         }
 
@@ -150,6 +166,8 @@ class Form extends Component
 
     public function render()
     {
+        $this->authorize($this->news?->exists ? 'update' : 'create', $this->news?->exists ? $this->news : News::class);
+
         $isEdit = (bool) $this->newsId;
 
         return view('livewire.admin.news.form', [

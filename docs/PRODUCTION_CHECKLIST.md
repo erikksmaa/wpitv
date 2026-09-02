@@ -1,71 +1,59 @@
 # PRODUCTION DEPLOYMENT CHECKLIST
-**WPiTV Modernization — Release Verification**
 
-Gunakan checklist ini sebelum dan saat melakukan deployment ke server produksi WPiTV.
+**WPiTV Modernization — release gate**
 
----
+Checklist ini harus diselesaikan untuk domain dan infrastruktur produksi yang sebenarnya. Nilai contoh dalam `.env.example` bukan nilai produksi.
 
-## 1. Server Environment
-- [ ] PHP versi 8.2+ terinstall (`php -v`).
-- [ ] Ekstensi PHP wajib aktif: `bcmath`, `ctype`, `curl`, `dom`, `fileinfo`, `filter`, `gd`, `intl`, `json`, `libxml`, `mbstring`, `openssl`, `pcre`, `PDO`, `pdo_mysql`, `session`, `SimpleXML`, `tokenizer`, `xml`, `xmlwriter`, `zlib`.
-- [ ] Web server (Nginx / Apache) terinstall dan aktif.
-- [ ] DocumentRoot web server diarahkan ke folder `/public` project (BUKAN root direktori Laravel).
-- [ ] Node.js & npm terpasang jika asset compilation dilakukan di server.
-- [ ] Composer 2.x terpasang.
+## PRE-DEPLOY
 
-## 2. Pre-Deployment Backup
-- [ ] Database existing telah di-dump dan diverifikasi (`mysqldump -u ... > backup.sql`).
-- [ ] Ukuran file dump SQL diverifikasi non-zero dan dapat dibaca.
-- [ ] File media legacy dan user upload yang ada di `storage/app/public` telah di-backup.
-- [ ] Konfigurasi web server sebelumnya telah di-backup.
+- [ ] Tetapkan tag/commit rilis dan catat penanggung jawab deployment serta rollback.
+- [ ] Buat backup database penuh dan `storage/app/public`; uji bahwa backup dapat dibaca dan lakukan latihan restore pada lingkungan terpisah.
+- [ ] Jangan jalankan `migrate:fresh`, `migrate:reset`, `db:wipe`, atau migrasi destruktif. Database existing tetap source of truth.
+- [ ] Verifikasi 17 tabel aplikasi dan bentuk skemanya terhadap manifest pengujian yang disetujui.
+- [ ] Jalankan `composer audit --locked` dan `npm audit`; setiap advisory baru harus ditinjau sebelum rilis.
+- [ ] Jalankan seluruh test suite, randomized test suite, Pint, build Vite, pemeriksaan Blade, dan audit rute.
+- [ ] Pastikan `public/hot` tidak ada dan `public/build/manifest.json` berasal dari build rilis.
+- [ ] Pastikan DocumentRoot hanya menunjuk ke `<project>/public`; `.env`, `vendor`, `storage`, `tests`, `docs`, `.git`, dan source project tidak boleh dapat diunduh lewat HTTP.
+- [ ] Gunakan PHP 8.2+ beserta ekstensi yang diwajibkan Composer; gunakan Composer 2.x dan Node/npm hanya bila build dilakukan di server.
 
-## 3. Source Code & Dependencies
-- [ ] Source code WPiTV versi rilis telah ditempatkan di server (`git clone` / upload release zip).
-- [ ] Composer dependencies terinstall tanpa paket development (`composer install --no-dev --optimize-autoloader`).
-- [ ] Aset frontend terkompilasi (`npm run build` atau upload folder `public/build/`).
-- [ ] File `public/build/manifest.json` ada dan valid.
+## DEPLOY
 
-## 4. Environment Configuration (`.env`)
-- [ ] `APP_NAME="WPiTV"`
-- [ ] `APP_ENV=production`
-- [ ] `APP_DEBUG=false`
-- [ ] `APP_URL=https://[DOMAIN_RESMI_WPITV]` (HTTPS)
-- [ ] `WPITV_WHATSAPP_NUMBER=628xxxxxxxxxx` terisi agar tombol komunikasi Peliputan aktif.
-- [ ] `DB_CONNECTION=mysql`
-- [ ] `DB_HOST`, `DB_PORT`, `DB_DATABASE`, `DB_USERNAME`, `DB_PASSWORD` terkonfigurasi ke database produksi.
-- [ ] `SESSION_DRIVER=file`
-- [ ] `CACHE_STORE=file`
-- [ ] `QUEUE_CONNECTION=sync`
-- [ ] `FILESYSTEM_DISK=public`
-- [ ] `LOG_LEVEL=error`
-- [ ] `APP_KEY` terisi dan valid.
+- [ ] Salin `.env.example` ke `.env`, lalu ganti seluruh placeholder dan secret.
+- [ ] Set `APP_ENV=production`, `APP_DEBUG=false`, `APP_URL=https://<domain-produksi>`, `LOG_LEVEL=error`, dan `APP_KEY` yang valid.
+- [ ] Gunakan akun database khusus aplikasi dengan password kuat; jangan gunakan `root`, password kosong, atau hak DDL/administratif. Hak runtime dibatasi ke `SELECT`, `INSERT`, `UPDATE`, dan `DELETE` pada database WPiTV.
+- [ ] Set `SESSION_SECURE_COOKIE=true`, `SESSION_HTTP_ONLY=true`, `SESSION_SAME_SITE=lax`, `SESSION_LIFETIME=30`, `ADMIN_SESSION_IDLE_TIMEOUT=30`, dan `ADMIN_SESSION_ABSOLUTE_LIFETIME=8`.
+- [ ] Set `TRUSTED_HOSTS` ke hostname literal produksi, dipisahkan koma bila lebih dari satu. Jangan memakai wildcard.
+- [ ] Biarkan `TRUSTED_PROXIES` kosong bila origin diakses langsung. Bila ada proxy/load balancer, isi hanya IP/CIDR proxy yang dikelola; jangan memakai `*`.
+- [ ] Pertahankan `SECURITY_CSP_REPORT_ONLY=true` pada cutover awal. Pantau pelanggaran CSP di staging/produksi, selesaikan kebutuhan inline script/style, lalu ubah ke `false` hanya setelah alur publik dan admin lolos pengujian browser.
+- [ ] Pastikan HTTPS valid dan HTTP selalu dialihkan ke HTTPS. HSTS hanya dikirim pada request HTTPS produksi.
+- [ ] Nonaktifkan `expose_php`; sembunyikan `X-Powered-By` pada PHP-FPM/web server; terapkan header keamanan pada respons statis dan error juga.
+- [ ] Tolak eksekusi `php`, `phtml`, dan `phar` di `/storage`. Konfigurasi Apache proyek sudah menolak ekstensi tersebut; Nginx harus memiliki aturan ekuivalen sebelum handler PHP.
+- [ ] Jalankan `composer install --no-dev --optimize-autoloader`.
+- [ ] Jalankan `npm ci && npm run build`, atau deploy `public/build` yang dibangun oleh CI tepercaya. Node_modules tidak perlu tersedia di produksi setelah build.
+- [ ] Jalankan `php artisan storage:link`. Hanya gambar tervalidasi yang boleh berada di `storage/app/public`; upload sementara Livewire tetap di disk private `storage/app/private`.
+- [ ] Berikan izin tulis hanya kepada user web server pada `storage` dan `bootstrap/cache`; jangan gunakan mode `777`.
+- [ ] Jalankan `php artisan optimize:clear`, lalu `php artisan config:cache`, `php artisan route:cache`, dan `php artisan view:cache`.
+- [ ] Jalankan `php artisan route:list` dari release yang sudah di-cache dan pastikan tidak ada rute register, reset password publik, verifikasi email, Banner, debug, atau test-only.
 
-## 5. Database & Storage Setup
-- [ ] Skema database 12 tabel terverifikasi utuh tanpa menjalankan migrasi destruktif.
-- [ ] Symlink storage dibuat (`php artisan storage:link`).
-- [ ] Folder sub-storage tersedia (`programs`, `news`, `banners`, `tvclub/members`).
-- [ ] Fallback image placeholder (`public/images/placeholders/program-placeholder.svg`) tersedia.
+## POST-DEPLOY
 
-## 6. Permissions & Security
-- [ ] Folder `storage/` dan `bootstrap/cache/` memiliki hak akses tulis untuk user web server (misal: `chmod -R 775`).
-- [ ] Tidak menggunakan `chmod 777`.
-- [ ] SSL / HTTPS aktif dan me-redirect seluruh trafik HTTP ke HTTPS.
-- [ ] Security headers (X-Frame-Options, X-Content-Type-Options, Referrer-Policy) terkonfigurasi di web server.
-- [ ] File `.env` terlindungi dari akses publik (HTTP 403/404).
+- [ ] Verifikasi `/up`, `/`, `/tentang`, `/program`, `/tayangan`, `/berita`, `/tv-club`, `/peliputan`, `/peliputan/ajukan`, `/peliputan/status`, dan `/agenda` pada desktop serta viewport mobile.
+- [ ] Verifikasi halaman detail Program, Tayangan YouTube, Berita, generasi TV Club, dan anggota menggunakan data produksi yang sah.
+- [ ] Verifikasi Public Visitor Counter di Homepage menampilkan hanya agregat Hari ini, Kemarin, Bulan ini, Tahun ini, dan Online tanpa IP. Nilai dapat tertunda hingga 60 detik; Online berarti record dengan aktivitas Homepage dalam lima menit terakhir.
+- [ ] Kirim satu permohonan Peliputan yang jelas diberi label smoke test; verifikasi receipt terikat sesi, lookup memerlukan kode plus nomor telepon, lalu hapus data smoke test dengan prosedur operasional yang tercatat.
+- [ ] Login dan logout menggunakan akun uji terkontrol untuk keempat peran: Super Admin, Produksi, News, dan TV Club.
+- [ ] Cocokkan sidebar, respons 403, dan operasi create/edit yang diizinkan dengan `docs/RBAC_ACCESS_MATRIX.md`. Users/Roles hanya untuk Super Admin.
+- [ ] Verifikasi upload JPEG/PNG/WebP valid berhasil, upload non-gambar/oversize ditolak, dan hasil tersimpan sebagai WebP pada folder fitur yang benar.
+- [ ] Periksa header `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`, `Permissions-Policy`, CSP report-only, HSTS, serta tidak adanya `X-Powered-By` pada halaman dinamis, aset statis, 404, dan redirect.
+- [ ] Tinjau browser console/CSP reports, `storage/logs/laravel.log`, log PHP-FPM, log web server, antrean, kapasitas disk, dan koneksi database.
+- [ ] Pastikan source database tidak berubah akibat test suite lokal/CI dan tidak mengandung akun atau record QA sintetis.
 
-## 7. Optimization & Caching
-- [ ] Cache bootstrap dibersihkan (`php artisan optimize:clear`).
-- [ ] Konfigurasi di-cache (`php artisan config:cache`).
-- [ ] Rute di-cache (`php artisan route:cache`).
-- [ ] Blade views di-cache (`php artisan view:cache`).
+## ROLLBACK
 
-## 8. Post-Deployment Smoke Test
-- [ ] Halaman Beranda (`/`) dapat diakses dan merender data program, video, berita, dan TV Club.
-- [ ] Halaman Program (`/program` dan `/program/{slug}`) berfungsi normal.
-- [ ] Halaman Tayangan (`/tayangan` dan `/tayangan/{id}`) merender player YouTube responsif.
-- [ ] Halaman Berita (`/berita` dan `/berita/{slug}`) merender konten dengan benar.
-- [ ] Halaman TV Club (`/tv-club`, `/tv-club/generasi/{id}`, `/tv-club/anggota/{id}`) berfungsi.
-- [ ] Alur Peliputan (`/peliputan`, `/peliputan/ajukan`, `/peliputan/status`) dapat menerima input dan menampilkan tracking status.
-- [ ] Halaman Login (`/login`) dan Admin Dashboard (`/admin`) dapat diakses dengan credential valid.
-- [ ] Seluruh hak akses RBAC (Super Admin, Admin Production, Admin News) berfungsi sesuai kebijakan.
-- [ ] File log `storage/logs/laravel.log` bersih dari error fatal.
+- [ ] Aktifkan maintenance mode dengan secret yang disimpan aman dan batasi trafik tulis.
+- [ ] Kembalikan symlink/release directory ke tag sebelumnya; jalankan `composer install --no-dev --optimize-autoloader` untuk lockfile rilis tersebut.
+- [ ] Restore database hanya bila deployment memang mengubah data dan setelah dampak perubahan pasca-cutover dinilai. Gunakan backup yang telah diuji; jangan menimpa data baru tanpa keputusan pemilik data.
+- [ ] Restore `storage/app/public` bila rilis mengubah media dan sinkronkan dengan keadaan database yang dipulihkan.
+- [ ] Jalankan `php artisan optimize:clear`, kemudian bangun ulang config/route/view cache dari rilis sebelumnya.
+- [ ] Ulangi health check, smoke test publik/login, dan pemeriksaan log sebelum `php artisan up`.
+- [ ] Catat penyebab, waktu, commit, backup yang digunakan, dampak data, dan tindak lanjut insiden.

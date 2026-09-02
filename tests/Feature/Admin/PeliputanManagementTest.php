@@ -67,7 +67,6 @@ class PeliputanManagementTest extends TestCase
         $coverage = Coverage::create([
             'submission_code' => 'PLP-20260817-0001',
             'name' => 'Dr. Budi Utomo',
-            'email' => 'budi@kampus.ac.id',
             'phone' => '08123456789',
             'event_name' => 'Seminar Dies Natalis WPiTV',
             'event_date' => '2026-09-10',
@@ -93,12 +92,9 @@ class PeliputanManagementTest extends TestCase
         $response->assertSee('Tambah Peliputan');
     }
 
-    public function test_admin_news_can_view_peliputan_index_but_cannot_see_create_button(): void
+    public function test_admin_news_cannot_view_peliputan_index(): void
     {
-        $response = $this->actingAs($this->adminNews)->get(route('admin.peliputan.index'));
-        $response->assertStatus(200);
-        $response->assertSee('Peliputan & Liputan Acara');
-        $response->assertDontSee('Tambah Peliputan');
+        $this->actingAs($this->adminNews)->get(route('admin.peliputan.index'))->assertForbidden();
     }
 
     public function test_admin_news_cannot_access_create_or_edit_direct_urls(): void
@@ -106,7 +102,6 @@ class PeliputanManagementTest extends TestCase
         $coverage = Coverage::create([
             'submission_code' => 'PLP-20260817-0002',
             'name' => 'Pemohon Test',
-            'email' => 'test@kampus.ac.id',
             'phone' => '08123456789',
             'event_name' => 'Event Direct Test',
             'event_date' => '2026-09-10',
@@ -124,7 +119,6 @@ class PeliputanManagementTest extends TestCase
         Livewire::actingAs($this->superAdmin)
             ->test(Form::class)
             ->set('name', 'Prof. Ahmad Dahlan')
-            ->set('email', 'ahmad@kampus.ac.id')
             ->set('phone', '081399887766')
             ->set('event_name', 'Kongres Kebangsaan 2026')
             ->set('event_date', '2026-10-15')
@@ -139,7 +133,6 @@ class PeliputanManagementTest extends TestCase
         $this->assertDatabaseHas('tr_perliputan', [
             'event_name' => 'Kongres Kebangsaan 2026',
             'name' => 'Prof. Ahmad Dahlan',
-            'email' => 'ahmad@kampus.ac.id',
             'status' => 'approved',
             'admin_note' => 'Tugaskan Kru 1 dan Kru 2',
         ]);
@@ -150,7 +143,6 @@ class PeliputanManagementTest extends TestCase
         Livewire::actingAs($this->adminProduction)
             ->test(Form::class)
             ->set('name', 'Koordinator Kemahasiswaan')
-            ->set('email', 'kemahasiswaan@kampus.ac.id')
             ->set('phone', '081555443322')
             ->set('event_name', 'Pekan Olahraga Mahasiswa')
             ->set('event_date', '2026-11-01')
@@ -172,14 +164,13 @@ class PeliputanManagementTest extends TestCase
         Livewire::actingAs($this->superAdmin)
             ->test(Form::class)
             ->set('name', '')
-            ->set('email', 'not-an-email')
             ->set('phone', '')
             ->set('event_name', '')
             ->set('event_date', '')
             ->set('location', '')
             ->set('description', '')
             ->call('save')
-            ->assertHasErrors(['name', 'email', 'phone', 'event_name', 'event_date', 'location', 'description']);
+            ->assertHasErrors(['name', 'phone', 'event_name', 'event_date', 'location', 'description']);
     }
 
     public function test_super_admin_can_edit_coverage(): void
@@ -187,7 +178,6 @@ class PeliputanManagementTest extends TestCase
         $coverage = Coverage::create([
             'submission_code' => 'PLP-20260817-0003',
             'name' => 'Nama Sebelum Edit',
-            'email' => 'sebelum@kampus.ac.id',
             'phone' => '0811111111',
             'event_name' => 'Event Sebelum Edit',
             'event_date' => '2026-09-20',
@@ -217,7 +207,6 @@ class PeliputanManagementTest extends TestCase
         $coverage = Coverage::create([
             'submission_code' => 'PLP-20260817-0004',
             'name' => 'Hapus Test',
-            'email' => 'hapus@kampus.ac.id',
             'phone' => '0899999999',
             'event_name' => 'Event Mau Dihapus',
             'event_date' => '2026-09-25',
@@ -238,7 +227,6 @@ class PeliputanManagementTest extends TestCase
         $coverage = Coverage::create([
             'submission_code' => 'PLP-20260817-0005',
             'name' => 'Hapus Denied Test',
-            'email' => 'denied@kampus.ac.id',
             'phone' => '0899999998',
             'event_name' => 'Event Denied Delete',
             'event_date' => '2026-09-25',
@@ -247,10 +235,7 @@ class PeliputanManagementTest extends TestCase
             'status' => Coverage::STATUS_PENDING,
         ]);
 
-        Livewire::actingAs($this->adminNews)
-            ->test(Index::class)
-            ->call('delete', $coverage->id)
-            ->assertStatus(403);
+        $this->actingAs($this->adminNews)->get(route('admin.peliputan.index'))->assertForbidden();
 
         $this->assertDatabaseHas('tr_perliputan', ['id' => $coverage->id]);
     }
@@ -260,7 +245,6 @@ class PeliputanManagementTest extends TestCase
         $coverage = Coverage::create([
             'submission_code' => 'PLP-20260817-0006',
             'name' => 'Quick Status Test',
-            'email' => 'quick@kampus.ac.id',
             'phone' => '0877777777',
             'event_name' => 'Event Quick Status',
             'event_date' => '2026-09-30',
@@ -286,7 +270,6 @@ class PeliputanManagementTest extends TestCase
         $coverage = Coverage::create([
             'submission_code' => 'PLP-20260817-0007',
             'name' => 'Status Denied Test',
-            'email' => 'statusdenied@kampus.ac.id',
             'phone' => '0877777776',
             'event_name' => 'Event Denied Status',
             'event_date' => '2026-09-30',
@@ -295,10 +278,8 @@ class PeliputanManagementTest extends TestCase
             'status' => Coverage::STATUS_PENDING,
         ]);
 
-        Livewire::actingAs($this->adminNews)
-            ->test(Index::class)
-            ->call('openStatusModal', $coverage->id)
-            ->assertStatus(403);
+        $this->actingAs($this->adminNews)->get(route('admin.peliputan.index'))->assertForbidden();
+        $this->assertSame(Coverage::STATUS_PENDING, $coverage->refresh()->status);
     }
 
     public function test_search_works(): void
@@ -306,7 +287,6 @@ class PeliputanManagementTest extends TestCase
         Coverage::create([
             'submission_code' => 'PLP-20260817-UNIQUE',
             'name' => 'Pemohon Search Unik',
-            'email' => 'searchunik@kampus.ac.id',
             'phone' => '0812344321',
             'event_name' => 'Konser Musik Orkestra Mahasiswa',
             'event_date' => '2026-10-10',
@@ -328,7 +308,6 @@ class PeliputanManagementTest extends TestCase
         Coverage::create([
             'submission_code' => 'PLP-STAT-1',
             'name' => 'Pemohon Stat 1',
-            'email' => 's1@kampus.ac.id',
             'phone' => '081111111',
             'event_name' => 'Acara Status Pending',
             'event_date' => '2026-10-10',
@@ -340,7 +319,6 @@ class PeliputanManagementTest extends TestCase
         Coverage::create([
             'submission_code' => 'PLP-STAT-2',
             'name' => 'Pemohon Stat 2',
-            'email' => 's2@kampus.ac.id',
             'phone' => '082222222',
             'event_name' => 'Acara Status Completed',
             'event_date' => '2026-10-10',
@@ -361,7 +339,6 @@ class PeliputanManagementTest extends TestCase
         Coverage::create([
             'submission_code' => 'PLP-DATE-1',
             'name' => 'Pemohon Date 1',
-            'email' => 'd1@kampus.ac.id',
             'phone' => '081111111',
             'event_name' => 'Acara Bulan Oktober',
             'event_date' => '2026-10-15',
@@ -373,7 +350,6 @@ class PeliputanManagementTest extends TestCase
         Coverage::create([
             'submission_code' => 'PLP-DATE-2',
             'name' => 'Pemohon Date 2',
-            'email' => 'd2@kampus.ac.id',
             'phone' => '082222222',
             'event_name' => 'Acara Bulan Desember',
             'event_date' => '2026-12-25',
@@ -406,7 +382,6 @@ class PeliputanManagementTest extends TestCase
         $coverage = Coverage::create([
             'submission_code' => 'PLP-WA-DETAIL',
             'name' => 'Pemohon Detail WhatsApp',
-            'email' => 'detail-wa@example.test',
             'phone' => '+62 813-4444-5555',
             'event_name' => 'Agenda Detail WhatsApp',
             'event_date' => '2026-09-30',
@@ -428,12 +403,11 @@ class PeliputanManagementTest extends TestCase
         );
     }
 
-    public function test_read_only_admin_cannot_see_or_prepare_whatsapp_actions(): void
+    public function test_admin_without_module_access_cannot_prepare_whatsapp_actions(): void
     {
         $coverage = Coverage::create([
             'submission_code' => 'PLP-WA-DENIED',
             'name' => 'Pemohon WhatsApp Denied',
-            'email' => 'denied-wa@example.test',
             'phone' => '081344445556',
             'event_name' => 'Agenda WhatsApp Denied',
             'event_date' => '2026-09-30',
@@ -442,12 +416,7 @@ class PeliputanManagementTest extends TestCase
             'status' => Coverage::STATUS_PENDING,
         ]);
 
-        Livewire::actingAs($this->adminNews)
-            ->test(Index::class)
-            ->call('openDetailModal', $coverage->id)
-            ->assertDontSee('Hubungi Pemohon')
-            ->call('openStatusModal', $coverage->id)
-            ->assertStatus(403);
+        $this->actingAs($this->adminNews)->get(route('admin.peliputan.index'))->assertForbidden();
     }
 
     public function test_status_is_persisted_before_whatsapp_draft_becomes_available(): void
@@ -455,7 +424,6 @@ class PeliputanManagementTest extends TestCase
         $coverage = Coverage::create([
             'submission_code' => 'PLP-WA-SAVE-FIRST',
             'name' => 'Pemohon Save First',
-            'email' => 'save-first@example.test',
             'phone' => '081355556666',
             'event_name' => 'Agenda Save First',
             'event_date' => '2026-09-30',
@@ -489,7 +457,6 @@ class PeliputanManagementTest extends TestCase
         $coverage = Coverage::create([
             'submission_code' => 'PLP-WA-BAD-PHONE',
             'name' => 'Pemohon Nomor Invalid',
-            'email' => 'bad-phone@example.test',
             'phone' => 'nomor invalid',
             'event_name' => 'Agenda Nomor Invalid',
             'event_date' => '2026-09-30',
@@ -517,7 +484,6 @@ class PeliputanManagementTest extends TestCase
         $coverage = Coverage::create([
             'submission_code' => 'PLP-WA-EDIT-FORM',
             'name' => 'Pemohon Edit Form',
-            'email' => 'edit-form@example.test',
             'phone' => '081366667777',
             'event_name' => 'Agenda Edit Form',
             'event_date' => '2026-09-30',

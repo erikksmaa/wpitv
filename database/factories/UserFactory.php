@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Models\Role;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
@@ -24,7 +25,7 @@ class UserFactory extends Factory
     public function definition(): array
     {
         return [
-            'role_id' => 1,
+            'role_id' => fn () => Role::firstOrCreate(['name' => User::ROLE_SUPER_ADMIN], ['description' => 'Synthetic factory role'])->id,
             'username' => fake()->unique()->userName(),
             'password' => static::$password ??= Hash::make('password'),
             'name' => fake()->name(),

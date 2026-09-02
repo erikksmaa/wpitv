@@ -28,9 +28,9 @@ class VideoManagementTest extends TestCase
     {
         parent::setUp();
 
-        $superAdminRole = Role::where('name', 'Super Admin')->first() ?? Role::find(1);
-        $prodRole = Role::where('name', 'Admin Production')->first() ?? Role::find(2);
-        $newsRole = Role::where('name', 'Admin News')->first() ?? Role::find(3);
+        $superAdminRole = Role::where('name', 'Super Admin')->firstOrFail();
+        $prodRole = Role::where('name', 'Admin Production')->firstOrFail();
+        $newsRole = Role::where('name', 'Admin News')->firstOrFail();
 
         $this->superAdmin = User::factory()->create([
             'role_id' => $superAdminRole->id,
@@ -91,7 +91,7 @@ class VideoManagementTest extends TestCase
 
     public function test_admin_news_does_not_see_delete_button(): void
     {
-        $video = Video::first();
+        $video = Video::create(['title' => 'Video Uji Hak Akses', 'youtube_id' => 'testVideo01', 'air_date' => now()->toDateString()]);
         Livewire::actingAs($this->adminNews)
             ->test(Index::class)
             ->assertDontSeeHtml('wire:click="delete('.$video->id.')"');
@@ -144,7 +144,7 @@ class VideoManagementTest extends TestCase
 
     public function test_create_video_success_and_sets_auth_user_id(): void
     {
-        $program = Program::first();
+        $program = Program::create(['name' => 'Program Uji', 'slug' => 'program-uji', 'status' => 1]);
 
         Livewire::actingAs($this->superAdmin)
             ->test(Form::class)
@@ -279,8 +279,8 @@ class VideoManagementTest extends TestCase
 
     public function test_filter_by_program(): void
     {
-        $programA = Program::first();
-        $programB = Program::skip(1)->first();
+        $programA = Program::create(['name' => 'Program Uji A', 'slug' => 'program-uji-a', 'status' => 1]);
+        $programB = Program::create(['name' => 'Program Uji B', 'slug' => 'program-uji-b', 'status' => 1]);
 
         $videoA = Video::create([
             'title' => 'Video Program A',
@@ -305,7 +305,7 @@ class VideoManagementTest extends TestCase
 
     public function test_video_with_null_program_and_null_user_displays_correctly(): void
     {
-        // Video ID 2 (Technopreneurship) has program_id = null and user_id = null
+        Video::create(['title' => 'Video Uji Tanpa Relasi', 'program_id' => null, 'user_id' => null, 'youtube_id' => 'testVideo01', 'air_date' => now()->toDateString()]);
         $response = $this->actingAs($this->superAdmin)->get(route('admin.videos.index'));
         $response->assertStatus(200);
         $response->assertSee('Tanpa Program');

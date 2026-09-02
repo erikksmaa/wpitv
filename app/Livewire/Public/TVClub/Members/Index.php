@@ -4,6 +4,7 @@ namespace App\Livewire\Public\TVClub\Members;
 
 use App\Models\TVClubGeneration;
 use App\Models\TVClubMember;
+use App\Support\InputBounds;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -38,6 +39,7 @@ class Index extends Component
 
     public function render()
     {
+        $this->search = InputBounds::search($this->search);
         $generations = TVClubGeneration::query()
             ->orderByDesc('year')
             ->orderByDesc('id')

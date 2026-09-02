@@ -3,14 +3,15 @@
 namespace App\Livewire\Public\Peliputan;
 
 use App\Models\Coverage;
+use App\Support\CoverageReceiptAuthorization;
+use App\Support\CoverageWhatsApp;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\RateLimiter;
 use Livewire\Component;
 
 class Create extends Component
 {
     public string $name = '';
-
-    public string $email = '';
 
     public string $phone = '';
 
@@ -33,11 +34,17 @@ class Create extends Component
     {
         return [
             'name' => ['required', 'string', 'max:100'],
-            'email' => ['required', 'email', 'max:150'],
-            'phone' => ['required', 'string', 'max:25'],
+            'phone' => [
+                'required',
+                'string',
+                'max:25',
+                fn ($attribute, $value, $fail) => app(CoverageWhatsApp::class)->normalizePhone($value)
+                    ? null
+                    : $fail('Nomor Telepon / WhatsApp tidak valid.'),
+            ],
             'event_name' => ['required', 'string', 'max:200'],
             'event_date' => ['required', 'date'],
-            'event_time' => ['nullable', 'string', 'max:8'],
+            'event_time' => ['nullable', 'date_format:H:i'],
             'location' => ['required', 'string', 'max:255'],
             'description' => ['required', 'string', 'max:3000'],
         ];
@@ -47,7 +54,6 @@ class Create extends Component
     {
         return [
             'name' => 'Nama Pemohon',
-            'email' => 'Email',
             'phone' => 'Nomor Telepon / WhatsApp',
             'event_name' => 'Nama Kegiatan',
             'event_date' => 'Tanggal Kegiatan',
@@ -67,16 +73,17 @@ class Create extends Component
             return;
         }
 
+        RateLimiter::hit($throttleKey, 60);
+
         $validated = $this->validate();
 
         try {
             $code = Coverage::generateSubmissionCode();
 
-            Coverage::create([
+            $coverage = Coverage::create([
                 'submission_code' => $code,
                 'name' => $validated['name'],
-                'email' => $validated['email'],
-                'phone' => $validated['phone'],
+                'phone' => app(CoverageWhatsApp::class)->normalizePhone($validated['phone']),
                 'event_name' => $validated['event_name'],
                 'event_date' => $validated['event_date'],
                 'event_time' => ! empty($validated['event_time']) ? $validated['event_time'] : null,
@@ -85,11 +92,13 @@ class Create extends Component
                 'status' => Coverage::STATUS_PENDING,
             ]);
 
-            RateLimiter::hit($throttleKey, 60);
+            app(CoverageReceiptAuthorization::class)->grant(app('session.store'), $coverage->submission_code);
 
             return redirect()->route('peliputan.success', $code);
         } catch (\Throwable $e) {
-            report($e);
+            Log::error('Peliputan submission failed.', [
+                'exception_type' => $e::class,
+            ]);
             $this->addError('general', 'Pengajuan belum berhasil dikirim karena kendala sistem. Silakan coba sesaat lagi.');
         }
     }

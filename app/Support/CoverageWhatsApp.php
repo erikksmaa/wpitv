@@ -35,22 +35,11 @@ class CoverageWhatsApp
             'Saya ingin menghubungi admin terkait pengajuan peliputan saya.',
             '',
             'Kode Pengajuan: '.$coverage->submission_code,
-            'Nama: '.$coverage->name,
             'Kegiatan: '.$coverage->event_name,
             'Tanggal: '.$this->formattedDate($coverage),
         ];
 
-        if ($time = $this->formattedTime($coverage)) {
-            $lines[] = 'Waktu: '.$time;
-        }
-
-        if (filled($coverage->location)) {
-            $lines[] = 'Lokasi: '.trim($coverage->location);
-        }
-
         $lines = array_merge($lines, [
-            '',
-            'Status Saat Ini: '.$this->statusLabel($coverage->status),
             '',
             'Mohon informasi atau koordinasi lebih lanjut terkait pengajuan tersebut.',
             '',
@@ -138,15 +127,6 @@ class CoverageWhatsApp
     private function formattedDate(Coverage $coverage): string
     {
         return $coverage->event_date?->locale('id')->translatedFormat('j F Y') ?? 'Tanggal belum ditentukan';
-    }
-
-    private function formattedTime(Coverage $coverage): ?string
-    {
-        if (blank($coverage->event_time)) {
-            return null;
-        }
-
-        return str_replace(':', '.', substr($coverage->event_time, 0, 5)).' WIB';
     }
 
     private function url(?string $number, string $message): ?string

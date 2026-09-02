@@ -56,8 +56,7 @@ class AgendaManagementTest extends TestCase
     {
         $this->actingAs($this->superAdmin)->get(route('admin.agenda.index'))->assertOk()->assertSee('Tambah Agenda');
         $this->actingAs($this->adminProduction)->get(route('admin.agenda.index'))->assertOk()->assertSee('Tambah Agenda');
-        $this->actingAs($this->adminNews)->get(route('admin.agenda.index'))->assertOk()->assertDontSee('Tambah Agenda');
-        Livewire::actingAs($this->adminNews)->test(Form::class)->assertForbidden();
+        $this->actingAs($this->adminNews)->get(route('admin.agenda.index'))->assertForbidden();
     }
 
     public function test_admin_can_create_edit_cancel_and_delete_agenda(): void
@@ -103,7 +102,7 @@ class AgendaManagementTest extends TestCase
 
     public function test_create_from_coverage_only_prefills_safe_fields_and_does_not_save(): void
     {
-        $coverage = $this->coverage('PLP-PREFILL-AGENDA', ['name' => 'Pemohon Privat', 'email' => 'privacy@example.test', 'phone' => '08129999999', 'admin_note' => 'Catatan rahasia']);
+        $coverage = $this->coverage('PLP-PREFILL-AGENDA', ['name' => 'Pemohon Privat', 'phone' => '08129999999', 'admin_note' => 'Catatan rahasia']);
         $before = WpitvAgenda::count();
         Livewire::actingAs($this->adminProduction)->test(Form::class, ['coverage' => $coverage])
             ->assertSet('coverage_id', $coverage->id)->assertSet('type', 'coverage')->assertSet('title', 'Peliputan '.$coverage->event_name)
@@ -119,6 +118,6 @@ class AgendaManagementTest extends TestCase
 
     private function coverage(string $code, array $overrides = []): Coverage
     {
-        return Coverage::create(array_merge(['submission_code' => $code, 'name' => 'Pemohon Agenda', 'email' => 'agenda@example.test', 'phone' => '081234567890', 'event_name' => 'Seminar Agenda', 'event_date' => '2026-09-15', 'event_time' => '09:00', 'location' => 'Aula Kampus', 'description' => 'Deskripsi pemohon yang tidak disalin', 'status' => 'approved'], $overrides));
+        return Coverage::create(array_merge(['submission_code' => $code, 'name' => 'Pemohon Agenda', 'phone' => '081234567890', 'event_name' => 'Seminar Agenda', 'event_date' => '2026-09-15', 'event_time' => '09:00', 'location' => 'Aula Kampus', 'description' => 'Deskripsi pemohon yang tidak disalin', 'status' => 'approved'], $overrides));
     }
 }

@@ -2,17 +2,27 @@
 
 namespace Tests\Feature\Public;
 
+use App\Livewire\Public\Agenda\Index;
 use App\Models\Coverage;
 use App\Models\Program;
 use App\Models\User;
 use App\Models\WpitvAgenda;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Str;
+use Livewire\Livewire;
 use Tests\TestCase;
 
 class AgendaPublicTest extends TestCase
 {
     use DatabaseTransactions;
+
+    public function test_malformed_month_is_normalized_without_exception(): void
+    {
+        Livewire::test(Index::class)
+            ->set('month', '2026-99-not-a-month')
+            ->call('nextMonth')
+            ->assertSet('month', now()->addMonth()->format('Y-m'));
+    }
 
     public function test_only_public_scheduled_today_and_future_agendas_are_visible_in_order(): void
     {
@@ -35,7 +45,7 @@ class AgendaPublicTest extends TestCase
 
     public function test_peliputan_linked_agenda_never_exposes_applicant_or_internal_data(): void
     {
-        $coverage = Coverage::create(['submission_code' => 'PLP-PRIVATE-PUBLIC', 'name' => 'Nama Pemohon Privat', 'email' => 'private-agenda@example.test', 'phone' => '081277788899', 'event_name' => 'Acara Aman', 'event_date' => today()->addDay(), 'location' => 'Aula Aman', 'description' => 'Deskripsi pemohon privat', 'status' => 'approved', 'admin_note' => 'Catatan admin sangat rahasia']);
+        $coverage = Coverage::create(['submission_code' => 'PLP-PRIVATE-PUBLIC', 'name' => 'Nama Pemohon Privat', 'phone' => '081277788899', 'event_name' => 'Acara Aman', 'event_date' => today()->addDay(), 'location' => 'Aula Aman', 'description' => 'Deskripsi pemohon privat', 'status' => 'approved', 'admin_note' => 'Catatan admin sangat rahasia']);
         $creator = User::factory()->create(['name' => 'Nama Admin Internal']);
         $this->agenda('Peliputan Acara Aman', ['coverage_id' => $coverage->id, 'created_by' => $creator->id]);
 

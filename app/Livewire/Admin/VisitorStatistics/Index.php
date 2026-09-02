@@ -3,7 +3,9 @@
 namespace App\Livewire\Admin\VisitorStatistics;
 
 use App\Models\UserCounter;
+use App\Support\InputBounds;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Attributes\Url;
@@ -84,6 +86,9 @@ class Index extends Component
 
     public function render()
     {
+        Gate::authorize('view-visitor-statistics');
+        $this->perPage = InputBounds::perPage($this->perPage);
+
         [$start, $end] = $this->getDateRange();
 
         // 1. Overview Global Cards

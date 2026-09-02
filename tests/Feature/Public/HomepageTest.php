@@ -3,7 +3,6 @@
 namespace Tests\Feature\Public;
 
 use App\Livewire\Public\Home as PublicHome;
-use App\Models\Banner;
 use App\Models\News;
 use App\Models\Program;
 use App\Models\TVClubGeneration;
@@ -12,6 +11,7 @@ use App\Models\TVClubMember;
 use App\Models\UserCounter;
 use App\Models\Video;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
+use Illuminate\Support\Facades\DB;
 use Livewire\Livewire;
 use Tests\TestCase;
 
@@ -58,7 +58,7 @@ class HomepageTest extends TestCase
 
         $video = Video::create([
             'program_id' => $program->id,
-            'user_id' => 1,
+            'user_id' => $this->contentAuthor()->id,
             'title' => 'Edisi Khusus Liputan Dies Natalis 2026',
             'youtube_id' => 'abc123xyz89',
             'description' => 'Deskripsi video hero test',
@@ -126,7 +126,7 @@ class HomepageTest extends TestCase
     {
         $video = Video::create([
             'program_id' => null,
-            'user_id' => 1,
+            'user_id' => $this->contentAuthor()->id,
             'title' => 'Tayangan Terbaru Tanpa Program Hero',
             'youtube_id' => 'noProgram99',
             'air_date' => now()->addYears(2)->toDateString(),
@@ -190,7 +190,7 @@ class HomepageTest extends TestCase
     {
         $video = Video::create([
             'program_id' => null,
-            'user_id' => 1,
+            'user_id' => $this->contentAuthor()->id,
             'title' => 'Tayangan Hero Dengan Tautan Detail Internal',
             'youtube_id' => 'internal999',
             'air_date' => now()->addYears(3)->toDateString(),
@@ -219,7 +219,7 @@ class HomepageTest extends TestCase
         for ($i = 0; $i < 500; $i++) {
             Video::create([
                 'program_id' => $program->id,
-                'user_id' => 1,
+                'user_id' => $this->contentAuthor()->id,
                 'title' => "Podcast Episode {$i}",
                 'youtube_id' => "yt123_{$i}",
                 'air_date' => now()->toDateString(),
@@ -244,7 +244,7 @@ class HomepageTest extends TestCase
 
         $video = Video::create([
             'program_id' => $program->id,
-            'user_id' => 1,
+            'user_id' => $this->contentAuthor()->id,
             'title' => 'Liputan Khusus Pelatihan Broadcasting Kru Baru',
             'youtube_id' => 'testVid12345',
             'air_date' => now()->addDays(2)->toDateString(),
@@ -261,7 +261,7 @@ class HomepageTest extends TestCase
     public function test_news_render_from_database(): void
     {
         $news = News::create([
-            'user_id' => 1,
+            'user_id' => $this->contentAuthor()->id,
             'author_name' => 'Redaksi Kampus',
             'title' => 'Mahasiswa WPiTV Raih Prestasi di Ajang Nasional 2026',
             'slug' => 'mahasiswa-wpitv-raih-prestasi-2026',
@@ -273,18 +273,31 @@ class HomepageTest extends TestCase
     }
 
     /**
-     * Test 7: Banners render in campus spotlight carousel from database.
+     * Retired Banner records must not be queried or rendered by Home.
      */
-    public function test_banners_render_from_database(): void
+    public function test_homepage_does_not_query_or_render_retired_banners(): void
     {
-        $banner = Banner::create([
+        DB::table('ms_banner')->insert([
             'title' => 'Penerimaan Mahasiswa Baru 2026/2027',
             'content' => 'Pendaftaran telah dibuka untuk seluruh jurusan di Institut Widya Pratama.',
         ]);
 
-        Livewire::test(PublicHome::class)
-            ->assertSee('Penerimaan Mahasiswa Baru 2026/2027')
-            ->assertSee('Pendaftaran telah dibuka untuk seluruh jurusan');
+        DB::flushQueryLog();
+        DB::enableQueryLog();
+        try {
+            Livewire::test(PublicHome::class)
+                ->assertDontSee('Penerimaan Mahasiswa Baru 2026/2027')
+                ->assertDontSee('Pendaftaran telah dibuka untuk seluruh jurusan')
+                ->assertDontSee('Sorotan Kampus')
+                ->assertDontSee('spotlightTrack');
+            $queries = DB::getQueryLog();
+        } finally {
+            DB::disableQueryLog();
+        }
+        foreach ($queries as $query) {
+            $this->assertStringNotContainsString('ms_banner', strtolower($query['query']));
+        }
+        $this->assertDatabaseHas('ms_banner', ['title' => 'Penerimaan Mahasiswa Baru 2026/2027']);
     }
 
     /**
@@ -307,7 +320,7 @@ class HomepageTest extends TestCase
 
         $group = TVClubGroup::first() ?? TVClubGroup::create([
             'generation_id' => $gen->id,
-            'program_id' => Program::first()->id ?? 1,
+            'program_id' => Program::create(['name' => 'Program Uji Kru', 'slug' => 'program-uji-kru', 'status' => 1])->id,
             'name' => 'Redaksi Berita',
             'status' => true,
         ]);

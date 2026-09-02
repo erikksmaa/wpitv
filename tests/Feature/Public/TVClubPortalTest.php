@@ -21,6 +21,17 @@ class TVClubPortalTest extends TestCase
 {
     use DatabaseTransactions;
 
+    private function productionMember(): TVClubMember
+    {
+        $generation = TVClubGeneration::create(['name' => 'Generasi Uji Relasi', 'year' => 3901, 'status' => true]);
+        $program = Program::create(['name' => 'Program Uji Relasi', 'slug' => 'program-uji-relasi', 'status' => true]);
+        $group = TVClubGroup::create(['generation_id' => $generation->id, 'program_id' => $program->id, 'name' => 'Kelompok Uji Relasi', 'status' => true]);
+        $member = TVClubMember::create(['generation_id' => $generation->id, 'student_number' => 'TEST-PRIVATE-3901', 'name' => 'Kru Uji Relasi', 'status' => true]);
+        $group->members()->attach($member->id, ['role' => 'Kameraman']);
+
+        return $member->load('generation', 'groups.program');
+    }
+
     /**
      * Test 1: TV Club landing loads successfully.
      */
@@ -150,6 +161,7 @@ class TVClubPortalTest extends TestCase
             $group = TVClubGroup::create([
                 'generation_id' => $gen->id,
                 'name' => 'Kelompok Test Unik '.uniqid(),
+                'program_id' => Program::create(['name' => 'Program Uji Kelompok', 'slug' => 'program-uji-kelompok', 'status' => 1])->id,
                 'status' => true,
             ]);
 
@@ -209,7 +221,7 @@ class TVClubPortalTest extends TestCase
      */
     public function test_member_generation_displays(): void
     {
-        $member = TVClubMember::whereNotNull('generation_id')->first();
+        $member = $this->productionMember();
         if ($member) {
             $response = $this->get(route('tvclub.members.show', $member->id));
             $response->assertStatus(200);
@@ -224,7 +236,7 @@ class TVClubPortalTest extends TestCase
      */
     public function test_member_groups_display(): void
     {
-        $member = TVClubMember::has('groups')->first();
+        $member = $this->productionMember();
         if ($member) {
             $group = $member->groups->first();
             $response = $this->get(route('tvclub.members.show', $member->id));
@@ -240,7 +252,7 @@ class TVClubPortalTest extends TestCase
      */
     public function test_pivot_role_displays(): void
     {
-        $member = TVClubMember::has('groups')->first();
+        $member = $this->productionMember();
         if ($member && ! empty($member->groups->first()?->pivot->role)) {
             $role = $member->groups->first()->pivot->role;
             $response = $this->get(route('tvclub.members.show', $member->id));
@@ -320,7 +332,7 @@ class TVClubPortalTest extends TestCase
      */
     public function test_group_program_relation_displays(): void
     {
-        $group = TVClubGroup::whereNotNull('program_id')->has('program')->first();
+        $group = $this->productionMember()->groups->first();
         if ($group) {
             $response = $this->get(route('tvclub.groups.index'));
             $response->assertStatus(200);
@@ -335,7 +347,7 @@ class TVClubPortalTest extends TestCase
      */
     public function test_program_link_uses_program_show(): void
     {
-        $group = TVClubGroup::whereNotNull('program_id')->has('program')->first();
+        $group = $this->productionMember()->groups->first();
         if ($group) {
             $response = $this->get(route('tvclub.groups.index'));
             $response->assertStatus(200);
@@ -350,7 +362,7 @@ class TVClubPortalTest extends TestCase
      */
     public function test_no_nim_exposed_on_landing(): void
     {
-        $member = TVClubMember::whereNotNull('student_number')->first();
+        $member = $this->productionMember();
         if ($member && ! empty($member->student_number)) {
             $response = $this->get(route('tvclub.index'));
             $response->assertStatus(200);
@@ -976,6 +988,7 @@ class TVClubPortalTest extends TestCase
     public function test_production_groups_page_is_semantic_database_driven_and_public(): void
     {
         $this->assertGuest();
+        $this->productionMember();
         $groupCount = TVClubGroup::count();
 
         $this->get(route('tvclub.groups.index'))

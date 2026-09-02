@@ -5,6 +5,7 @@ namespace App\Livewire\Public;
 use App\Models\News;
 use App\Models\Program;
 use App\Models\Video;
+use App\Support\InputBounds;
 use Illuminate\Support\Collection;
 use Livewire\Component;
 
@@ -19,7 +20,8 @@ class GlobalSearch extends Component
 
     public function render()
     {
-        $term = trim($this->query);
+        $term = InputBounds::search($this->query);
+        $this->query = $term;
         $programs = collect();
         $videos = collect();
         $news = collect();

@@ -10,6 +10,16 @@ class User extends Authenticatable
 {
     use HasFactory, Notifiable;
 
+    public const ROLE_SUPER_ADMIN = 'Super Admin';
+
+    public const ROLE_PRODUCTION = 'Admin Production';
+
+    public const ROLE_NEWS = 'Admin News';
+
+    public const ROLE_TVCLUB = 'TVClub';
+
+    public const ADMIN_ROLES = [self::ROLE_SUPER_ADMIN, self::ROLE_PRODUCTION, self::ROLE_NEWS, self::ROLE_TVCLUB];
+
     protected $table = 'users';
 
     protected $fillable = [
@@ -59,17 +69,37 @@ class User extends Authenticatable
 
     public function isSuperAdmin(): bool
     {
-        return $this->role && $this->role->name === 'Super Admin';
+        return $this->role && $this->role->name === self::ROLE_SUPER_ADMIN;
     }
 
     public function isAdminProduction(): bool
     {
-        return $this->role && $this->role->name === 'Admin Production';
+        return $this->role && $this->role->name === self::ROLE_PRODUCTION;
     }
 
     public function isAdminNews(): bool
     {
-        return $this->role && $this->role->name === 'Admin News';
+        return $this->role && $this->role->name === self::ROLE_NEWS;
+    }
+
+    public function isTVClub(): bool
+    {
+        return $this->role && $this->role->name === self::ROLE_TVCLUB;
+    }
+
+    public function canAccessAdmin(): bool
+    {
+        return $this->status && in_array($this->role?->name, self::ADMIN_ROLES, true);
+    }
+
+    public function canManageProgramsAndTVClub(): bool
+    {
+        return $this->status && ($this->isSuperAdmin() || $this->isAdminProduction() || $this->isTVClub());
+    }
+
+    public function canPublishVideos(): bool
+    {
+        return $this->status && ($this->isSuperAdmin() || $this->isAdminProduction() || $this->isAdminNews());
     }
 
     public function getInitialsAttribute(): string

@@ -20,7 +20,7 @@ class UserCounterTest extends TestCase
     {
         parent::setUp();
 
-        $superAdminRole = Role::where('name', 'Super Admin')->first() ?? Role::find(1);
+        $superAdminRole = Role::where('name', 'Super Admin')->firstOrFail();
 
         $this->superAdmin = User::factory()->create([
             'name' => 'Super Admin Tester',

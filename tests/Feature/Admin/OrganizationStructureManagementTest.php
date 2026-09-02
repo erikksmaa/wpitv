@@ -244,11 +244,8 @@ class OrganizationStructureManagementTest extends TestCase
 
         $this->actingAs($this->superAdmin)->get(route('admin.organization.index'))->assertOk()->assertSee('Tambah Posisi');
         $this->actingAs($this->adminProduction)->get(route('admin.tvclub.generations.organization', $generation))->assertOk()->assertSee('Tambah Posisi');
-        $this->actingAs($this->adminNews)->get(route('admin.organization.index'))->assertOk()->assertDontSee('Tambah Posisi');
-        $this->actingAs($this->adminNews)->get(route('admin.tvclub.generations.organization', $generation))->assertOk()->assertDontSee('Tambah Posisi');
-
-        Livewire::actingAs($this->adminNews)->test(WpitvOrganizationIndex::class)->call('createPosition')->assertForbidden();
-        Livewire::actingAs($this->adminNews)->test(TvClubOrganizationIndex::class, ['generation' => $generation])->call('createPosition')->assertForbidden();
+        $this->actingAs($this->adminNews)->get(route('admin.organization.index'))->assertForbidden();
+        $this->actingAs($this->adminNews)->get(route('admin.tvclub.generations.organization', $generation))->assertForbidden();
     }
 
     public function test_generation_list_has_an_obvious_reachable_organization_entry_point(): void

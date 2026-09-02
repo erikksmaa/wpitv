@@ -21,7 +21,6 @@ class AuthenticationTest extends TestCase
     public function test_active_user_can_authenticate_using_username_and_password(): void
     {
         $user = User::factory()->create([
-            'role_id' => 1,
             'username' => 'testuser_'.uniqid(),
             'password' => Hash::make('password123'),
             'status' => 1,
@@ -42,7 +41,6 @@ class AuthenticationTest extends TestCase
     public function test_user_cannot_authenticate_with_invalid_password(): void
     {
         $user = User::factory()->create([
-            'role_id' => 1,
             'username' => 'testuser_'.uniqid(),
             'password' => Hash::make('password123'),
             'status' => 1,
@@ -59,7 +57,6 @@ class AuthenticationTest extends TestCase
     public function test_user_with_status_zero_cannot_login(): void
     {
         $inactiveUser = User::factory()->create([
-            'role_id' => 1,
             'username' => 'inactive_'.uniqid(),
             'password' => Hash::make('password123'),
             'status' => 0,
@@ -76,7 +73,6 @@ class AuthenticationTest extends TestCase
     public function test_authenticated_user_can_access_protected_admin_routes(): void
     {
         $user = User::factory()->create([
-            'role_id' => 1, // Super Admin
             'status' => 1,
         ]);
 
@@ -95,7 +91,6 @@ class AuthenticationTest extends TestCase
     public function test_user_can_logout(): void
     {
         $user = User::factory()->create([
-            'role_id' => 1,
             'status' => 1,
         ]);
 

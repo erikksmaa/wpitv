@@ -136,7 +136,7 @@ class ProgramPagesTest extends TestCase
         for ($i = 0; $i < 300; $i++) {
             Video::create([
                 'program_id' => $prog->id,
-                'user_id' => 1,
+                'user_id' => $this->contentAuthor()->id,
                 'title' => "Mega Ep {$i}",
                 'youtube_id' => "vid_mega_{$i}",
                 'air_date' => now()->toDateString(),
@@ -258,7 +258,7 @@ class ProgramPagesTest extends TestCase
 
         Video::create([
             'program_id' => $program->id,
-            'user_id' => 1,
+            'user_id' => $this->contentAuthor()->id,
             'title' => 'Buletin Pagi Edisi 10 Februari 2026',
             'youtube_id' => 'pagi10feb26',
             'air_date' => now()->toDateString(),
@@ -279,7 +279,7 @@ class ProgramPagesTest extends TestCase
 
         Video::create([
             'program_id' => $programB->id,
-            'user_id' => 1,
+            'user_id' => $this->contentAuthor()->id,
             'title' => 'Video Khusus Milik Program Beta Saja',
             'youtube_id' => 'betaOnly999',
             'air_date' => now()->toDateString(),
@@ -317,7 +317,7 @@ class ProgramPagesTest extends TestCase
 
         Video::create([
             'program_id' => $program->id,
-            'user_id' => 1,
+            'user_id' => $this->contentAuthor()->id,
             'title' => 'Video Lama 2024',
             'youtube_id' => 'lama2024',
             'air_date' => '2024-01-01',
@@ -325,7 +325,7 @@ class ProgramPagesTest extends TestCase
 
         Video::create([
             'program_id' => $program->id,
-            'user_id' => 1,
+            'user_id' => $this->contentAuthor()->id,
             'title' => 'Video Baru 2026',
             'youtube_id' => 'baru2026',
             'air_date' => '2026-01-01',
@@ -349,7 +349,7 @@ class ProgramPagesTest extends TestCase
         for ($i = 1; $i <= 15; $i++) {
             Video::create([
                 'program_id' => $program->id,
-                'user_id' => 1,
+                'user_id' => $this->contentAuthor()->id,
                 'title' => "Episode Ratusan {$i}",
                 'youtube_id' => "ratusan_{$i}",
                 'air_date' => now()->toDateString(),
@@ -380,7 +380,7 @@ class ProgramPagesTest extends TestCase
      */
     public function test_homepage_program_links_use_public_detail_route(): void
     {
-        $program = Program::where('status', true)->first();
+        $program = Program::create(['name' => 'Program Uji Tautan', 'slug' => 'program-uji-tautan', 'status' => true]);
 
         $response = $this->get(route('public.home'));
 
@@ -422,7 +422,7 @@ class ProgramPagesTest extends TestCase
 
         $this->get(route('program.index'))->assertStatus(200);
 
-        $program = Program::where('status', true)->first();
+        $program = Program::create(['name' => 'Program Uji Tamu', 'slug' => 'program-uji-tamu', 'status' => true]);
         if ($program) {
             $this->get(route('program.show', $program->slug))->assertStatus(200);
         }
@@ -602,7 +602,7 @@ class ProgramPagesTest extends TestCase
         foreach (range(1, 2) as $episode) {
             Video::create([
                 'program_id' => $program->id,
-                'user_id' => 1,
+                'user_id' => $this->contentAuthor()->id,
                 'title' => 'Episode Hitung Aktual '.$episode,
                 'youtube_id' => 'countActual'.$episode,
                 'air_date' => now()->toDateString(),

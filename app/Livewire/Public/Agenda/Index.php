@@ -3,6 +3,7 @@
 namespace App\Livewire\Public\Agenda;
 
 use App\Models\WpitvAgenda;
+use App\Support\InputBounds;
 use Carbon\CarbonImmutable;
 use Livewire\Attributes\Url;
 use Livewire\Component;
@@ -14,16 +15,18 @@ class Index extends Component
 
     public function mount(): void
     {
-        $this->month = preg_match('/^\d{4}-\d{2}$/', $this->month) ? $this->month : now()->format('Y-m');
+        $this->month = InputBounds::month($this->month);
     }
 
     public function previousMonth(): void
     {
+        $this->month = InputBounds::month($this->month);
         $this->month = CarbonImmutable::createFromFormat('Y-m', $this->month)->subMonth()->format('Y-m');
     }
 
     public function nextMonth(): void
     {
+        $this->month = InputBounds::month($this->month);
         $this->month = CarbonImmutable::createFromFormat('Y-m', $this->month)->addMonth()->format('Y-m');
     }
 
@@ -34,6 +37,7 @@ class Index extends Component
 
     public function render()
     {
+        $this->month = InputBounds::month($this->month);
         $monthStart = CarbonImmutable::createFromFormat('Y-m', $this->month)->startOfMonth();
         $gridStart = $monthStart->startOfWeek(CarbonImmutable::MONDAY);
         $gridEnd = $monthStart->endOfMonth()->endOfWeek(CarbonImmutable::SUNDAY);

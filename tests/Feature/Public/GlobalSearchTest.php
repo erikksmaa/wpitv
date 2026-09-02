@@ -77,7 +77,6 @@ class GlobalSearchTest extends TestCase
         Coverage::create([
             'submission_code' => 'PLP-PRIVATE-GLOBAL',
             'name' => $privateToken,
-            'email' => 'private-global@example.test',
             'phone' => '081299991111',
             'event_name' => 'Agenda Privat Global',
             'event_date' => now()->addWeek()->toDateString(),
@@ -109,5 +108,12 @@ class GlobalSearchTest extends TestCase
             ->html();
 
         $this->assertSame(5, substr_count($html, 'Program WPiTV'));
+    }
+
+    public function test_oversized_global_search_is_bounded(): void
+    {
+        Livewire::test(GlobalSearch::class)
+            ->set('query', str_repeat('a', 500))
+            ->assertSet('query', str_repeat('a', 150));
     }
 }

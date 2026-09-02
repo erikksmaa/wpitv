@@ -4,6 +4,7 @@ namespace App\Livewire\Admin\Roles;
 
 use App\Models\Role;
 use App\Models\User;
+use App\Support\InputBounds;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
@@ -63,8 +64,7 @@ class Index extends Component
         $this->authorize('delete', $role);
 
         // Core system roles cannot be deleted
-        $coreRoles = ['Super Admin', 'Admin Production', 'Admin News'];
-        if (in_array($role->name, $coreRoles, true)) {
+        if ($role->isCore()) {
             session()->flash('error', "Role '{$role->name}' adalah role inti sistem dan tidak dapat dihapus.");
 
             return;
@@ -86,6 +86,8 @@ class Index extends Component
     public function render()
     {
         $this->authorize('viewAny', Role::class);
+        $this->search = InputBounds::search($this->search);
+        $this->perPage = InputBounds::perPage($this->perPage);
 
         $allowedSortFields = ['name', 'description', 'created_at'];
         $sortField = in_array($this->sortField, $allowedSortFields, true) ? $this->sortField : 'name';

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Http\Middleware\EnsureAdminSessionIsValid;
 use App\Http\Requests\Auth\LoginRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -28,6 +29,16 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
+        $now = now()->timestamp;
+        $guard = Auth::guard('web');
+        $request->session()->put([
+            EnsureAdminSessionIsValid::STARTED_AT => $now,
+            EnsureAdminSessionIsValid::LAST_ACTIVITY_AT => $now,
+            'password_hash_'.Auth::getDefaultDriver() => $guard->hashPasswordForCookie(
+                $request->user()->getAuthPassword()
+            ),
+        ]);
+
         $displayName = $request->user()->name ?: $request->user()->username;
         $request->session()->flash('success', "Selamat datang kembali, {$displayName}. Anda berhasil masuk ke WPiTV Admin.");
 
@@ -39,6 +50,10 @@ class AuthenticatedSessionController extends Controller
      */
     public function destroy(Request $request): RedirectResponse
     {
+        $request->session()->forget([
+            EnsureAdminSessionIsValid::STARTED_AT,
+            EnsureAdminSessionIsValid::LAST_ACTIVITY_AT,
+        ]);
         Auth::guard('web')->logout();
 
         $request->session()->invalidate();

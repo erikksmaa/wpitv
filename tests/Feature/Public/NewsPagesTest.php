@@ -32,7 +32,7 @@ class NewsPagesTest extends TestCase
     public function test_news_renders_from_database(): void
     {
         $news = News::latest('created_at')->first() ?? News::create([
-            'user_id' => 1,
+            'user_id' => $this->contentAuthor()->id,
             'title' => 'Berita Peluncuran WPiTV',
             'slug' => 'berita-peluncuran-wpitv',
             'content' => '<p>Konten berita peluncuran.</p>',
@@ -52,7 +52,7 @@ class NewsPagesTest extends TestCase
     {
         $uniqueTitle = 'Liputan Unik Spesial Ulang Tahun Kampus '.uniqid();
         News::create([
-            'user_id' => 1,
+            'user_id' => $this->contentAuthor()->id,
             'title' => $uniqueTitle,
             'slug' => 'liputan-unik-ulang-tahun-'.uniqid(),
             'content' => '<p>Liputan perayaan ulang tahun.</p>',
@@ -92,7 +92,7 @@ class NewsPagesTest extends TestCase
     {
         $oldTitle = 'Berita Sejarah Tahun 1999 '.uniqid();
         $news = new News;
-        $news->user_id = 1;
+        $news->user_id = $this->contentAuthor()->id;
         $news->title = $oldTitle;
         $news->slug = 'berita-1999-'.uniqid();
         $news->content = '<p>Konten tahun 1999.</p>';
@@ -113,7 +113,7 @@ class NewsPagesTest extends TestCase
     {
         $prefix = 'SortLatestTest_'.uniqid();
         $oldItem = new News;
-        $oldItem->user_id = 1;
+        $oldItem->user_id = $this->contentAuthor()->id;
         $oldItem->title = $prefix.' Old Item';
         $oldItem->slug = 'old-item-'.uniqid();
         $oldItem->content = '<p>Old</p>';
@@ -123,7 +123,7 @@ class NewsPagesTest extends TestCase
         $oldItem->save();
 
         $newItem = new News;
-        $newItem->user_id = 1;
+        $newItem->user_id = $this->contentAuthor()->id;
         $newItem->title = $prefix.' New Item';
         $newItem->slug = 'new-item-'.uniqid();
         $newItem->content = '<p>New</p>';
@@ -145,7 +145,7 @@ class NewsPagesTest extends TestCase
     {
         $prefix = 'SortOldestTest_'.uniqid();
         $oldItem = new News;
-        $oldItem->user_id = 1;
+        $oldItem->user_id = $this->contentAuthor()->id;
         $oldItem->title = $prefix.' Old Item';
         $oldItem->slug = 'old-item-'.uniqid();
         $oldItem->content = '<p>Old</p>';
@@ -155,7 +155,7 @@ class NewsPagesTest extends TestCase
         $oldItem->save();
 
         $newItem = new News;
-        $newItem->user_id = 1;
+        $newItem->user_id = $this->contentAuthor()->id;
         $newItem->title = $prefix.' New Item';
         $newItem->slug = 'new-item-'.uniqid();
         $newItem->content = '<p>New</p>';
@@ -177,14 +177,14 @@ class NewsPagesTest extends TestCase
     {
         $prefix = 'SortAZTest_'.uniqid();
         $itemA = News::create([
-            'user_id' => 1,
+            'user_id' => $this->contentAuthor()->id,
             'title' => $prefix.' AAA Item',
             'slug' => 'aaa-item-'.uniqid(),
             'content' => '<p>A</p>',
             'created_at' => now(),
         ]);
         $itemZ = News::create([
-            'user_id' => 1,
+            'user_id' => $this->contentAuthor()->id,
             'title' => $prefix.' ZZZ Item',
             'slug' => 'zzz-item-'.uniqid(),
             'content' => '<p>Z</p>',
@@ -204,14 +204,14 @@ class NewsPagesTest extends TestCase
     {
         $prefix = 'SortZATest_'.uniqid();
         $itemA = News::create([
-            'user_id' => 1,
+            'user_id' => $this->contentAuthor()->id,
             'title' => $prefix.' AAA Item',
             'slug' => 'aaa-item-'.uniqid(),
             'content' => '<p>A</p>',
             'created_at' => now(),
         ]);
         $itemZ = News::create([
-            'user_id' => 1,
+            'user_id' => $this->contentAuthor()->id,
             'title' => $prefix.' ZZZ Item',
             'slug' => 'zzz-item-'.uniqid(),
             'content' => '<p>Z</p>',
@@ -242,7 +242,7 @@ class NewsPagesTest extends TestCase
     public function test_detail_loads_using_slug(): void
     {
         $news = News::first() ?? News::create([
-            'user_id' => 1,
+            'user_id' => $this->contentAuthor()->id,
             'title' => 'Uji Coba Detail Berita '.uniqid(),
             'slug' => 'uji-coba-detail-berita-'.uniqid(),
             'content' => '<p>Konten uji coba detail.</p>',
@@ -260,7 +260,7 @@ class NewsPagesTest extends TestCase
      */
     public function test_detail_title_displays(): void
     {
-        $news = News::first();
+        $news = News::create(['user_id' => $this->contentAuthor()->id, 'title' => 'Berita Uji Judul', 'slug' => 'berita-uji-judul', 'content' => '<p>Konten uji</p>']);
         if ($news) {
             $response = $this->get(route('news.show', $news->slug));
             $response->assertStatus(200);
@@ -276,7 +276,7 @@ class NewsPagesTest extends TestCase
     public function test_author_accessor_displays(): void
     {
         $news = News::first() ?? News::create([
-            'user_id' => 1,
+            'user_id' => $this->contentAuthor()->id,
             'title' => 'Berita Uji Author '.uniqid(),
             'slug' => 'berita-uji-author-'.uniqid(),
             'content' => '<p>Konten.</p>',
@@ -295,7 +295,7 @@ class NewsPagesTest extends TestCase
     public function test_date_displays(): void
     {
         $news = News::first() ?? News::create([
-            'user_id' => 1,
+            'user_id' => $this->contentAuthor()->id,
             'title' => 'Berita Uji Tanggal '.uniqid(),
             'slug' => 'berita-uji-tanggal-'.uniqid(),
             'content' => '<p>Konten.</p>',
@@ -314,7 +314,7 @@ class NewsPagesTest extends TestCase
     public function test_image_fallback_works(): void
     {
         $news = News::create([
-            'user_id' => 1,
+            'user_id' => $this->contentAuthor()->id,
             'title' => 'Berita Gambar Fallback '.uniqid(),
             'slug' => 'berita-fallback-img-'.uniqid(),
             'image' => null,
@@ -331,7 +331,7 @@ class NewsPagesTest extends TestCase
     public function test_empty_image_works(): void
     {
         $news = News::create([
-            'user_id' => 1,
+            'user_id' => $this->contentAuthor()->id,
             'title' => 'Berita Empty Image '.uniqid(),
             'slug' => 'berita-empty-img-'.uniqid(),
             'image' => '',
@@ -369,7 +369,7 @@ class NewsPagesTest extends TestCase
     public function test_legacy_html_content_renders(): void
     {
         $news = News::create([
-            'user_id' => 1,
+            'user_id' => $this->contentAuthor()->id,
             'title' => 'Berita Legacy HTML Test '.uniqid(),
             'slug' => 'berita-legacy-html-'.uniqid(),
             'content' => '<p>Paragraf <strong>tebal</strong> dan <em>miring</em>.</p>',
@@ -389,7 +389,7 @@ class NewsPagesTest extends TestCase
     public function test_related_news_excludes_current(): void
     {
         $news = News::first() ?? News::create([
-            'user_id' => 1,
+            'user_id' => $this->contentAuthor()->id,
             'title' => 'Berita Utama '.uniqid(),
             'slug' => 'berita-utama-'.uniqid(),
             'content' => '<p>Konten.</p>',
@@ -409,7 +409,7 @@ class NewsPagesTest extends TestCase
     {
         $title = 'Berita Sama Judul';
         $news1 = News::create([
-            'user_id' => 1,
+            'user_id' => $this->contentAuthor()->id,
             'title' => $title,
             'slug' => 'berita-sama-judul-1-'.uniqid(),
             'content' => '<p>Konten 1.</p>',
@@ -417,7 +417,7 @@ class NewsPagesTest extends TestCase
         ]);
 
         $news2 = News::create([
-            'user_id' => 1,
+            'user_id' => $this->contentAuthor()->id,
             'title' => $title,
             'slug' => 'berita-sama-judul-2-'.uniqid(),
             'content' => '<p>Konten 2.</p>',
@@ -454,7 +454,7 @@ class NewsPagesTest extends TestCase
         $responseIndex = $this->get(route('news.index'));
         $responseIndex->assertStatus(200);
 
-        $news = News::first();
+        $news = News::create(['user_id' => $this->contentAuthor()->id, 'title' => 'Berita Uji Tamu', 'slug' => 'berita-uji-tamu', 'content' => '<p>Konten uji</p>']);
         if ($news) {
             $responseShow = $this->get(route('news.show', $news->slug));
             $responseShow->assertStatus(200);
@@ -471,7 +471,7 @@ class NewsPagesTest extends TestCase
         $responseIndex->assertDontSee('admin.news.create');
         $responseIndex->assertDontSee('admin.news.edit');
 
-        $news = News::first();
+        $news = News::create(['user_id' => $this->contentAuthor()->id, 'title' => 'Berita Uji Akses', 'slug' => 'berita-uji-akses', 'content' => '<p>Konten uji</p>']);
         if ($news) {
             $responseShow = $this->get(route('news.show', $news->slug));
             $responseShow->assertStatus(200);

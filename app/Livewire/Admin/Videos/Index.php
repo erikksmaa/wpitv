@@ -4,6 +4,7 @@ namespace App\Livewire\Admin\Videos;
 
 use App\Models\Program;
 use App\Models\Video;
+use App\Support\InputBounds;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
@@ -87,6 +88,8 @@ class Index extends Component
     public function render()
     {
         $this->authorize('viewAny', Video::class);
+        $this->search = InputBounds::search($this->search);
+        $this->perPage = InputBounds::perPage($this->perPage);
 
         $allowedSortFields = ['air_date', 'title', 'created_at'];
         $sortField = in_array($this->sortField, $allowedSortFields, true) ? $this->sortField : 'air_date';

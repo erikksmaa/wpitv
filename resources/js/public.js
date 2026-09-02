@@ -403,103 +403,6 @@ import './bootstrap';
       });
     }
 
-    // ===================== SPOTLIGHT CAROUSEL =====================
-    const spTrack = document.getElementById('spotlightTrack');
-    const spDots = document.getElementById('spotDots');
-    const spPrev = document.getElementById('spotPrev');
-    const spNext = document.getElementById('spotNext');
-
-    if (spTrack && !spTrack.dataset.bound) {
-      spTrack.dataset.bound = 'true';
-      const spSlides = spTrack.querySelectorAll('.spotlight-slide');
-      let spIdx = 0;
-      let spTimer;
-
-      if (spSlides.length > 0) {
-        if (spDots) {
-          spDots.innerHTML = '';
-          spSlides.forEach(function (_, i) {
-            const dot = document.createElement('button');
-            dot.className = 'spot-dot' + (i === 0 ? ' active' : '');
-            dot.setAttribute('role', 'tab');
-            dot.setAttribute('aria-label', 'Slide ' + (i + 1));
-            dot.addEventListener('click', function () {
-              spGo(i);
-              spRestart();
-            });
-            spDots.appendChild(dot);
-          });
-        }
-
-        function spGo(i) {
-          spIdx = (i + spSlides.length) % spSlides.length;
-          spTrack.style.transform = 'translateX(-' + (spIdx * 100) + '%)';
-          if (spDots) {
-            spDots.querySelectorAll('.spot-dot').forEach(function (d, di) {
-              d.classList.toggle('active', di === spIdx);
-              d.setAttribute('aria-selected', di === spIdx ? 'true' : 'false');
-            });
-          }
-        }
-
-        function spRestart() {
-          clearInterval(spTimer);
-          if (spSlides.length > 1) {
-            spTimer = setInterval(function () {
-              spGo(spIdx + 1);
-            }, 5500);
-          }
-        }
-
-        if (spPrev) {
-          spPrev.addEventListener('click', function () {
-            spGo(spIdx - 1);
-            spRestart();
-          });
-        }
-        if (spNext) {
-          spNext.addEventListener('click', function () {
-            spGo(spIdx + 1);
-            spRestart();
-          });
-        }
-
-        const spWrap = spTrack.parentElement;
-        if (spWrap) {
-          spWrap.addEventListener('mouseenter', function () {
-            clearInterval(spTimer);
-          });
-          spWrap.addEventListener('mouseleave', spRestart);
-          spWrap.addEventListener('keydown', function (e) {
-            if (e.key === 'ArrowLeft') {
-              spGo(spIdx - 1);
-              spRestart();
-            }
-            if (e.key === 'ArrowRight') {
-              spGo(spIdx + 1);
-              spRestart();
-            }
-          });
-        }
-
-        let tx = 0;
-        spTrack.addEventListener('touchstart', function (e) {
-          tx = e.changedTouches[0].screenX;
-        }, { passive: true });
-
-        spTrack.addEventListener('touchend', function (e) {
-          const diff = tx - e.changedTouches[0].screenX;
-          if (Math.abs(diff) > 50) {
-            spGo(diff > 0 ? spIdx + 1 : spIdx - 1);
-            spRestart();
-          }
-        }, { passive: true });
-
-        if (spSlides.length > 1) {
-          spRestart();
-        }
-      }
-    }
 
     // ===================== COUNT UP ANIMATION =====================
     const counters = document.querySelectorAll('[data-count]');
@@ -542,6 +445,42 @@ import './bootstrap';
         });
       }
     }
+
+    // ===================== FLOATING VISITOR WIDGET =====================
+    document.querySelectorAll('[data-visitor-widget]').forEach(function (widget) {
+      if (widget.dataset.bound === 'true') return;
+
+      widget.dataset.bound = 'true';
+      const trigger = widget.querySelector('[data-visitor-widget-trigger]');
+      const panel = widget.querySelector('[data-visitor-widget-panel]');
+      if (!trigger || !panel) return;
+
+      function setExpanded(expanded, restoreFocus = false) {
+        widget.classList.toggle('is-expanded', expanded);
+        trigger.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+        panel.setAttribute('aria-hidden', expanded ? 'false' : 'true');
+        if (restoreFocus) trigger.focus();
+      }
+
+      trigger.addEventListener('click', function (event) {
+        event.stopPropagation();
+        const isOpen = widget.classList.contains('is-expanded');
+        setExpanded(!isOpen);
+      });
+
+      widget.addEventListener('keydown', function (event) {
+        if (event.key === 'Escape' && widget.classList.contains('is-expanded')) {
+          event.preventDefault();
+          setExpanded(false, true);
+        }
+      });
+
+      document.addEventListener('click', function (event) {
+        if (!widget.contains(event.target)) {
+          setExpanded(false);
+        }
+      });
+    });
 
     // Fallback error image
     document.querySelectorAll('img').forEach(function (img) {

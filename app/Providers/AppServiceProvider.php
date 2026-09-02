@@ -2,9 +2,15 @@
 
 namespace App\Providers;
 
+use App\Http\Middleware\EnsureAdminSessionIsValid;
+use App\Http\Middleware\EnsureUserHasRole;
+use App\Http\Middleware\EnsureUserIsActive;
 use App\Models\User;
+use App\Support\TestingDatabaseGuard;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
+use Livewire\Livewire;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -21,8 +27,18 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        TestingDatabaseGuard::assertSafe($this->app);
+        if ($this->app->environment('production')) {
+            URL::forceScheme('https');
+        }
+        Livewire::addPersistentMiddleware([
+            EnsureAdminSessionIsValid::class,
+            EnsureUserIsActive::class,
+            EnsureUserHasRole::class,
+        ]);
+
         Gate::define('access-admin', function (User $user) {
-            return $user->status && $user->role !== null;
+            return $user->canAccessAdmin();
         });
 
         Gate::define('manage-production', function (User $user) {
@@ -34,6 +50,10 @@ class AppServiceProvider extends ServiceProvider
         });
 
         Gate::define('manage-users', function (User $user) {
+            return $user->status && $user->isSuperAdmin();
+        });
+
+        Gate::define('view-visitor-statistics', function (User $user) {
             return $user->status && $user->isSuperAdmin();
         });
     }

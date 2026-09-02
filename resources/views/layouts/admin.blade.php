@@ -55,97 +55,7 @@
                             </a>
                         </li>
 
-                        <li class="sidebar-item {{ request()->routeIs('admin.visitor-statistics.*') ? 'active' : '' }}">
-                            <a href="{{ route('admin.visitor-statistics.index') }}" class="sidebar-link">
-                                <i class="bi bi-graph-up-arrow"></i>
-                                <span>Statistik Pengunjung</span>
-                            </a>
-                        </li>
-
-                        <li class="sidebar-item {{ request()->routeIs('admin.organization.*') ? 'active' : '' }}">
-                            <a href="{{ route('admin.organization.index') }}" class="sidebar-link">
-                                <i class="bi bi-diagram-3-fill"></i>
-                                <span>Organisasi WPiTV</span>
-                            </a>
-                        </li>
-
-                        <li class="sidebar-title">Konten</li>
-
-                        <li class="sidebar-item has-sub {{ request()->routeIs('admin.programs.*', 'admin.videos.*', 'admin.news.*', 'admin.banners.*') ? 'active' : '' }}">
-                            <a href="#" class="sidebar-link">
-                                <i class="bi bi-collection-play-fill"></i>
-                                <span>Media & Artikel</span>
-                            </a>
-                            <ul class="submenu {{ request()->routeIs('admin.programs.*', 'admin.videos.*', 'admin.news.*', 'admin.banners.*') ? 'submenu-open' : '' }}">
-                                <li class="submenu-item {{ request()->routeIs('admin.videos.*') ? 'active' : '' }}">
-                                    <a href="{{ route('admin.videos.index') }}" class="submenu-link">Tayangan</a>
-                                </li>
-                                <li class="submenu-item {{ request()->routeIs('admin.programs.*') ? 'active' : '' }}">
-                                    <a href="{{ route('admin.programs.index') }}" class="submenu-link">Program</a>
-                                </li>
-                                <li class="submenu-item {{ request()->routeIs('admin.news.*') ? 'active' : '' }}">
-                                    <a href="{{ route('admin.news.index') }}" class="submenu-link">Berita</a>
-                                </li>
-                                <li class="submenu-item {{ request()->routeIs('admin.banners.*') ? 'active' : '' }}">
-                                    <a href="{{ route('admin.banners.index') }}" class="submenu-link">Banner</a>
-                                </li>
-                            </ul>
-                        </li>
-
-                        <li class="sidebar-title">Produksi</li>
-
-                        <li class="sidebar-item {{ request()->routeIs('admin.peliputan.*') ? 'active' : '' }}">
-                            <a href="{{ route('admin.peliputan.index') }}" class="sidebar-link">
-                                <i class="bi bi-camera-reels-fill"></i>
-                                <span>Peliputan Acara</span>
-                            </a>
-                        </li>
-
-                        <li class="sidebar-item {{ request()->routeIs('admin.agenda.*') ? 'active' : '' }}">
-                            <a href="{{ route('admin.agenda.index') }}" class="sidebar-link">
-                                <i class="bi bi-calendar2-week-fill"></i>
-                                <span>Agenda WPiTV</span>
-                            </a>
-                        </li>
-
-                        <li class="sidebar-title">TV Club</li>
-
-                        <li class="sidebar-item has-sub {{ request()->routeIs('admin.tvclub.*') ? 'active' : '' }}">
-                            <a href="#" class="sidebar-link">
-                                <i class="bi bi-people-fill"></i>
-                                <span>Portal TV Club</span>
-                            </a>
-                            <ul class="submenu {{ request()->routeIs('admin.tvclub.*') ? 'submenu-open' : '' }}">
-                                <li class="submenu-item {{ request()->routeIs('admin.tvclub.generations.*') ? 'active' : '' }}">
-                                    <a href="{{ route('admin.tvclub.generations.index') }}" class="submenu-link">Generasi</a>
-                                </li>
-                                <li class="submenu-item {{ request()->routeIs('admin.tvclub.members.*') ? 'active' : '' }}">
-                                    <a href="{{ route('admin.tvclub.members.index') }}" class="submenu-link">Anggota</a>
-                                </li>
-                                <li class="submenu-item {{ request()->routeIs('admin.tvclub.groups.*') ? 'active' : '' }}">
-                                    <a href="{{ route('admin.tvclub.groups.index') }}" class="submenu-link">Kelompok</a>
-                                </li>
-                            </ul>
-                        </li>
-
-                        @can('viewAny', App\Models\User::class)
-                        <li class="sidebar-title">Sistem</li>
-
-                        <li class="sidebar-item has-sub {{ request()->routeIs('admin.users.*', 'admin.roles.*') ? 'active' : '' }}">
-                            <a href="#" class="sidebar-link">
-                                <i class="bi bi-shield-lock-fill"></i>
-                                <span>Kontrol Akses</span>
-                            </a>
-                            <ul class="submenu {{ request()->routeIs('admin.users.*', 'admin.roles.*') ? 'submenu-open' : '' }}">
-                                <li class="submenu-item {{ request()->routeIs('admin.users.*') ? 'active' : '' }}">
-                                    <a href="{{ route('admin.users.index') }}" class="submenu-link">Pengguna</a>
-                                </li>
-                                <li class="submenu-item {{ request()->routeIs('admin.roles.*') ? 'active' : '' }}">
-                                    <a href="{{ route('admin.roles.index') }}" class="submenu-link">Peran</a>
-                                </li>
-                            </ul>
-                        </li>
-                        @endcan
+                        @include('components.admin.role-navigation')
 
                         <li class="sidebar-item">
                             <form method="POST" action="{{ route('logout') }}" id="logout-form" data-admin-confirm="logout">
@@ -232,7 +142,6 @@
     <script src="{{ asset('mazer/extensions/perfect-scrollbar/perfect-scrollbar.min.js') }}"></script>
     <script src="{{ asset('mazer/compiled/js/bootstrap.bundle.min.js') }}"></script>
     <script src="{{ asset('mazer/compiled/js/app.js') }}"></script>
-    <script src="{{ asset('mazer/static/js/components/sidebar.js') }}"></script>
     @stack('scripts')
     @livewireScripts
 </body>

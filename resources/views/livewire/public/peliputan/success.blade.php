@@ -15,12 +15,11 @@
                 <div><dt>Nama kegiatan</dt><dd>{{ $coverage->event_name }}</dd></div>
                 <div><dt>Tanggal</dt><dd>{{ $coverage->event_date ? $coverage->event_date->locale('id')->translatedFormat('j F Y') : '-' }}</dd></div>
                 @if($coverage->event_time)<div><dt>Waktu</dt><dd>{{ substr($coverage->event_time, 0, 5) }} WIB</dd></div>@endif
-                <div><dt>Lokasi</dt><dd>{{ $coverage->location }}</dd></div>
             </dl></section>
             <div class="coverage-success-actions"><a href="{{ route('peliputan.status', ['submission_code' => $coverage->submission_code]) }}" class="pub-btn pub-btn--primary">Cek Status</a>@if($whatsAppUrl)<a href="{{ $whatsAppUrl }}" class="pub-btn pub-btn--secondary coverage-whatsapp-action" target="_blank" rel="noopener noreferrer" aria-label="Hubungi Admin WPiTV melalui WhatsApp"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 11.5a8.4 8.4 0 0 1-9 8.5 9.8 9.8 0 0 1-4-.9L3 21l1.7-4.6A8.5 8.5 0 1 1 21 11.5Z"/><path d="M8.5 8.5c.5 3 2 4.5 5 5"/></svg>Hubungi Admin</a>@endif</div>
             @if($whatsAppUrl)<p class="coverage-success-coordination">Butuh koordinasi lebih lanjut? Hubungi Admin WPiTV melalui WhatsApp dengan detail pengajuan Anda.</p>@endif
             <a href="{{ route('peliputan.index') }}" class="coverage-success-back">Kembali ke Peliputan</a>
         </main>
-        <aside class="coverage-success-next" aria-labelledby="coverageNextTitle"><span>LANGKAH BERIKUTNYA</span><h2 id="coverageNextTitle">Apa yang terjadi setelah ini?</h2><ol><li><i>1</i><div><strong>Review informasi</strong><p>Tim memeriksa detail kegiatan dan kesiapan jadwal.</p></div></li><li><i>2</i><div><strong>Koordinasi bila diperlukan</strong><p>WhatsApp dapat digunakan untuk menindaklanjuti pengajuan.</p></div></li><li><i>3</i><div><strong>Pantau status</strong><p>Gunakan kode dan kontak yang Anda daftarkan.</p></div></li></ol></aside>
+        <aside class="coverage-success-next" aria-labelledby="coverageNextTitle"><span>LANGKAH BERIKUTNYA</span><h2 id="coverageNextTitle">Apa yang terjadi setelah ini?</h2><ol><li><i>1</i><div><strong>Review informasi</strong><p>Tim memeriksa detail kegiatan dan kesiapan jadwal.</p></div></li><li><i>2</i><div><strong>Koordinasi bila diperlukan</strong><p>WhatsApp dapat digunakan untuk menindaklanjuti pengajuan.</p></div></li><li><i>3</i><div><strong>Pantau status</strong><p>Gunakan kode dan nomor telepon yang Anda daftarkan.</p></div></li></ol></aside>
     </div></div></section>
 </div>

@@ -5,12 +5,14 @@ namespace App\Livewire\Admin\Programs;
 use App\Models\Program;
 use App\Services\OptimizedImageStorage;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Livewire\Attributes\Layout;
+use Livewire\Attributes\Locked;
 use Livewire\Component;
 use Livewire\WithFileUploads;
+use Throwable;
 
 #[Layout('layouts.admin')]
 class Form extends Component
@@ -20,6 +22,7 @@ class Form extends Component
 
     public ?Program $program = null;
 
+    #[Locked]
     public ?int $programId = null;
 
     public string $name = '';
@@ -31,10 +34,6 @@ class Form extends Component
     public bool $status = true;
 
     public $image = null;
-
-    public ?string $existingImage = null;
-
-    public ?string $existingImageUrl = null;
 
     public bool $slugManuallyEdited = false;
 
@@ -58,8 +57,6 @@ class Form extends Component
             $this->slug = $program->slug;
             $this->description = $program->description ?? '';
             $this->status = (bool) $program->status;
-            $this->existingImage = $program->image;
-            $this->existingImageUrl = $program->image_url;
             $this->slugManuallyEdited = true; // Keep existing slug intact on edit
 
             $this->videosCount = $program->videos()->count();
@@ -114,34 +111,48 @@ class Form extends Component
 
     public function save(OptimizedImageStorage $imageStorage)
     {
-        if ($this->programId) {
-            $this->authorize('update', $this->program);
+        $program = null;
+        if ($this->programId !== null) {
+            $program = Program::findOrFail($this->programId);
+            $this->authorize('update', $program);
         } else {
             $this->authorize('create', Program::class);
         }
 
         $validated = $this->validate();
+        $oldFilename = $program?->image;
+        $newFilename = null;
 
-        // Handle Image Upload safely
-        if ($this->image) {
-            $safeSlug = Str::slug($this->slug ?: $this->name);
-            $newFilename = $imageStorage->store($this->image, 'programs', $safeSlug, 900, 1200, 82);
-            $validated['image'] = $newFilename;
-
-            // Safe replacement: Delete old image if it was managed locally in storage
-            if ($this->existingImage && Storage::disk('public')->exists('programs/'.$this->existingImage)) {
-                Storage::disk('public')->delete('programs/'.$this->existingImage);
+        try {
+            if ($this->image) {
+                $safeSlug = Str::slug($this->slug ?: $this->name);
+                $newFilename = $imageStorage->store($this->image, OptimizedImageStorage::PROGRAMS, $safeSlug, 900, 1200, 82);
             }
-        } else {
-            // Keep existing image on edit, or null on create
-            $validated['image'] = $this->existingImage;
+
+            $validated['image'] = $newFilename ?? $oldFilename;
+
+            DB::transaction(function () use ($program, $validated): void {
+                if ($program) {
+                    $program->update($validated);
+                } else {
+                    Program::create($validated);
+                }
+            });
+        } catch (Throwable $exception) {
+            if ($newFilename !== null) {
+                $imageStorage->deleteOwned(OptimizedImageStorage::PROGRAMS, $newFilename, 'Program', $program?->id);
+            }
+
+            throw $exception;
         }
 
-        if ($this->programId) {
-            $this->program->update($validated);
+        if ($newFilename !== null) {
+            $imageStorage->deleteOwned(OptimizedImageStorage::PROGRAMS, $oldFilename, 'Program', $program?->id);
+        }
+
+        if ($program) {
             session()->flash('success', "Program \"{$this->name}\" berhasil diperbarui.");
         } else {
-            Program::create($validated);
             session()->flash('success', "Program \"{$this->name}\" berhasil ditambahkan.");
         }
 
@@ -150,6 +161,8 @@ class Form extends Component
 
     public function render()
     {
+        $this->authorize($this->program?->exists ? 'update' : 'create', $this->program?->exists ? $this->program : Program::class);
+
         $isEdit = (bool) $this->programId;
 
         return view('livewire.admin.programs.form', [

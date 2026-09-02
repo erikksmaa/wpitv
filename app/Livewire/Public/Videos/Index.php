@@ -4,6 +4,7 @@ namespace App\Livewire\Public\Videos;
 
 use App\Models\Program;
 use App\Models\Video;
+use App\Support\InputBounds;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -54,6 +55,7 @@ class Index extends Component
 
     public function render()
     {
+        $this->search = InputBounds::search($this->search);
         $allowedSorts = ['latest', 'oldest', 'title_asc', 'title_desc', 'newest_created'];
         $currentSort = in_array($this->sort, $allowedSorts, true) ? $this->sort : 'latest';
 

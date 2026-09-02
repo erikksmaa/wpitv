@@ -1,6 +1,6 @@
 # Checklist Progres Modernisasi WPiTV
 
-Terakhir diperbarui: 25 Agustus 2026
+Terakhir diperbarui: 1 September 2026
 
 Dokumen ini menjadi pusat tracking pekerjaan modernisasi portal publik dan admin WPiTV.
 
@@ -13,7 +13,7 @@ Dokumen ini menjadi pusat tracking pekerjaan modernisasi portal publik dan admin
 ## Ringkasan Status
 
 - [x] Struktur aplikasi publik dan admin sudah dibangun dengan Laravel, Livewire, dan Vite.
-- [x] Pengujian penuh terakhir lulus: 459 test dan 1.360 assertion.
+- [x] Pengujian penuh setelah retirement Banner lulus: 816 tes dan 2.946 assertion, database `wpitv_testing`.
 - [x] Laravel Pint, Blade cache, Vite production build, dan `git diff --check` terakhir lulus.
 - [~] Perubahan proyek masih tersebar dalam banyak file modified/untracked dan belum memiliki checkpoint Git khusus modernisasi.
 - [~] Pengujian fungsional otomatis sudah kuat, tetapi audit visual manual setiap halaman dan setiap role belum selesai.
@@ -25,7 +25,7 @@ Dokumen ini menjadi pusat tracking pekerjaan modernisasi portal publik dan admin
 - [x] User nonaktif tidak dapat login.
 - [x] Proteksi route admin untuk guest dan user tanpa izin.
 - [x] Role Super Admin, Admin Produksi, dan Admin Berita tersedia.
-- [x] Policy akses tersedia untuk banner, program, video, berita, peliputan, TV Club, user, dan role.
+- [x] Policy akses tersedia untuk program, video, berita, peliputan, TV Club, user, dan role. Banner sudah retired dari aplikasi.
 - [x] Pengujian akses langsung URL dan mutasi Livewire tersedia.
 - [~] Audit manual menu dan tombol berdasarkan ketiga role pada seluruh halaman admin.
 - [ ] Buat checkpoint Git/tag sebelum perubahan besar berikutnya.
@@ -64,11 +64,11 @@ Dokumen ini menjadi pusat tracking pekerjaan modernisasi portal publik dan admin
 
 ## 4. Modul Admin
 
-### Banner
+### Banner — RETIRED / REMOVED FROM APPLICATION
 
-- [x] Daftar, pencarian, tambah, edit, hapus, upload, dan fallback gambar tersedia.
-- [x] Hak akses berdasarkan role diuji.
-- [ ] QA visual form, tabel, konfirmasi, toast, dan empty state.
+- [x] Query publik, route/CRUD admin, sidebar, KPI/action dashboard, model, dan policy Banner dihapus.
+- [x] Tes regresi memastikan tidak ada query Banner, menu/action, atau route aktif untuk semua role.
+- [x] Tabel `ms_banner`, baris historis, dan file gambar lama dipertahankan; bukan penghapusan database.
 
 ### Program
 
@@ -100,7 +100,7 @@ Dokumen ini menjadi pusat tracking pekerjaan modernisasi portal publik dan admin
 - [x] Modal detail permohonan telah dibuat lebih modern.
 - [x] Modal perubahan status menggunakan pola modal admin modern.
 - [~] Audit apakah seluruh modal tersisa sudah memakai pola `admin-modal` yang sama.
-- [ ] QA visual rincian permohonan dengan deskripsi, alamat, email, dan nama yang sangat panjang.
+- [ ] QA visual rincian permohonan dengan deskripsi, alamat, nomor telepon, dan nama yang sangat panjang.
 
 ### TV Club
 
@@ -135,6 +135,7 @@ Dokumen ini menjadi pusat tracking pekerjaan modernisasi portal publik dan admin
 ## 6. Portal Publik
 
 - [x] Homepage menggunakan konten database.
+- [x] Homepage menampilkan Public Visitor Counter berbasis `tr_usercounter` untuk Hari ini, Kemarin, Bulan ini, Tahun ini, dan Online; agregat di-cache 60 detik tanpa mengekspos IP.
 - [x] Halaman daftar dan detail Program tersedia.
 - [x] Halaman daftar dan detail Tayangan tersedia.
 - [x] Halaman daftar dan detail Berita tersedia.

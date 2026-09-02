@@ -33,22 +33,20 @@ class CoverageWhatsAppTest extends TestCase
         $message = (new CoverageWhatsApp)->publicToAdminMessage($coverage);
 
         $this->assertStringContainsString('PLP-20260830-TEST', $message);
-        $this->assertStringContainsString('Alya Pemohon', $message);
         $this->assertStringContainsString('Seminar Media Kampus', $message);
         $this->assertStringContainsString('30 Agustus 2026', $message);
-        $this->assertStringContainsString('09.00 WIB', $message);
-        $this->assertStringContainsString('Aula Institut Widya Pratama', $message);
         $this->assertStringContainsString('Saya ingin menghubungi admin terkait pengajuan peliputan saya.', $message);
-        $this->assertStringContainsString('Status Saat Ini: Menunggu Review', $message);
         $this->assertStringContainsString('Mohon informasi atau koordinasi lebih lanjut', $message);
-        $this->assertStringContainsString('Menunggu Review', $message);
-        $this->assertStringNotContainsString('alya@example.test', $message);
+        $this->assertStringNotContainsString('Alya Pemohon', $message);
+        $this->assertStringNotContainsString('09.00 WIB', $message);
+        $this->assertStringNotContainsString('Aula Institut Widya Pratama', $message);
+        $this->assertStringNotContainsString('Menunggu Review', $message);
         $this->assertStringNotContainsString('081234567890', $message);
         $this->assertStringNotContainsString('Catatan internal rahasia', $message);
         $this->assertStringNotContainsString('Deskripsi lengkap privat', $message);
     }
 
-    public function test_public_message_omits_optional_time_and_empty_location(): void
+    public function test_public_message_omits_time_and_location(): void
     {
         $coverage = $this->coverage(['event_time' => null, 'location' => '']);
         $message = (new CoverageWhatsApp)->publicToAdminMessage($coverage);
@@ -71,10 +69,6 @@ class CoverageWhatsAppTest extends TestCase
         foreach ($expectations as $status => [$label, $copy]) {
             $this->assertSame($label, $service->statusLabel($status));
             $this->assertStringContainsString($copy, $service->statusMessage($status));
-            $this->assertStringContainsString(
-                'Status Saat Ini: '.$label,
-                $service->publicToAdminMessage($this->coverage(['status' => $status]))
-            );
         }
     }
 
@@ -109,7 +103,6 @@ class CoverageWhatsAppTest extends TestCase
         return new Coverage(array_merge([
             'submission_code' => 'PLP-20260830-TEST',
             'name' => 'Alya Pemohon',
-            'email' => 'alya@example.test',
             'phone' => '081234567890',
             'event_name' => 'Seminar Media Kampus',
             'event_date' => '2026-08-30',

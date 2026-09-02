@@ -3,8 +3,9 @@
 namespace App\Livewire\Admin\News;
 
 use App\Models\News;
+use App\Services\OptimizedImageStorage;
+use App\Support\InputBounds;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
-use Illuminate\Support\Facades\Storage;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Attributes\Url;
@@ -64,19 +65,16 @@ class Index extends Component
         }
     }
 
-    public function delete(int $id): void
+    public function delete(int $id, OptimizedImageStorage $imageStorage): void
     {
         $news = News::findOrFail($id);
 
         $this->authorize('delete', $news);
 
-        // Safe physical media cleanup if stored in public storage
-        if ($news->image && Storage::disk('public')->exists('news/'.$news->image)) {
-            Storage::disk('public')->delete('news/'.$news->image);
-        }
-
+        $oldFilename = $news->image;
         $newsTitle = $news->title;
         $news->delete();
+        $imageStorage->deleteOwned(OptimizedImageStorage::NEWS, $oldFilename, 'News', $news->id);
 
         session()->flash('success', "Artikel berita \"{$newsTitle}\" berhasil dihapus.");
     }
@@ -84,6 +82,8 @@ class Index extends Component
     public function render()
     {
         $this->authorize('viewAny', News::class);
+        $this->search = InputBounds::search($this->search);
+        $this->perPage = InputBounds::perPage($this->perPage);
 
         $allowedSortFields = ['created_at', 'title'];
         $sortField = in_array($this->sortField, $allowedSortFields, true) ? $this->sortField : 'created_at';

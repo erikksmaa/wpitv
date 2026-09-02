@@ -3,6 +3,7 @@
 namespace App\Livewire\Admin\TVClub\Generations;
 
 use App\Models\TVClubGeneration;
+use App\Support\InputBounds;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
@@ -85,6 +86,8 @@ class Index extends Component
     public function render()
     {
         $this->authorize('viewAny', TVClubGeneration::class);
+        $this->search = InputBounds::search($this->search);
+        $this->perPage = InputBounds::perPage($this->perPage);
 
         $allowedSortFields = ['year', 'name', 'status', 'created_at'];
         $sortField = in_array($this->sortField, $allowedSortFields, true) ? $this->sortField : 'year';

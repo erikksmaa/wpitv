@@ -3,6 +3,7 @@
 namespace App\Livewire\Admin\Agenda;
 
 use App\Models\WpitvAgenda;
+use App\Support\InputBounds;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Livewire\Attributes\Layout;
@@ -46,7 +47,7 @@ class Index extends Component
     public function mount(): void
     {
         $this->authorize('viewAny', WpitvAgenda::class);
-        $this->month = preg_match('/^\d{4}-\d{2}$/', $this->month) ? $this->month : now()->format('Y-m');
+        $this->month = InputBounds::month($this->month);
     }
 
     public function setView(string $view): void
@@ -58,11 +59,13 @@ class Index extends Component
 
     public function previousMonth(): void
     {
+        $this->month = InputBounds::month($this->month);
         $this->month = CarbonImmutable::createFromFormat('Y-m', $this->month)->subMonth()->format('Y-m');
     }
 
     public function nextMonth(): void
     {
+        $this->month = InputBounds::month($this->month);
         $this->month = CarbonImmutable::createFromFormat('Y-m', $this->month)->addMonth()->format('Y-m');
     }
 
@@ -118,6 +121,8 @@ class Index extends Component
 
     private function filteredQuery()
     {
+        $this->search = InputBounds::search($this->search);
+
         return WpitvAgenda::query()->with(['program:id,name', 'coverage:id,submission_code,event_name', 'group:id,name'])
             ->when($this->search !== '', fn ($q) => $q->where(fn ($s) => $s->where('title', 'like', '%'.$this->search.'%')->orWhere('location', 'like', '%'.$this->search.'%')->orWhereHas('program', fn ($p) => $p->where('name', 'like', '%'.$this->search.'%'))))
             ->when($this->typeFilter !== '', fn ($q) => $q->where('type', $this->typeFilter))
@@ -127,6 +132,10 @@ class Index extends Component
 
     public function render()
     {
+        $this->authorize('viewAny', WpitvAgenda::class);
+        $this->month = InputBounds::month($this->month);
+        $this->perPage = InputBounds::perPage($this->perPage);
+
         $monthStart = CarbonImmutable::createFromFormat('Y-m', $this->month)->startOfMonth();
         $gridStart = $monthStart->startOfWeek(CarbonImmutable::MONDAY);
         $gridEnd = $monthStart->endOfMonth()->endOfWeek(CarbonImmutable::SUNDAY);

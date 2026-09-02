@@ -5,6 +5,7 @@ namespace App\Livewire\Admin\TVClub\Groups;
 use App\Models\Program;
 use App\Models\TVClubGeneration;
 use App\Models\TVClubGroup;
+use App\Support\InputBounds;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
@@ -103,6 +104,8 @@ class Index extends Component
     public function render()
     {
         $this->authorize('viewAny', TVClubGroup::class);
+        $this->search = InputBounds::search($this->search);
+        $this->perPage = InputBounds::perPage($this->perPage);
 
         $allowedSortFields = ['name', 'generation', 'program', 'status', 'created_at'];
         $sortField = in_array($this->sortField, $allowedSortFields, true) ? $this->sortField : 'name';

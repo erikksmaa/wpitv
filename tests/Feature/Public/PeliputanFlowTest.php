@@ -5,6 +5,7 @@ namespace Tests\Feature\Public;
 use App\Livewire\Public\Peliputan\Create;
 use App\Livewire\Public\Peliputan\Status;
 use App\Models\Coverage;
+use App\Support\CoverageReceiptAuthorization;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\RateLimiter;
 use Livewire\Livewire;
@@ -54,7 +55,7 @@ class PeliputanFlowTest extends TestCase
         $response->assertSee('Tentang Kegiatan');
         $response->assertSee('Detail Peliputan');
         $response->assertSee('Review &amp; Kirim', false);
-        foreach (['name', 'email', 'phone', 'event_name', 'event_date', 'event_time', 'location', 'description'] as $field) {
+        foreach (['name', 'phone', 'event_name', 'event_date', 'event_time', 'location', 'description'] as $field) {
             $response->assertSee('wire:model="'.$field.'"', false);
         }
         $response->assertDontSee('wire:model="coverage_type"', false);
@@ -71,7 +72,6 @@ class PeliputanFlowTest extends TestCase
 
         Livewire::test(Create::class)
             ->set('name', 'BEM Institut Widya Pratama')
-            ->set('email', 'bem@stmik-wp.ac.id')
             ->set('phone', '081234567890')
             ->set('event_name', 'Masa Pengenalan Kampus 2026')
             ->set('event_date', '2026-09-10')
@@ -91,7 +91,7 @@ class PeliputanFlowTest extends TestCase
         Livewire::test(Create::class)
             ->set('event_date', '')
             ->call('submit')
-            ->assertHasErrors(['name', 'email', 'phone', 'event_name', 'event_date', 'location', 'description']);
+            ->assertHasErrors(['name', 'phone', 'event_name', 'event_date', 'location', 'description']);
     }
 
     /**
@@ -101,12 +101,11 @@ class PeliputanFlowTest extends TestCase
     {
         Livewire::test(Create::class)
             ->set('name', str_repeat('A', 101))
-            ->set('email', 'not-an-email')
             ->set('phone', str_repeat('0', 26))
             ->set('event_name', str_repeat('B', 201))
             ->set('location', str_repeat('C', 256))
             ->call('submit')
-            ->assertHasErrors(['name', 'email', 'phone', 'event_name', 'location']);
+            ->assertHasErrors(['name', 'phone', 'event_name', 'location']);
     }
 
     /**
@@ -118,7 +117,6 @@ class PeliputanFlowTest extends TestCase
 
         Livewire::test(Create::class)
             ->set('name', 'Panitia Fest')
-            ->set('email', 'fest@stmik-wp.ac.id')
             ->set('phone', '089876543210')
             ->set('event_name', $uniqueEvent)
             ->set('event_date', '2026-10-01')
@@ -142,7 +140,6 @@ class PeliputanFlowTest extends TestCase
         $coverage = Coverage::create([
             'submission_code' => $code,
             'name' => 'Pemohon Initial Test',
-            'email' => 'initial@test.com',
             'phone' => '081111111111',
             'event_name' => 'Agenda Initial Status',
             'event_date' => '2026-11-01',
@@ -163,7 +160,6 @@ class PeliputanFlowTest extends TestCase
         Coverage::create([
             'submission_code' => $code,
             'name' => 'Pemohon Sukses',
-            'email' => 'sukses@test.com',
             'phone' => '082222222222',
             'event_name' => 'Acara Sukses Terkirim',
             'event_date' => '2026-12-01',
@@ -171,6 +167,8 @@ class PeliputanFlowTest extends TestCase
             'description' => 'Deskripsi.',
             'status' => 'pending',
         ]);
+
+        $this->authorizeReceipt($code);
 
         $response = $this->get(route('peliputan.success', $code));
 
@@ -188,7 +186,6 @@ class PeliputanFlowTest extends TestCase
         $coverage = Coverage::create([
             'submission_code' => $code,
             'name' => 'Pemohon Lookup Phone',
-            'email' => 'phone@lookup.com',
             'phone' => '081299887766',
             'event_name' => 'Acara Lookup Phone',
             'event_date' => '2026-08-30',
@@ -199,22 +196,21 @@ class PeliputanFlowTest extends TestCase
 
         Livewire::test(Status::class)
             ->set('submission_code', $code)
-            ->set('contact', '081299887766')
+            ->set('phone', '081299887766')
             ->call('check')
             ->assertHasNoErrors()
             ->assertSee($coverage->event_name);
     }
 
     /**
-     * Test 10: Status lookup works with code and email.
+     * Test 10: Email-like input cannot authenticate a status lookup.
      */
-    public function test_status_lookup_works_with_code_and_email(): void
+    public function test_status_lookup_rejects_email_like_input(): void
     {
         $code = Coverage::generateSubmissionCode();
         $coverage = Coverage::create([
             'submission_code' => $code,
             'name' => 'Pemohon Lookup Email',
-            'email' => 'pemohon_email@domain.com',
             'phone' => '081200000000',
             'event_name' => 'Acara Lookup Email',
             'event_date' => '2026-08-30',
@@ -225,11 +221,10 @@ class PeliputanFlowTest extends TestCase
 
         Livewire::test(Status::class)
             ->set('submission_code', $code)
-            ->set('contact', 'pemohon_email@domain.com')
+            ->set('phone', 'pemohon_email@domain.com')
             ->call('check')
-            ->assertHasNoErrors()
-            ->assertSee($coverage->event_name)
-            ->assertSee('Disetujui');
+            ->assertHasErrors(['phone'])
+            ->assertDontSee($coverage->event_name);
     }
 
     /**
@@ -239,7 +234,7 @@ class PeliputanFlowTest extends TestCase
     {
         Livewire::test(Status::class)
             ->set('submission_code', 'PLP-FAKE-9999')
-            ->set('contact', '081234567890')
+            ->set('phone', '081234567890')
             ->call('check')
             ->assertHasErrors(['lookup']);
     }
@@ -253,7 +248,6 @@ class PeliputanFlowTest extends TestCase
         Coverage::create([
             'submission_code' => $code,
             'name' => 'Pemohon Salah Kontak',
-            'email' => 'benar@test.com',
             'phone' => '081211112222',
             'event_name' => 'Acara Salah Kontak',
             'event_date' => '2026-09-01',
@@ -264,7 +258,7 @@ class PeliputanFlowTest extends TestCase
 
         Livewire::test(Status::class)
             ->set('submission_code', $code)
-            ->set('contact', '089999999999')
+            ->set('phone', '089999999999')
             ->call('check')
             ->assertHasErrors(['lookup']);
     }
@@ -274,7 +268,6 @@ class PeliputanFlowTest extends TestCase
         $coverage = Coverage::create([
             'submission_code' => 'PLP-LOOKUP-NORMALIZED',
             'name' => 'Pemohon Normalisasi',
-            'email' => 'normalisasi@example.test',
             'phone' => '0812-1111-2222',
             'event_name' => 'Acara Normalisasi Kontak',
             'event_date' => '2026-09-01',
@@ -285,16 +278,16 @@ class PeliputanFlowTest extends TestCase
 
         Livewire::test(Status::class)
             ->set('submission_code', $coverage->submission_code)
-            ->set('contact', '+62 812 1111 2222')
+            ->set('phone', '+62 812 1111 2222')
             ->call('check')
             ->assertHasNoErrors()
             ->assertSee('Acara Normalisasi Kontak');
 
         Livewire::test(Status::class)
             ->set('submission_code', $coverage->submission_code)
-            ->set('contact', '2222')
+            ->set('phone', '2222')
             ->call('check')
-            ->assertHasErrors(['lookup'])
+            ->assertHasErrors(['phone'])
             ->assertDontSee('Acara Normalisasi Kontak');
     }
 
@@ -307,7 +300,6 @@ class PeliputanFlowTest extends TestCase
         Coverage::create([
             'submission_code' => $code,
             'name' => 'Pemohon Masking',
-            'email' => 'privat@test.com',
             'phone' => '081234567899',
             'event_name' => 'Acara Masking Test',
             'event_date' => '2026-09-01',
@@ -320,8 +312,6 @@ class PeliputanFlowTest extends TestCase
         $maskedPhone = $component->maskPhone('081234567899');
         $this->assertEquals('0812******99', $maskedPhone);
 
-        $maskedEmail = $component->maskEmail('privat@test.com');
-        $this->assertEquals('p*****@test.com', $maskedEmail);
     }
 
     /**
@@ -345,7 +335,6 @@ class PeliputanFlowTest extends TestCase
         $coverage = Coverage::create([
             'submission_code' => $code,
             'name' => 'Pemohon Untuk Admin',
-            'email' => 'admin_cek@test.com',
             'phone' => '085555555555',
             'event_name' => 'Acara Untuk Verifikasi Admin',
             'event_date' => '2026-10-15',
@@ -368,7 +357,6 @@ class PeliputanFlowTest extends TestCase
         $coverage = Coverage::create([
             'submission_code' => $code,
             'name' => 'Pemohon Update Status',
-            'email' => 'update@test.com',
             'phone' => '087777777777',
             'event_name' => 'Acara Update Status',
             'event_date' => '2026-10-20',
@@ -381,7 +369,7 @@ class PeliputanFlowTest extends TestCase
 
         Livewire::test(Status::class)
             ->set('submission_code', $code)
-            ->set('contact', '087777777777')
+            ->set('phone', '087777777777')
             ->call('check')
             ->assertHasNoErrors()
             ->assertSee('Selesai')
@@ -426,7 +414,6 @@ class PeliputanFlowTest extends TestCase
         $coverage = Coverage::create([
             'submission_code' => 'PLP-WA-SUCCESS',
             'name' => 'Pemohon WhatsApp Sukses',
-            'email' => 'private-success@example.test',
             'phone' => '081399999999',
             'event_name' => 'Acara WhatsApp Sukses',
             'event_date' => '2026-08-30',
@@ -436,12 +423,13 @@ class PeliputanFlowTest extends TestCase
             'admin_note' => 'Catatan internal sukses',
         ]);
 
+        $this->authorizeReceipt($coverage->submission_code);
+
         $this->get(route('peliputan.success', $coverage->submission_code))
             ->assertOk()
             ->assertSee('Hubungi Admin')
             ->assertSee('https://wa.me/6281200001111?text=', false)
-            ->assertSee('Status%20Saat%20Ini%3A%20Menunggu%20Review', false)
-            ->assertDontSee('private-success@example.test')
+            ->assertSee(rawurlencode('Kode Pengajuan: '.$coverage->submission_code), false)
             ->assertDontSee('081399999999')
             ->assertDontSee('Deskripsi privat sukses')
             ->assertDontSee('Catatan internal sukses');
@@ -453,7 +441,6 @@ class PeliputanFlowTest extends TestCase
         $coverage = Coverage::create([
             'submission_code' => 'PLP-WA-NO-ADMIN',
             'name' => 'Pemohon Tanpa WhatsApp',
-            'email' => 'no-wa@example.test',
             'phone' => '081399999998',
             'event_name' => 'Acara Tanpa WhatsApp',
             'event_date' => '2026-08-30',
@@ -461,6 +448,8 @@ class PeliputanFlowTest extends TestCase
             'description' => 'Deskripsi.',
             'status' => Coverage::STATUS_PENDING,
         ]);
+
+        $this->authorizeReceipt($coverage->submission_code);
 
         $this->get(route('peliputan.success', $coverage->submission_code))
             ->assertOk()
@@ -475,7 +464,6 @@ class PeliputanFlowTest extends TestCase
         $coverage = Coverage::create([
             'submission_code' => 'PLP-WA-LOOKUP',
             'name' => 'Pemohon WhatsApp Lookup',
-            'email' => 'wa-lookup@example.test',
             'phone' => '081277778888',
             'event_name' => 'Acara WhatsApp Lookup',
             'event_date' => '2026-08-30',
@@ -486,15 +474,15 @@ class PeliputanFlowTest extends TestCase
 
         Livewire::test(Status::class)
             ->set('submission_code', $coverage->submission_code)
-            ->set('contact', $coverage->phone)
+            ->set('phone', $coverage->phone)
             ->call('check')
             ->assertSee('Hubungi Admin')
             ->assertSee('https://wa.me/6281200001111?text=', false)
-            ->assertSee('Status%20Saat%20Ini%3A%20Disetujui', false);
+            ->assertSee(rawurlencode('Kode Pengajuan: '.$coverage->submission_code), false);
 
         Livewire::test(Status::class)
             ->set('submission_code', 'PLP-WA-INVALID')
-            ->set('contact', '081200000000')
+            ->set('phone', '081200000000')
             ->call('check')
             ->assertHasErrors(['lookup'])
             ->assertDontSee('Hubungi Admin WPiTV melalui WhatsApp')
@@ -508,7 +496,6 @@ class PeliputanFlowTest extends TestCase
         $coverage = Coverage::create([
             'submission_code' => 'PLP-WA-LATEST-STATUS',
             'name' => 'Pemohon Status Terbaru',
-            'email' => 'latest-status@example.test',
             'phone' => '081277770001',
             'event_name' => 'Agenda Status Terbaru',
             'event_date' => '2026-09-02',
@@ -523,14 +510,12 @@ class PeliputanFlowTest extends TestCase
 
         Livewire::test(Status::class)
             ->set('submission_code', $coverage->submission_code)
-            ->set('contact', $coverage->email)
+            ->set('phone', $coverage->phone)
             ->call('check')
             ->assertHasNoErrors()
             ->assertSee('Disetujui')
             ->assertSee('Hubungi Admin')
-            ->assertSee('Status%20Saat%20Ini%3A%20Disetujui', false)
-            ->assertDontSee('Status%20Saat%20Ini%3A%20Menunggu%20Review', false)
-            ->assertDontSee('latest-status@example.test')
+            ->assertSee(rawurlencode('Kode Pengajuan: '.$coverage->submission_code), false)
             ->assertDontSee('081277770001')
             ->assertDontSee('Catatan internal tidak boleh bocor.');
     }
@@ -541,7 +526,6 @@ class PeliputanFlowTest extends TestCase
         $coverage = Coverage::create([
             'submission_code' => 'PLP-WA-STATUS-NO-ADMIN',
             'name' => 'Pemohon Tanpa Nomor Admin',
-            'email' => 'no-admin-status@example.test',
             'phone' => '081277770002',
             'event_name' => 'Agenda Tanpa Nomor Admin',
             'event_date' => '2026-09-03',
@@ -552,7 +536,7 @@ class PeliputanFlowTest extends TestCase
 
         Livewire::test(Status::class)
             ->set('submission_code', $coverage->submission_code)
-            ->set('contact', $coverage->phone)
+            ->set('phone', $coverage->phone)
             ->call('check')
             ->assertHasNoErrors()
             ->assertSee('Sedang Diproses')
@@ -572,7 +556,6 @@ class PeliputanFlowTest extends TestCase
 
             Livewire::test(Create::class)
                 ->set('name', 'Pemohon Terbatas')
-                ->set('email', 'limited@example.test')
                 ->set('phone', '081200000001')
                 ->set('event_name', 'Agenda Tidak Boleh Tersimpan')
                 ->set('event_date', '2026-09-10')
@@ -599,12 +582,17 @@ class PeliputanFlowTest extends TestCase
 
             Livewire::test(Status::class)
                 ->set('submission_code', 'PLP-RATE-LIMIT')
-                ->set('contact', '081200000002')
+                ->set('phone', '081200000002')
                 ->call('check')
                 ->assertHasErrors(['lookup'])
                 ->assertDontSee('Agenda');
         } finally {
             RateLimiter::clear($key);
         }
+    }
+
+    private function authorizeReceipt(string $code): void
+    {
+        app(CoverageReceiptAuthorization::class)->grant($this->app['session.store'], $code);
     }
 }

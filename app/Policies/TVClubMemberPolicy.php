@@ -12,7 +12,7 @@ class TVClubMemberPolicy
      */
     public function viewAny(User $user): bool
     {
-        return (bool) $user->status;
+        return $user->canManageProgramsAndTVClub();
     }
 
     /**
@@ -20,33 +20,33 @@ class TVClubMemberPolicy
      */
     public function view(User $user, TVClubMember $member): bool
     {
-        return (bool) $user->status;
+        return $user->canManageProgramsAndTVClub();
     }
 
     /**
      * Determine whether the user can create members.
-     * Super Admin and Admin Production can create members.
+     * Super Admin, Admin Production, and TVClub can create members.
      */
     public function create(User $user): bool
     {
-        return $user->status && ($user->isSuperAdmin() || $user->isAdminProduction());
+        return $user->canManageProgramsAndTVClub();
     }
 
     /**
      * Determine whether the user can update the member.
-     * Super Admin and Admin Production can update members.
+     * Super Admin, Admin Production, and TVClub can update members.
      */
     public function update(User $user, TVClubMember $member): bool
     {
-        return $user->status && ($user->isSuperAdmin() || $user->isAdminProduction());
+        return $user->canManageProgramsAndTVClub();
     }
 
     /**
      * Determine whether the user can delete the member.
-     * Super Admin and Admin Production can delete members.
+     * Super Admin, Admin Production, and TVClub can delete members.
      */
     public function delete(User $user, TVClubMember $member): bool
     {
-        return $user->status && ($user->isSuperAdmin() || $user->isAdminProduction());
+        return $user->canManageProgramsAndTVClub();
     }
 }

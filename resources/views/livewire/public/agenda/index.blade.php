@@ -48,9 +48,13 @@
                 <div class="public-agenda-shell-header">
                     <span class="public-agenda-shell-eyebrow">Kalender Agenda</span>
                     <div class="public-agenda-shell-titlerow">
-                        <button wire:click="previousMonth" class="public-agenda-nav-btn" aria-label="Bulan sebelumnya"><i class="bi bi-chevron-left"></i></button>
+                        <button type="button" wire:click="previousMonth" class="public-agenda-nav-btn" aria-label="Bulan sebelumnya">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="m15 18-6-6 6-6" /></svg>
+                        </button>
                         <h2>{{ $monthStart->locale('id')->translatedFormat('F Y') }}</h2>
-                        <button wire:click="nextMonth" class="public-agenda-nav-btn" aria-label="Bulan berikutnya"><i class="bi bi-chevron-right"></i></button>
+                        <button type="button" wire:click="nextMonth" class="public-agenda-nav-btn" aria-label="Bulan berikutnya">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="m9 6 6 6-6 6" /></svg>
+                        </button>
                     </div>
                     <button wire:click="currentMonth" class="public-agenda-current">Kembali ke Bulan Ini</button>
                 </div>

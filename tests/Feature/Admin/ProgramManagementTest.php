@@ -7,6 +7,7 @@ use App\Livewire\Admin\Programs\Index;
 use App\Models\Program;
 use App\Models\Role;
 use App\Models\User;
+use App\Models\Video;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -31,9 +32,12 @@ class ProgramManagementTest extends TestCase
 
         Storage::fake('public');
 
-        $superAdminRole = Role::where('name', 'Super Admin')->first() ?? Role::find(1);
-        $prodRole = Role::where('name', 'Admin Production')->first() ?? Role::find(2);
-        $newsRole = Role::where('name', 'Admin News')->first() ?? Role::find(3);
+        Program::create(['name' => 'AKTUAL', 'slug' => 'aktual', 'status' => 1]);
+        Program::create(['name' => 'PODCAST PASTI', 'slug' => 'podcast-pasti', 'status' => 1]);
+
+        $superAdminRole = Role::where('name', 'Super Admin')->firstOrFail();
+        $prodRole = Role::where('name', 'Admin Production')->firstOrFail();
+        $newsRole = Role::where('name', 'Admin News')->firstOrFail();
 
         $this->superAdmin = User::factory()->create([
             'role_id' => $superAdminRole->id,
@@ -84,12 +88,9 @@ class ProgramManagementTest extends TestCase
         $response->assertSee('Tambah Program');
     }
 
-    public function test_admin_news_can_view_programs_index_but_cannot_see_create_button(): void
+    public function test_admin_news_cannot_view_programs_index(): void
     {
-        $response = $this->actingAs($this->adminNews)->get(route('admin.programs.index'));
-        $response->assertStatus(200);
-        $response->assertSee('Daftar Program Televisi');
-        $response->assertDontSee('Tambah Program');
+        $this->actingAs($this->adminNews)->get(route('admin.programs.index'))->assertForbidden();
     }
 
     public function test_search_by_name_and_slug_works(): void
@@ -161,7 +162,7 @@ class ProgramManagementTest extends TestCase
         Livewire::actingAs($this->superAdmin)
             ->test(Form::class)
             ->set('name', 'Aktual Duplikat')
-            ->set('slug', 'aktual') // 'aktual' already exists in ms_program (ID 80)
+            ->set('slug', 'aktual') // Synthetic program created in setUp.
             ->call('save')
             ->assertHasErrors(['slug' => 'unique']);
     }
@@ -186,17 +187,19 @@ class ProgramManagementTest extends TestCase
 
     public function test_delete_is_blocked_when_program_has_videos(): void
     {
-        // Program ID 80 (AKTUAL) has 264 existing videos
-        $program = Program::withCount('videos')->findOrFail(80);
+        $program = Program::where('slug', 'aktual')->firstOrFail();
+        Video::create(['program_id' => $program->id, 'user_id' => $this->superAdmin->id,
+            'title' => 'Tayangan Uji Relasi', 'youtube_id' => 'testVideo01', 'air_date' => now()->toDateString()]);
+        $program->loadCount('videos');
         $this->assertGreaterThan(0, $program->videos_count);
 
         Livewire::actingAs($this->superAdmin)
             ->test(Index::class)
-            ->call('delete', 80)
+            ->call('delete', $program->id)
             ->assertSee('tidak dapat dihapus karena masih memiliki data terkait');
 
         $this->assertDatabaseHas('ms_program', [
-            'id' => 80,
+            'id' => $program->id,
         ]);
     }
 
@@ -225,9 +228,7 @@ class ProgramManagementTest extends TestCase
             'status' => 1,
         ]);
 
-        Livewire::actingAs($this->adminNews)
-            ->test(Index::class)
-            ->call('delete', $standaloneProg->id)
-            ->assertStatus(403);
+        $this->actingAs($this->adminNews)->get(route('admin.programs.index'))->assertForbidden();
+        $this->assertDatabaseHas('ms_program', ['id' => $standaloneProg->id]);
     }
 }

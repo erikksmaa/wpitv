@@ -192,6 +192,8 @@ class Index extends Component
 
     public function render()
     {
+        $this->authorize('viewAny', TvClubOrganizationPosition::class);
+
         $positions = $this->generation->organizationPositions()
             ->with(['assignments.member:id,generation_id,name,student_number,photo,status'])
             ->withCount('children')

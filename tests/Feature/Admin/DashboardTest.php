@@ -56,16 +56,17 @@ class DashboardTest extends TestCase
             ->assertSee('class="burger-btn admin-menu-toggle"', false)
             ->assertSee('aria-controls="sidebar"', false)
             ->assertSee('aria-expanded="false"', false)
+            ->assertDontSee('mazer/static/js/components/sidebar.js', false)
             ->assertDontSee('<div id="sidebar" class="active"', false);
     }
 
     public function test_program_kpi_is_database_driven_and_counts_active_programs(): void
     {
-        $before = app(AdminDashboardMetrics::class)->get()['kpis']['programs'];
+        $before = app(AdminDashboardMetrics::class)->get($this->superAdmin)['kpis']['programs'];
         $active = $this->makeProgram('Program Aktif Dashboard', true);
         $this->makeProgram('Program Nonaktif Dashboard', false);
 
-        $after = app(AdminDashboardMetrics::class)->get()['kpis']['programs'];
+        $after = app(AdminDashboardMetrics::class)->get($this->superAdmin)['kpis']['programs'];
 
         $this->assertSame($before['total'] + 2, $after['total']);
         $this->assertSame($before['active'] + 1, $after['active']);
@@ -74,10 +75,10 @@ class DashboardTest extends TestCase
 
     public function test_video_and_news_kpis_use_actual_records(): void
     {
-        $before = app(AdminDashboardMetrics::class)->get()['kpis'];
+        $before = app(AdminDashboardMetrics::class)->get($this->superAdmin)['kpis'];
         Video::create(['title' => 'Tayangan KPI Dashboard', 'youtube_id' => 'dashKpi0001', 'air_date' => today()]);
         News::create(['title' => 'Berita KPI Dashboard', 'slug' => 'berita-kpi-'.Str::uuid(), 'content' => 'Konten pengujian']);
-        $after = app(AdminDashboardMetrics::class)->get()['kpis'];
+        $after = app(AdminDashboardMetrics::class)->get($this->superAdmin)['kpis'];
 
         $this->assertSame($before['videos']['total'] + 1, $after['videos']['total']);
         $this->assertSame($before['videos']['this_month'] + 1, $after['videos']['this_month']);
@@ -89,7 +90,7 @@ class DashboardTest extends TestCase
     {
         $approved = $this->makeCoverage('Peliputan Disetujui Dashboard', Coverage::STATUS_APPROVED);
         $pending = $this->makeCoverage('Peliputan Menunggu Dashboard', Coverage::STATUS_PENDING);
-        $dashboard = app(AdminDashboardMetrics::class)->get();
+        $dashboard = app(AdminDashboardMetrics::class)->get($this->superAdmin);
 
         $this->assertSame(Coverage::where('status', Coverage::STATUS_PENDING)->count(), $dashboard['kpis']['coverage']['pending']);
         $this->assertSame(Coverage::STATUS_PENDING, $dashboard['coverage']['latest']->first()->status);
@@ -99,10 +100,10 @@ class DashboardTest extends TestCase
 
     public function test_monthly_production_aggregate_includes_current_video_and_news(): void
     {
-        $before = app(AdminDashboardMetrics::class)->get()['production'];
+        $before = app(AdminDashboardMetrics::class)->get($this->superAdmin)['production'];
         Video::create(['title' => 'Agregat Video Dashboard', 'youtube_id' => 'dashAgg0001', 'air_date' => today()]);
         News::create(['title' => 'Agregat Berita Dashboard', 'slug' => 'agregat-'.Str::uuid(), 'content' => 'Konten agregat']);
-        $after = app(AdminDashboardMetrics::class)->get()['production'];
+        $after = app(AdminDashboardMetrics::class)->get($this->superAdmin)['production'];
 
         $this->assertCount(6, $after['labels']);
         $this->assertSame($before['videos'][5] + 1, $after['videos'][5]);
@@ -111,9 +112,9 @@ class DashboardTest extends TestCase
 
     public function test_traffic_summary_uses_counter_table(): void
     {
-        $before = app(AdminDashboardMetrics::class)->get()['traffic'];
+        $before = app(AdminDashboardMetrics::class)->get($this->superAdmin)['traffic'];
         UserCounter::create(['ip' => '198.51.100.44', 'tanggal' => today(), 'hits' => 8, 'online' => time()]);
-        $after = app(AdminDashboardMetrics::class)->get()['traffic'];
+        $after = app(AdminDashboardMetrics::class)->get($this->superAdmin)['traffic'];
 
         $this->assertSame($before['hits'][6] + 8, $after['hits'][6]);
         $this->assertSame($before['visitors'][6] + 1, $after['visitors'][6]);
@@ -128,7 +129,7 @@ class DashboardTest extends TestCase
             $news->forceFill(['created_at' => now()->addMinutes($index)])->save();
         }
 
-        $latest = app(AdminDashboardMetrics::class)->get()['latest'];
+        $latest = app(AdminDashboardMetrics::class)->get($this->superAdmin)['latest'];
 
         $this->assertCount(5, $latest['videos']);
         $this->assertCount(5, $latest['news']);
@@ -143,22 +144,22 @@ class DashboardTest extends TestCase
             Video::create(['program_id' => $program->id, 'title' => "Ranking {$index}", 'youtube_id' => "rankDash{$index}", 'air_date' => today()]);
         }
 
-        $ranked = app(AdminDashboardMetrics::class)->get()['programs']['ranking']->firstWhere('id', $program->id);
+        $ranked = app(AdminDashboardMetrics::class)->get($this->superAdmin)['programs']['ranking']->firstWhere('id', $program->id);
 
         if ($ranked) {
             $this->assertSame(3, $ranked->videos_count);
         } else {
-            $this->assertGreaterThanOrEqual(3, app(AdminDashboardMetrics::class)->get()['programs']['ranking']->first()->videos_count);
+            $this->assertGreaterThanOrEqual(3, app(AdminDashboardMetrics::class)->get($this->superAdmin)['programs']['ranking']->first()->videos_count);
         }
     }
 
     public function test_content_health_counts_unlinked_video_and_missing_images(): void
     {
-        $before = app(AdminDashboardMetrics::class)->get()['health'];
+        $before = app(AdminDashboardMetrics::class)->get($this->superAdmin)['health'];
         Video::create(['title' => 'Video Tanpa Program Dashboard', 'youtube_id' => 'unlinkedDash', 'air_date' => today()]);
         $this->makeProgram('Program Tanpa Gambar Dashboard', true, null);
         News::create(['title' => 'Berita Tanpa Gambar Dashboard', 'slug' => 'no-image-'.Str::uuid(), 'content' => 'Konten', 'image' => null]);
-        $after = app(AdminDashboardMetrics::class)->get()['health'];
+        $after = app(AdminDashboardMetrics::class)->get($this->superAdmin)['health'];
 
         $this->assertSame($before['videos_without_program'] + 1, $after['videos_without_program']);
         $this->assertSame($before['programs_without_image'] + 1, $after['programs_without_image']);
@@ -167,13 +168,13 @@ class DashboardTest extends TestCase
 
     public function test_tv_club_metrics_and_group_members_are_database_driven(): void
     {
-        $before = app(AdminDashboardMetrics::class)->get()['tv_club'];
+        $before = app(AdminDashboardMetrics::class)->get($this->superAdmin)['tv_club'];
         $generation = TVClubGeneration::create(['name' => 'Generasi Dashboard', 'year' => 2097, 'status' => true]);
         $member = TVClubMember::create(['generation_id' => $generation->id, 'student_number' => 'DASH-001', 'name' => 'Kru Dashboard', 'status' => true]);
         $program = $this->makeProgram('Program TV Club Dashboard', true);
         $group = TVClubGroup::create(['generation_id' => $generation->id, 'program_id' => $program->id, 'name' => 'Kelompok Dashboard', 'status' => true]);
         $group->members()->attach($member->id, ['role' => 'Produser']);
-        $after = app(AdminDashboardMetrics::class)->get()['tv_club'];
+        $after = app(AdminDashboardMetrics::class)->get($this->superAdmin)['tv_club'];
 
         $this->assertSame($before['active_generations'] + 1, $after['active_generations']);
         $this->assertSame($before['active_members'] + 1, $after['active_members']);
@@ -184,14 +185,15 @@ class DashboardTest extends TestCase
     public function test_quick_actions_follow_each_role_policy(): void
     {
         $this->actingAs($this->superAdmin)->get(route('admin.dashboard'))
-            ->assertSee('Tambah Program')->assertSee('Tulis Berita')->assertSee('Tinjau Peliputan');
+            ->assertSee('Tambah Program')->assertSee('Tulis Berita')->assertSee('Proses Peliputan');
 
         $this->actingAs($this->adminProduction)->get(route('admin.dashboard'))
-            ->assertSee('Tambah Program')->assertSee('Tambah Banner')->assertDontSee('Tulis Berita');
+            ->assertSee('Tambah Program')->assertSee('Tambah Tayangan')->assertSee('Tambah Agenda')
+            ->assertSee('Proses Peliputan')->assertDontSee('Tambah Banner')->assertDontSee('Tulis Berita');
 
         $this->actingAs($this->adminNews)->get(route('admin.dashboard'))
-            ->assertSee('Tambah Tayangan')->assertSee('Tulis Berita')->assertDontSee('Tambah Program')
-            ->assertDontSee('Tambah Banner')->assertDontSee('Kelola TV Club')->assertDontSee('Tinjau Peliputan');
+            ->assertSee('Tulis Berita')->assertSee('Tambah Tayangan')->assertDontSee('Tambah Program')
+            ->assertDontSee('Tambah Banner')->assertDontSee('Kelola TV Club')->assertDontSee('Proses Peliputan');
     }
 
     public function test_dashboard_does_not_render_fake_analytics_or_system_actions(): void
@@ -208,7 +210,7 @@ class DashboardTest extends TestCase
     {
         DB::flushQueryLog();
         DB::enableQueryLog();
-        app(AdminDashboardMetrics::class)->get();
+        app(AdminDashboardMetrics::class)->get($this->superAdmin);
         $queryCount = count(DB::getQueryLog());
         DB::disableQueryLog();
 
@@ -241,7 +243,6 @@ class DashboardTest extends TestCase
         return Coverage::create([
             'submission_code' => 'PLP-DASH-'.Str::upper(Str::random(8)),
             'name' => 'Pemohon Dashboard',
-            'email' => 'dashboard@example.test',
             'phone' => '081234567890',
             'event_name' => $eventName,
             'event_date' => today()->addDays(3),

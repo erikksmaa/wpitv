@@ -257,6 +257,8 @@ class Form extends Component
 
     public function render()
     {
+        $this->authorize($this->group?->exists ? 'update' : 'create', $this->group?->exists ? $this->group : TVClubGroup::class);
+
         $isEdit = (bool) $this->groupId;
         $generations = TVClubGeneration::orderBy('year', 'desc')->get();
         $programs = Program::orderBy('name', 'asc')->get();

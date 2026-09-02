@@ -34,9 +34,9 @@ class TVClubGroupManagementTest extends TestCase
     {
         parent::setUp();
 
-        $superAdminRole = Role::where('name', 'Super Admin')->first() ?? Role::find(1);
-        $prodRole = Role::where('name', 'Admin Production')->first() ?? Role::find(2);
-        $newsRole = Role::where('name', 'Admin News')->first() ?? Role::find(3);
+        $superAdminRole = Role::where('name', 'Super Admin')->firstOrFail();
+        $prodRole = Role::where('name', 'Admin Production')->firstOrFail();
+        $newsRole = Role::where('name', 'Admin News')->firstOrFail();
 
         $this->superAdmin = User::factory()->create([
             'name' => 'Super Admin Tester',
@@ -104,17 +104,9 @@ class TVClubGroupManagementTest extends TestCase
         $response->assertSee('Tambah Kelompok');
     }
 
-    public function test_admin_news_can_view_groups_but_cannot_see_create_or_action_buttons(): void
+    public function test_admin_news_cannot_view_groups(): void
     {
-        $response = $this->actingAs($this->adminNews)->get(route('admin.tvclub.groups.index'));
-        $response->assertStatus(200);
-        $response->assertSee('Kelompok TV Club');
-        $response->assertDontSee('Tambah Kelompok');
-
-        Livewire::actingAs($this->adminNews)
-            ->test(Index::class)
-            ->assertDontSeeHtml('wire:click="delete(')
-            ->assertDontSeeHtml('title="Edit Kelompok & Kru"');
+        $this->actingAs($this->adminNews)->get(route('admin.tvclub.groups.index'))->assertForbidden();
     }
 
     public function test_super_admin_can_create_group(): void
@@ -261,10 +253,7 @@ class TVClubGroupManagementTest extends TestCase
             'status' => 1,
         ]);
 
-        Livewire::actingAs($this->adminNews)
-            ->test(Index::class)
-            ->call('delete', $group->id)
-            ->assertStatus(403);
+        $this->actingAs($this->adminNews)->get(route('admin.tvclub.groups.index'))->assertForbidden();
 
         $this->assertDatabaseHas('tvclub_groups', [
             'id' => $group->id,

@@ -35,7 +35,7 @@ class VideoPagesTest extends TestCase
     {
         $video = Video::create([
             'program_id' => null,
-            'user_id' => 1,
+            'user_id' => $this->contentAuthor()->id,
             'title' => 'Video Eksklusif Testing Render Database 2026',
             'youtube_id' => 'renderTest123',
             'air_date' => now()->toDateString(),
@@ -52,7 +52,7 @@ class VideoPagesTest extends TestCase
     {
         $videoA = Video::create([
             'program_id' => null,
-            'user_id' => 1,
+            'user_id' => $this->contentAuthor()->id,
             'title' => 'Pelatihan Jurnalistik Kampus Pekalongan',
             'youtube_id' => 'vidA123',
             'air_date' => now()->toDateString(),
@@ -60,7 +60,7 @@ class VideoPagesTest extends TestCase
 
         $videoB = Video::create([
             'program_id' => null,
-            'user_id' => 1,
+            'user_id' => $this->contentAuthor()->id,
             'title' => 'Dokumenter Sejarah Batik Indonesia',
             'youtube_id' => 'vidB123',
             'air_date' => now()->toDateString(),
@@ -79,7 +79,7 @@ class VideoPagesTest extends TestCase
     {
         $video = Video::create([
             'program_id' => null,
-            'user_id' => 1,
+            'user_id' => $this->contentAuthor()->id,
             'title' => 'Video Dengan ID Unik Tertentu',
             'youtube_id' => 'xX_uniqueYtId99_Xx',
             'air_date' => now()->toDateString(),
@@ -100,7 +100,7 @@ class VideoPagesTest extends TestCase
 
         $vidA = Video::create([
             'program_id' => $progA->id,
-            'user_id' => 1,
+            'user_id' => $this->contentAuthor()->id,
             'title' => 'Video Khusus Program A',
             'youtube_id' => 'progA_vid',
             'air_date' => now()->toDateString(),
@@ -108,7 +108,7 @@ class VideoPagesTest extends TestCase
 
         $vidB = Video::create([
             'program_id' => $progB->id,
-            'user_id' => 1,
+            'user_id' => $this->contentAuthor()->id,
             'title' => 'Video Khusus Program B',
             'youtube_id' => 'progB_vid',
             'air_date' => now()->toDateString(),
@@ -129,7 +129,7 @@ class VideoPagesTest extends TestCase
 
         $vidWithProg = Video::create([
             'program_id' => $prog->id,
-            'user_id' => 1,
+            'user_id' => $this->contentAuthor()->id,
             'title' => 'Tayangan Memiliki Program ID',
             'youtube_id' => 'hasProg123',
             'air_date' => now()->toDateString(),
@@ -137,7 +137,7 @@ class VideoPagesTest extends TestCase
 
         $vidWithoutProg = Video::create([
             'program_id' => null,
-            'user_id' => 1,
+            'user_id' => $this->contentAuthor()->id,
             'title' => 'Tayangan Murni Non Program',
             'youtube_id' => 'noProg123',
             'air_date' => now()->toDateString(),
@@ -156,7 +156,7 @@ class VideoPagesTest extends TestCase
     {
         $vid2020 = Video::create([
             'program_id' => null,
-            'user_id' => 1,
+            'user_id' => $this->contentAuthor()->id,
             'title' => 'Arsip Tayangan Tahun 2020',
             'youtube_id' => 'yr2020',
             'air_date' => '2020-05-15',
@@ -164,7 +164,7 @@ class VideoPagesTest extends TestCase
 
         $vid2026 = Video::create([
             'program_id' => null,
-            'user_id' => 1,
+            'user_id' => $this->contentAuthor()->id,
             'title' => 'Tayangan Terkini Tahun 2026',
             'youtube_id' => 'yr2026',
             'air_date' => '2026-02-10',
@@ -181,8 +181,8 @@ class VideoPagesTest extends TestCase
      */
     public function test_newest_sorting_works(): void
     {
-        Video::create(['program_id' => null, 'user_id' => 1, 'title' => 'Tayangan Jadul 2019 Unik Sort', 'youtube_id' => 'j2019', 'air_date' => '2019-01-01']);
-        Video::create(['program_id' => null, 'user_id' => 1, 'title' => 'Tayangan Anyar 2026 Unik Sort', 'youtube_id' => 'a2026', 'air_date' => '2026-12-31']);
+        Video::create(['program_id' => null, 'user_id' => $this->contentAuthor()->id, 'title' => 'Tayangan Jadul 2019 Unik Sort', 'youtube_id' => 'j2019', 'air_date' => '2019-01-01']);
+        Video::create(['program_id' => null, 'user_id' => $this->contentAuthor()->id, 'title' => 'Tayangan Anyar 2026 Unik Sort', 'youtube_id' => 'a2026', 'air_date' => '2026-12-31']);
 
         Livewire::test(VideosIndex::class)
             ->set('search', 'Unik Sort')
@@ -195,8 +195,8 @@ class VideoPagesTest extends TestCase
      */
     public function test_title_sorting_works(): void
     {
-        Video::create(['program_id' => null, 'user_id' => 1, 'title' => 'Alpha Video Unik Sort', 'youtube_id' => 'ytA', 'air_date' => now()->toDateString()]);
-        Video::create(['program_id' => null, 'user_id' => 1, 'title' => 'Omega Video Unik Sort', 'youtube_id' => 'ytZ', 'air_date' => now()->toDateString()]);
+        Video::create(['program_id' => null, 'user_id' => $this->contentAuthor()->id, 'title' => 'Alpha Video Unik Sort', 'youtube_id' => 'ytA', 'air_date' => now()->toDateString()]);
+        Video::create(['program_id' => null, 'user_id' => $this->contentAuthor()->id, 'title' => 'Omega Video Unik Sort', 'youtube_id' => 'ytZ', 'air_date' => now()->toDateString()]);
 
         Livewire::test(VideosIndex::class)
             ->set('search', 'Video Unik Sort')
@@ -217,7 +217,7 @@ class VideoPagesTest extends TestCase
         for ($i = 1; $i <= 15; $i++) {
             Video::create([
                 'program_id' => null,
-                'user_id' => 1,
+                'user_id' => $this->contentAuthor()->id,
                 'title' => "Batch Video Pagination {$i}",
                 'youtube_id' => "batch_pag_{$i}",
                 'air_date' => now()->toDateString(),
@@ -237,7 +237,7 @@ class VideoPagesTest extends TestCase
     {
         $video = Video::create([
             'program_id' => null,
-            'user_id' => 1,
+            'user_id' => $this->contentAuthor()->id,
             'title' => 'Tayangan Eksklusif Uji Coba Halaman Detail',
             'youtube_id' => 'detailTest999',
             'air_date' => now()->toDateString(),
@@ -256,7 +256,7 @@ class VideoPagesTest extends TestCase
     {
         $video = Video::create([
             'program_id' => null,
-            'user_id' => 1,
+            'user_id' => $this->contentAuthor()->id,
             'title' => 'Judul Video Yang Sangat Jelas Terbaca',
             'youtube_id' => 'titleDisp123',
             'air_date' => now()->toDateString(),
@@ -273,7 +273,7 @@ class VideoPagesTest extends TestCase
     {
         $video = Video::create([
             'program_id' => null,
-            'user_id' => 1,
+            'user_id' => $this->contentAuthor()->id,
             'title' => 'Video Embed Testing',
             'youtube_id' => 'embedYtKey888',
             'air_date' => now()->toDateString(),
@@ -298,7 +298,7 @@ class VideoPagesTest extends TestCase
 
         $video = Video::create([
             'program_id' => $program->id,
-            'user_id' => 1,
+            'user_id' => $this->contentAuthor()->id,
             'title' => 'Episode Perdana Studio',
             'youtube_id' => 'studioEp1',
             'air_date' => now()->toDateString(),
@@ -316,7 +316,7 @@ class VideoPagesTest extends TestCase
     {
         $video = Video::create([
             'program_id' => null,
-            'user_id' => 1,
+            'user_id' => $this->contentAuthor()->id,
             'title' => 'Video Lepas Tanpa Program Induk',
             'youtube_id' => 'noProgHandle',
             'air_date' => now()->toDateString(),
@@ -350,7 +350,7 @@ class VideoPagesTest extends TestCase
     {
         $video = Video::create([
             'program_id' => null,
-            'user_id' => 1,
+            'user_id' => $this->contentAuthor()->id,
             'title' => 'Video Deskripsi Null',
             'youtube_id' => 'nullDescVid',
             'description' => null,
@@ -370,7 +370,7 @@ class VideoPagesTest extends TestCase
 
         $video1 = Video::create([
             'program_id' => $program->id,
-            'user_id' => 1,
+            'user_id' => $this->contentAuthor()->id,
             'title' => 'Video Utama Yang Sedang Ditonton',
             'youtube_id' => 'relMainVid',
             'air_date' => now()->toDateString(),
@@ -378,7 +378,7 @@ class VideoPagesTest extends TestCase
 
         $video2 = Video::create([
             'program_id' => $program->id,
-            'user_id' => 1,
+            'user_id' => $this->contentAuthor()->id,
             'title' => 'Video Terkait Satu Program',
             'youtube_id' => 'relSameProg',
             'air_date' => now()->subDay()->toDateString(),
@@ -394,8 +394,8 @@ class VideoPagesTest extends TestCase
      */
     public function test_duplicate_youtube_id_remains_valid(): void
     {
-        $vidA = Video::create(['program_id' => null, 'user_id' => 1, 'title' => 'Duplikat ID Pertama', 'youtube_id' => 'sameYtId123', 'air_date' => now()->toDateString()]);
-        $vidB = Video::create(['program_id' => null, 'user_id' => 1, 'title' => 'Duplikat ID Kedua', 'youtube_id' => 'sameYtId123', 'air_date' => now()->toDateString()]);
+        $vidA = Video::create(['program_id' => null, 'user_id' => $this->contentAuthor()->id, 'title' => 'Duplikat ID Pertama', 'youtube_id' => 'sameYtId123', 'air_date' => now()->toDateString()]);
+        $vidB = Video::create(['program_id' => null, 'user_id' => $this->contentAuthor()->id, 'title' => 'Duplikat ID Kedua', 'youtube_id' => 'sameYtId123', 'air_date' => now()->toDateString()]);
 
         $this->get(route('video.show', $vidA))->assertStatus(200)->assertSee('Duplikat ID Pertama');
         $this->get(route('video.show', $vidB))->assertStatus(200)->assertSee('Duplikat ID Kedua');
@@ -406,7 +406,7 @@ class VideoPagesTest extends TestCase
      */
     public function test_homepage_links_use_internal_video_route(): void
     {
-        $video = Video::first();
+        $video = Video::create(['title' => 'Video Uji Tautan', 'user_id' => $this->contentAuthor()->id, 'youtube_id' => 'testVideo01', 'air_date' => now()->toDateString()]);
 
         $response = $this->get(route('public.home'));
 
@@ -429,7 +429,7 @@ class VideoPagesTest extends TestCase
 
         $video = Video::create([
             'program_id' => $program->id,
-            'user_id' => 1,
+            'user_id' => $this->contentAuthor()->id,
             'title' => 'Video Link Internal Program Test',
             'youtube_id' => 'intLinkProg99',
             'air_date' => now()->toDateString(),
@@ -452,7 +452,7 @@ class VideoPagesTest extends TestCase
 
         $video = Video::first() ?? Video::create([
             'program_id' => null,
-            'user_id' => 1,
+            'user_id' => $this->contentAuthor()->id,
             'title' => 'Guest Accessible Video',
             'youtube_id' => 'guestVid123',
             'air_date' => now()->toDateString(),
@@ -468,7 +468,7 @@ class VideoPagesTest extends TestCase
     {
         $video = Video::first() ?? Video::create([
             'program_id' => null,
-            'user_id' => 1,
+            'user_id' => $this->contentAuthor()->id,
             'title' => 'Security Test Video',
             'youtube_id' => 'secVid123',
             'air_date' => now()->toDateString(),
@@ -492,11 +492,14 @@ class VideoPagesTest extends TestCase
     {
         $video = Video::first() ?? Video::create([
             'program_id' => null,
-            'user_id' => 1,
+            'user_id' => $this->contentAuthor()->id,
             'title' => 'Layout Verification Video',
             'youtube_id' => 'layoutCheck123',
             'air_date' => now()->toDateString(),
         ]);
+
+        Video::create(['program_id' => $video->program_id, 'user_id' => $this->contentAuthor()->id,
+            'title' => 'Related Layout Test', 'youtube_id' => 'testVideo02', 'air_date' => now()->toDateString()]);
 
         $response = $this->get(route('video.show', $video));
 

@@ -100,6 +100,8 @@ class Form extends Component
 
     public function save()
     {
+        $this->authorize($this->agenda?->exists ? 'update' : 'create', $this->agenda?->exists ? $this->agenda : WpitvAgenda::class);
+
         $data = $this->validate();
         foreach (['program_id', 'coverage_id', 'group_id'] as $field) {
             $data[$field] = $data[$field] ?: null;
@@ -125,6 +127,8 @@ class Form extends Component
 
     public function render()
     {
+        $this->authorize($this->agenda?->exists ? 'update' : 'create', $this->agenda?->exists ? $this->agenda : WpitvAgenda::class);
+
         return view('livewire.admin.agenda.form', [
             'programs' => Program::orderBy('name')->get(['id', 'name']),
             'coverages' => Coverage::orderByDesc('event_date')->limit(200)->get(['id', 'submission_code', 'event_name', 'event_date']),

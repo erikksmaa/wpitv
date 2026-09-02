@@ -12,7 +12,7 @@ class VideoPolicy
      */
     public function viewAny(User $user): bool
     {
-        return (bool) $user->status;
+        return $user->canPublishVideos();
     }
 
     /**
@@ -20,7 +20,7 @@ class VideoPolicy
      */
     public function view(User $user, Video $video): bool
     {
-        return (bool) $user->status;
+        return $user->canPublishVideos();
     }
 
     /**
@@ -29,7 +29,7 @@ class VideoPolicy
      */
     public function create(User $user): bool
     {
-        return (bool) $user->status;
+        return $user->canPublishVideos();
     }
 
     /**
@@ -38,7 +38,7 @@ class VideoPolicy
      */
     public function update(User $user, Video $video): bool
     {
-        return (bool) $user->status;
+        return $user->canPublishVideos();
     }
 
     /**

@@ -127,16 +127,11 @@
                                  class="img-fluid rounded shadow-sm object-fit-cover" 
                                  style="max-height: 180px; width: 100%;">
                             <div class="badge bg-info text-dark mt-2">Gambar Baru Dipilih (Belum Disimpan)</div>
-                        @elseif ($existingImageUrl)
-                            <img src="{{ $existingImageUrl }}" 
+                        @elseif ($news?->image_url)
+                            <img src="{{ $news->image_url }}"
                                  alt="{{ $title }}" 
                                  class="img-fluid rounded shadow-sm object-fit-cover" 
                                  style="max-height: 180px; width: 100%;">
-                            @if ($existingImage)
-                                <div class="text-muted small font-monospace mt-2 text-truncate" title="{{ $existingImage }}">
-                                    File: {{ $existingImage }}
-                                </div>
-                            @endif
                         @else
                             <img src="{{ asset('images/placeholders/program-placeholder.svg') }}" 
                                  alt="Placeholder" 

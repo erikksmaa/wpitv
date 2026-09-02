@@ -27,9 +27,9 @@ class VisitorStatisticsTest extends TestCase
     {
         parent::setUp();
 
-        $superAdminRole = Role::where('name', 'Super Admin')->first() ?? Role::find(1);
-        $prodRole = Role::where('name', 'Admin Production')->first() ?? Role::find(2);
-        $newsRole = Role::where('name', 'Admin News')->first() ?? Role::find(3);
+        $superAdminRole = Role::where('name', 'Super Admin')->firstOrFail();
+        $prodRole = Role::where('name', 'Admin Production')->firstOrFail();
+        $newsRole = Role::where('name', 'Admin News')->firstOrFail();
 
         $this->superAdmin = User::factory()->create([
             'name' => 'Super Admin Tester',
@@ -76,18 +76,16 @@ class VisitorStatisticsTest extends TestCase
         $response->assertSee('Rincian Harian');
     }
 
-    public function test_admin_production_can_access_visitor_statistics(): void
+    public function test_admin_production_cannot_access_visitor_statistics(): void
     {
         $response = $this->actingAs($this->adminProduction)->get(route('admin.visitor-statistics.index'));
-        $response->assertStatus(200);
-        $response->assertSee('Statistik Pengunjung');
+        $response->assertForbidden();
     }
 
-    public function test_admin_news_can_access_visitor_statistics(): void
+    public function test_admin_news_cannot_access_visitor_statistics(): void
     {
         $response = $this->actingAs($this->adminNews)->get(route('admin.visitor-statistics.index'));
-        $response->assertStatus(200);
-        $response->assertSee('Statistik Pengunjung');
+        $response->assertForbidden();
     }
 
     public function test_statistics_calculate_total_hits_correctly(): void
@@ -148,6 +146,7 @@ class VisitorStatisticsTest extends TestCase
     public function test_date_filtering_works(): void
     {
         $testDate = '2026-08-05';
+        UserCounter::create(['ip' => '192.0.2.5', 'tanggal' => $testDate, 'hits' => 2, 'online' => time()]);
 
         Livewire::actingAs($this->superAdmin)
             ->test(Index::class)

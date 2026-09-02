@@ -6,11 +6,12 @@ use App\Models\TVClubGeneration;
 use App\Models\TVClubMember;
 use App\Services\OptimizedImageStorage;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
+use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Layout;
+use Livewire\Attributes\Locked;
 use Livewire\Component;
 use Livewire\WithFileUploads;
+use Throwable;
 
 #[Layout('layouts.admin')]
 class Form extends Component
@@ -20,6 +21,7 @@ class Form extends Component
 
     public ?TVClubMember $member = null;
 
+    #[Locked]
     public ?int $memberId = null;
 
     public ?int $generation_id = null;
@@ -29,8 +31,6 @@ class Form extends Component
     public string $name = '';
 
     public $photo = null;
-
-    public ?string $existingPhoto = null;
 
     public bool $status = true;
 
@@ -51,7 +51,6 @@ class Form extends Component
             $this->generation_id = (int) $member->generation_id;
             $this->student_number = $member->student_number;
             $this->name = $member->name;
-            $this->existingPhoto = $member->photo;
             $this->status = (bool) $member->status;
 
             $this->groupsCount = $member->groups()->count();
@@ -92,44 +91,54 @@ class Form extends Component
 
     public function save(OptimizedImageStorage $imageStorage)
     {
-        if ($this->memberId) {
-            $this->authorize('update', $this->member);
+        $member = null;
+        if ($this->memberId !== null) {
+            $member = TVClubMember::findOrFail($this->memberId);
+            $this->authorize('update', $member);
         } else {
             $this->authorize('create', TVClubMember::class);
         }
 
         $validated = $this->validate();
-
-        $photoFilename = $this->existingPhoto;
-
-        if ($this->photo) {
-            $slugPrefix = Str::slug($this->student_number.'-'.$this->name);
-            $photoFilename = $imageStorage->store($this->photo, 'tvclub/members', $slugPrefix, 600, 600, 82);
-
-            // Ensure destination directory exists on public disk
-            if (! Storage::disk('public')->exists('tvclub/members')) {
-                Storage::disk('public')->makeDirectory('tvclub/members');
-            }
-
-            // Delete old photo if exists and replaced
-            if ($this->existingPhoto && Storage::disk('public')->exists('tvclub/members/'.$this->existingPhoto)) {
-                Storage::disk('public')->delete('tvclub/members/'.$this->existingPhoto);
-            }
-        }
+        $oldFilename = $member?->photo;
+        $newFilename = null;
 
         $payload = [
             'generation_id' => $validated['generation_id'],
             'student_number' => $validated['student_number'],
             'name' => $validated['name'],
-            'photo' => $photoFilename,
             'status' => $validated['status'],
         ];
 
-        if ($this->memberId) {
-            $this->member->update($payload);
+        try {
+            if ($this->photo) {
+                $newFilename = $imageStorage->store($this->photo, OptimizedImageStorage::TVCLUB_MEMBERS, 'member', 600, 600, 82);
+            }
+
+            $payload['photo'] = $newFilename ?? $oldFilename;
+
+            DB::transaction(function () use ($member, $payload): void {
+                if ($member) {
+                    $member->update($payload);
+                } else {
+                    TVClubMember::create($payload);
+                }
+            });
+        } catch (Throwable $exception) {
+            if ($newFilename !== null) {
+                $imageStorage->deleteOwned(OptimizedImageStorage::TVCLUB_MEMBERS, $newFilename, 'TVClubMember', $member?->id);
+            }
+
+            throw $exception;
+        }
+
+        if ($newFilename !== null) {
+            $imageStorage->deleteOwned(OptimizedImageStorage::TVCLUB_MEMBERS, $oldFilename, 'TVClubMember', $member?->id);
+        }
+
+        if ($member) {
             session()->flash('success', "Data anggota \"{$this->name}\" berhasil diperbarui.");
         } else {
-            TVClubMember::create($payload);
             session()->flash('success', "Anggota \"{$this->name}\" berhasil ditambahkan.");
         }
 
@@ -138,6 +147,8 @@ class Form extends Component
 
     public function render()
     {
+        $this->authorize($this->member?->exists ? 'update' : 'create', $this->member?->exists ? $this->member : TVClubMember::class);
+
         $isEdit = (bool) $this->memberId;
         $generations = TVClubGeneration::orderBy('year', 'desc')->get();
 

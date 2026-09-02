@@ -9,6 +9,7 @@ use App\Livewire\Public\Peliputan\Create;
 use App\Livewire\Public\Peliputan\Status;
 use App\Livewire\Public\Peliputan\Success;
 use App\Livewire\Public\Programs\Show;
+use App\Models\User;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -32,7 +33,7 @@ Route::get('/tv-club/anggota/{member}', App\Livewire\Public\TVClub\Members\Show:
 Route::get('/tv-club/tim-produksi', App\Livewire\Public\TVClub\Groups\Index::class)->name('tvclub.groups.index');
 Route::get('/peliputan', App\Livewire\Public\Peliputan\Index::class)->name('peliputan.index');
 Route::get('/peliputan/ajukan', Create::class)->name('peliputan.create');
-Route::get('/peliputan/berhasil/{code}', Success::class)->name('peliputan.success');
+Route::get('/peliputan/berhasil/{code}', Success::class)->middleware('throttle:15,1')->name('peliputan.success');
 Route::get('/peliputan/status', Status::class)->name('peliputan.status');
 Route::get('/agenda', App\Livewire\Public\Agenda\Index::class)->name('agenda.index');
 
@@ -41,7 +42,7 @@ Route::get('/agenda', App\Livewire\Public\Agenda\Index::class)->name('agenda.ind
 | Admin Routes
 |--------------------------------------------------------------------------
 */
-Route::prefix('admin')->middleware(['auth', 'active', 'role:Super Admin,Admin Production,Admin News'])->group(function () {
+Route::prefix('admin')->middleware(['auth', 'session.valid', 'active', 'role:'.implode(',', User::ADMIN_ROLES)])->group(function () {
     Route::get('/', AdminDashboard::class)->name('admin.index');
     Route::get('/dashboard', AdminDashboard::class)->name('admin.dashboard');
 
@@ -59,11 +60,6 @@ Route::prefix('admin')->middleware(['auth', 'active', 'role:Super Admin,Admin Pr
     Route::get('/news', App\Livewire\Admin\News\Index::class)->name('admin.news.index');
     Route::get('/news/create', App\Livewire\Admin\News\Form::class)->name('admin.news.create');
     Route::get('/news/{news}/edit', App\Livewire\Admin\News\Form::class)->name('admin.news.edit');
-
-    // Banner Management
-    Route::get('/banners', App\Livewire\Admin\Banners\Index::class)->name('admin.banners.index');
-    Route::get('/banners/create', App\Livewire\Admin\Banners\Form::class)->name('admin.banners.create');
-    Route::get('/banners/{banner}/edit', App\Livewire\Admin\Banners\Form::class)->name('admin.banners.edit');
 
     // Visitor Statistics
     Route::get('/visitor-statistics', App\Livewire\Admin\VisitorStatistics\Index::class)->name('admin.visitor-statistics.index');
@@ -87,12 +83,10 @@ Route::prefix('admin')->middleware(['auth', 'active', 'role:Super Admin,Admin Pr
     Route::get('/tvclub/groups/create', App\Livewire\Admin\TVClub\Groups\Form::class)->name('admin.tvclub.groups.create');
     Route::get('/tvclub/groups/{group}/edit', App\Livewire\Admin\TVClub\Groups\Form::class)->name('admin.tvclub.groups.edit');
 
-    // User Management
     Route::get('/users', App\Livewire\Admin\Users\Index::class)->name('admin.users.index');
     Route::get('/users/create', App\Livewire\Admin\Users\Form::class)->name('admin.users.create');
     Route::get('/users/{user}/edit', App\Livewire\Admin\Users\Form::class)->name('admin.users.edit');
 
-    // Role Management
     Route::get('/roles', App\Livewire\Admin\Roles\Index::class)->name('admin.roles.index');
     Route::get('/roles/create', App\Livewire\Admin\Roles\Form::class)->name('admin.roles.create');
     Route::get('/roles/{role}/edit', App\Livewire\Admin\Roles\Form::class)->name('admin.roles.edit');

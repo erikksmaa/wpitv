@@ -1,6 +1,6 @@
 /**
  * WPiTV Custom Admin JavaScript
- * Mazer Core behaviors (sidebar, dark theme, perfect-scrollbar) are loaded directly from public/mazer/
+ * Mazer core behavior comes from its compiled bundle; WPiTV adds accessibility and confirmation handling here.
  */
 
 import Swal from 'sweetalert2';

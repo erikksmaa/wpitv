@@ -22,11 +22,11 @@ class EnsureUserHasRole
         }
 
         // If Super Admin, allow access or check if role matches
-        if ($user->role->name === 'Super Admin') {
+        if ($user->canAccessAdmin() && $user->isSuperAdmin()) {
             return $next($request);
         }
 
-        if (in_array($user->role->name, $roles)) {
+        if ($user->canAccessAdmin() && in_array($user->role->name, $roles, true)) {
             return $next($request);
         }
 

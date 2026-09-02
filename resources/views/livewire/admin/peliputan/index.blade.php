@@ -434,13 +434,6 @@
                                     <strong>{{ $selectedCoverage->phone ?: '-' }}</strong>
                                 </div>
                             </section>
-                            <section class="coverage-info-card coverage-info-card--wide">
-                                <span class="coverage-info-icon"><i class="bi bi-envelope" aria-hidden="true"></i></span>
-                                <div>
-                                    <span class="coverage-info-label">Alamat Email</span>
-                                    <strong>{{ $selectedCoverage->email ?: '-' }}</strong>
-                                </div>
-                            </section>
                         </div>
 
                         <section class="coverage-detail-section">

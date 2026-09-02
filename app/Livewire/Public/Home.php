@@ -2,7 +2,6 @@
 
 namespace App\Livewire\Public;
 
-use App\Models\Banner;
 use App\Models\News;
 use App\Models\Program;
 use App\Models\TVClubGeneration;
@@ -26,7 +25,7 @@ class Home extends Component
     {
         $data = app()->environment('testing')
             ? $this->homepageData()
-            : Cache::remember('public.homepage.v4', now()->addSeconds(60), fn () => $this->homepageData());
+            : Cache::remember('public.homepage.v5', now()->addSeconds(60), fn () => $this->homepageData());
 
         return view('livewire.public.home', $data)->layout('layouts.public', [
             'title' => 'WPiTV — Televisi Digital Kampus Institut Widya Pratama',
@@ -59,9 +58,6 @@ class Home extends Component
             $tickerItems->push('Selamat datang di portal televisi digital WPiTV Institut Widya Pratama');
             $tickerItems->push('WPiTV membuka pengajuan peliputan kegiatan kampus');
         }
-
-        // 3. Campus Spotlight / Banners
-        $banners = Banner::latest()->take(5)->get();
 
         // 4. Programs (Active programs with videos count)
         $programs = Program::where('status', true)
@@ -116,7 +112,6 @@ class Home extends Component
             'featuredVideos' => $featuredVideos,
             'defaultFeaturedVideo' => $featuredVideos[0] ?? null,
             'tickerItems' => $tickerItems,
-            'banners' => $banners,
             'programs' => $programs,
             'latestVideos' => $latestVideos,
             'stats' => $stats,

@@ -3,7 +3,12 @@
         <div>
             <span class="dashboard-eyebrow">WPiTV Media Operations</span>
             <h1 id="dashboard-welcome-title">Selamat datang, {{ $user->name }}</h1>
-            <p>Ringkasan aktivitas dan operasional WPiTV hari ini.</p>
+            <p>{{ match ($user->role->name) {
+                App\Models\User::ROLE_SUPER_ADMIN => 'Ringkasan sistem dan operasional WPiTV',
+                App\Models\User::ROLE_PRODUCTION => 'Operasional produksi dan peliputan',
+                App\Models\User::ROLE_NEWS => 'Ringkasan editorial dan berita',
+                App\Models\User::ROLE_TVCLUB => 'Operasional TV Club dan Program Acara',
+            } }}</p>
         </div>
         <div class="dashboard-welcome-meta">
             <span class="badge bg-primary"><i class="bi bi-shield-check me-1"></i>{{ $user->role->name ?? 'Admin' }}</span>
@@ -16,6 +21,12 @@
             <i class="bi bi-exclamation-triangle-fill me-2"></i>Data dasbor belum dapat dimuat. Silakan muat ulang halaman.
         </div>
     @else
+        @include('livewire.admin.dashboard.quick-actions')
+        @if(!$user->isSuperAdmin())
+            @include('livewire.admin.dashboard.focused')
+        @else
+        @include('livewire.admin.dashboard.agenda')
+        @include('livewire.admin.dashboard.system')
         <section class="row g-3 mb-3" aria-label="Indikator utama">
             <div class="col-12 col-sm-6 col-xl-3">
                 <article class="dashboard-kpi kpi-program h-100">
@@ -32,7 +43,7 @@
             <div class="col-12 col-sm-6 col-xl-3">
                 <article class="dashboard-kpi kpi-news h-100">
                     <div class="dashboard-kpi-icon"><i class="bi bi-newspaper"></i></div>
-                    <div class="dashboard-kpi-copy"><span>Berita</span><strong>{{ number_format($dashboard['kpis']['news']['total']) }}</strong><small>{{ number_format($dashboard['kpis']['news']['this_month']) }} terbit bulan ini</small></div>
+                    <div class="dashboard-kpi-copy"><span>Berita</span><strong>{{ number_format($dashboard['kpis']['news']['total']) }}</strong><small>{{ number_format($dashboard['kpis']['news']['this_month']) }} dibuat bulan ini</small></div>
                 </article>
             </div>
             <div class="col-12 col-sm-6 col-xl-3">
@@ -41,6 +52,16 @@
                     <div class="dashboard-kpi-copy"><span>Peliputan</span><strong>{{ number_format($dashboard['kpis']['coverage']['pending']) }}</strong><small>{{ $dashboard['kpis']['coverage']['pending'] > 0 ? 'pengajuan menunggu tinjauan' : 'tidak ada antrean tinjauan' }}</small></div>
                 </article>
             </div>
+        </section>
+        <section class="row g-3 mb-3" aria-label="Indikator sistem dan sumber daya">
+            @foreach([
+                ['Anggota aktif', $dashboard['tv_club']['active_members']],
+                ['Agenda mendatang', $dashboard['agenda']['count']],
+                ['Pengunjung hari ini', $dashboard['traffic']['metrics']['today_visitors']],
+                ['Pengguna aktif', $dashboard['system']['active_users']],
+            ] as [$label, $value])
+                <div class="col-12 col-sm-6 col-xl-3"><article class="dashboard-kpi kpi-program h-100"><div class="dashboard-kpi-copy"><span>{{ $label }}</span><strong>{{ number_format($value) }}</strong></div></article></div>
+            @endforeach
         </section>
 
         <div class="row g-3 mb-3 dashboard-priority-row">
@@ -74,7 +95,7 @@
                                 @endphp
                                 <div class="dashboard-list-item">
                                     <div class="list-icon warning"><i class="bi bi-calendar-event"></i></div>
-                                    <div class="list-copy"><strong>{{ $coverage->event_name }}</strong><span>{{ $coverage->name }} · {{ $coverage->event_date->locale('id')->translatedFormat('d F Y') }}</span></div>
+                                    <div class="list-copy"><strong>{{ $coverage->event_name }}</strong><span>{{ $coverage->event_date->locale('id')->translatedFormat('d F Y') }}</span></div>
                                     <div class="list-actions">
                                         @if(!$isClosed && $daysToEvent < 0)<span class="badge bg-danger">Lewat</span>
                                         @elseif(!$isClosed && $daysToEvent === 0)<span class="badge bg-warning">Hari ini</span>
@@ -140,7 +161,6 @@
                         <a href="{{ route('admin.videos.index') }}"><span class="health-icon primary"><i class="bi bi-link-45deg"></i></span><span><strong>{{ $dashboard['health']['videos_without_program'] }} tayangan</strong><small>belum terhubung ke program</small></span><span class="badge bg-primary">Belum terhubung</span></a>
                         <a href="{{ route('admin.programs.index') }}"><span class="health-icon info"><i class="bi bi-image"></i></span><span><strong>{{ $dashboard['health']['programs_without_image'] }} program</strong><small>menggunakan gambar fallback</small></span><span class="badge bg-info">Fallback</span></a>
                         <a href="{{ route('admin.news.index') }}"><span class="health-icon info"><i class="bi bi-newspaper"></i></span><span><strong>{{ $dashboard['health']['news_without_image'] }} berita</strong><small>menggunakan gambar fallback</small></span><span class="badge bg-info">Fallback</span></a>
-                        <a href="{{ route('admin.banners.index') }}"><span class="health-icon secondary"><i class="bi bi-images"></i></span><span><strong>{{ $dashboard['health']['banners_without_image'] }} banner</strong><small>menggunakan gambar fallback</small></span><span class="badge bg-secondary">Fallback</span></a>
                     </div>
                 </section>
             </div>
@@ -152,7 +172,7 @@
                     <div class="card-header dashboard-panel-header"><div><span class="dashboard-section-kicker">Publikasi</span><h2 id="latest-videos-title"><i class="bi bi-camera-video me-2"></i>Tayangan Terbaru</h2></div><a href="{{ route('admin.videos.index') }}" class="btn btn-sm btn-outline-primary">Lihat semua</a></div>
                     <div class="card-body dashboard-list">
                         @forelse($dashboard['latest']['videos'] as $video)
-                            <div class="dashboard-list-item"><img src="{{ $video->thumbnail_url }}" alt="" loading="lazy" class="media-thumb"><div class="list-copy"><strong>{{ $video->title }}</strong><span>{{ $video->program?->name ?? 'Belum terhubung' }} · {{ $video->air_date?->locale('id')->translatedFormat('d F Y') ?? 'Tanggal belum diatur' }}</span></div><a href="{{ route('admin.videos.edit', $video) }}" aria-label="Buka {{ $video->title }}"><i class="bi bi-arrow-right"></i></a></div>
+                            <div class="dashboard-list-item"><img src="{{ $video->thumbnail_url }}" alt="" loading="lazy" class="media-thumb"><div class="list-copy"><strong>{{ $video->title }}</strong><span>{{ $video->program?->name ?? 'Belum terhubung' }} · {{ $video->air_date?->locale('id')->translatedFormat('d F Y') ?? 'Tanggal belum diatur' }}</span></div>@can('update', $video)<a href="{{ route('admin.videos.edit', $video) }}" aria-label="Buka {{ $video->title }}"><i class="bi bi-arrow-right"></i></a>@endcan</div>
                         @empty
                             <div class="dashboard-empty"><i class="bi bi-camera-video-off"></i><span>Belum ada tayangan terbaru.</span></div>
                         @endforelse
@@ -194,18 +214,6 @@
             </div>
         </section>
 
-        <section class="card dashboard-panel quick-actions-panel" aria-labelledby="quick-actions-title">
-            <div class="card-header dashboard-panel-header"><div><span class="dashboard-section-kicker">Langkah berikutnya</span><h2 id="quick-actions-title"><i class="bi bi-lightning-charge me-2"></i>Aksi Cepat</h2></div></div>
-            <div class="card-body quick-actions-grid">
-                @can('create', App\Models\Program::class)<a href="{{ route('admin.programs.create') }}"><i class="bi bi-collection-play"></i><span>Tambah Program</span></a>@endcan
-                @can('create', App\Models\Video::class)<a href="{{ route('admin.videos.create') }}"><i class="bi bi-camera-video"></i><span>Tambah Tayangan</span></a>@endcan
-                @can('create', App\Models\News::class)<a href="{{ route('admin.news.create') }}"><i class="bi bi-pencil-square"></i><span>Tulis Berita</span></a>@endcan
-                @can('create', App\Models\Banner::class)<a href="{{ route('admin.banners.create') }}"><i class="bi bi-images"></i><span>Tambah Banner</span></a>@endcan
-                @can('create', App\Models\TVClubGroup::class)<a href="{{ route('admin.tvclub.groups.create') }}"><i class="bi bi-people"></i><span>Kelola TV Club</span></a>@endcan
-                @can('updateStatus', App\Models\Coverage::class)<a href="{{ route('admin.peliputan.index') }}"><i class="bi bi-camera-reels"></i><span>Tinjau Peliputan</span></a>@endcan
-            </div>
-        </section>
-
         <div id="dashboard-chart-data" data-production-labels='@json($dashboard['production']['labels'])' data-production-videos='@json($dashboard['production']['videos'])' data-production-news='@json($dashboard['production']['news'])' data-traffic-labels='@json($dashboard['traffic']['labels'])' data-traffic-hits='@json($dashboard['traffic']['hits'])' data-traffic-visitors='@json($dashboard['traffic']['visitors'])' hidden></div>
 
         @push('scripts')
@@ -237,5 +245,6 @@
             }
         </script>
         @endscript
+        @endif
     @endunless
 </div>

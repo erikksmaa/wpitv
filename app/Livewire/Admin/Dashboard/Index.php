@@ -4,6 +4,7 @@ namespace App\Livewire\Admin\Dashboard;
 
 use App\Services\AdminDashboardMetrics;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
 use Livewire\Component;
 
@@ -11,11 +12,13 @@ class Index extends Component
 {
     public function render(AdminDashboardMetrics $metrics)
     {
+        Gate::authorize('access-admin');
+        $user = Auth::user();
         $dashboard = [];
         $dashboardAvailable = true;
 
         try {
-            $dashboard = $metrics->get();
+            $dashboard = $metrics->get($user);
         } catch (\Throwable $exception) {
             $dashboardAvailable = false;
             Log::error('Admin dashboard metrics failed to load.', ['exception' => $exception]);
@@ -24,7 +27,7 @@ class Index extends Component
         return view('livewire.admin.dashboard.index', [
             'dashboard' => $dashboard,
             'dashboardAvailable' => $dashboardAvailable,
-            'user' => Auth::user(),
+            'user' => $user,
         ])->layout('layouts.admin', [
             'title' => 'Dasbor Admin - WPiTV',
         ]);

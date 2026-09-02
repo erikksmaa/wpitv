@@ -2,7 +2,6 @@
 
 namespace Tests\Feature\Admin;
 
-use App\Models\Banner;
 use App\Models\News;
 use App\Models\Program;
 use App\Models\Role;
@@ -20,6 +19,15 @@ use Tests\TestCase;
 class TVClubSeederTest extends TestCase
 {
     use DatabaseTransactions;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        // Repository demo seeder expects these program prerequisites; never load application rows.
+        foreach (['NGOPOT', 'PODCAST', 'TODAY', 'AKTUAL', 'INSIGHT', 'HEALING', 'HARMONI'] as $name) {
+            Program::create(['name' => $name, 'slug' => strtolower($name), 'status' => 1]);
+        }
+    }
 
     public function test_seeder_creates_generations_members_groups_and_assignments(): void
     {
@@ -110,12 +118,22 @@ class TVClubSeederTest extends TestCase
 
     public function test_existing_legacy_modules_data_remains_intact(): void
     {
-        $this->assertEquals(21, Program::count());
-        $this->assertEquals(409, Video::count());
-        $this->assertEquals(367, News::count());
-        $this->assertEquals(2, Banner::count());
-        $this->assertGreaterThanOrEqual(35487, UserCounter::count());
-        $this->assertEquals(3, Role::count());
-        $this->assertEquals(3, User::count());
+        $author = $this->contentAuthor();
+        Video::create(['title' => 'Video Uji Lama', 'user_id' => $author->id, 'youtube_id' => 'testVideo01', 'air_date' => '2020-01-01']);
+        News::create(['title' => 'Berita Uji Lama', 'slug' => 'berita-uji-lama', 'content' => 'Konten uji', 'user_id' => $author->id]);
+        // Historical table is retained, but has no application model or CRUD.
+        DB::table('ms_banner')->insert(['title' => 'Banner Uji Lama']);
+        $legacyBanners = DB::table('ms_banner')->orderBy('id')->get()->toArray();
+        UserCounter::create(['ip' => '192.0.2.1', 'tanggal' => '2020-01-01', 'hits' => 1, 'online' => 1]);
+        $models = [Program::class, Video::class, News::class, UserCounter::class, Role::class, User::class];
+        $before = [];
+        foreach ($models as $model) {
+            $before[$model] = $model::orderBy('id')->get()->map->getAttributes()->all();
+        }
+        $this->seed(TVClubSeeder::class);
+        foreach ($models as $model) {
+            $this->assertSame($before[$model], $model::orderBy('id')->get()->map->getAttributes()->all(), $model.' must remain unchanged');
+        }
+        $this->assertEquals($legacyBanners, DB::table('ms_banner')->orderBy('id')->get()->toArray());
     }
 }

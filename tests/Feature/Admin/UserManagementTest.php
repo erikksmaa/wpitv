@@ -33,9 +33,9 @@ class UserManagementTest extends TestCase
     {
         parent::setUp();
 
-        $this->superAdminRole = Role::where('name', 'Super Admin')->first() ?? Role::find(1);
-        $this->prodRole = Role::where('name', 'Admin Production')->first() ?? Role::find(2);
-        $this->newsRole = Role::where('name', 'Admin News')->first() ?? Role::find(3);
+        $this->superAdminRole = Role::where('name', 'Super Admin')->firstOrFail();
+        $this->prodRole = Role::where('name', 'Admin Production')->firstOrFail();
+        $this->newsRole = Role::where('name', 'Admin News')->firstOrFail();
 
         $this->superAdmin = User::factory()->create([
             'username' => 'super_admin_test',
@@ -378,6 +378,51 @@ class UserManagementTest extends TestCase
             ->set('role_id', $this->prodRole->id)
             ->call('save')
             ->assertHasErrors(['status']);
+    }
+
+    public function test_last_active_super_admin_cannot_be_deactivated_or_deleted(): void
+    {
+        User::where('role_id', $this->superAdminRole->id)
+            ->where('id', '!=', $this->superAdmin->id)
+            ->delete();
+
+        Livewire::actingAs($this->superAdmin)
+            ->test(Form::class, ['user' => $this->superAdmin])
+            ->set('status', false)
+            ->call('save')
+            ->assertHasErrors(['status']);
+
+        $this->assertTrue($this->superAdmin->fresh()->status);
+
+        $operator = User::factory()->create([
+            'role_id' => $this->superAdminRole->id,
+            'status' => true,
+        ]);
+        $this->superAdmin->delete();
+
+        Livewire::actingAs($operator)
+            ->test(Index::class)
+            ->call('delete', $operator->id)
+            ->assertSee('Anda tidak dapat menghapus akun Anda sendiri yang sedang aktif.');
+
+        $this->assertDatabaseHas('users', ['id' => $operator->id, 'status' => true]);
+    }
+
+    public function test_one_super_admin_can_be_demoted_when_another_active_super_admin_remains(): void
+    {
+        $other = User::factory()->create([
+            'role_id' => $this->superAdminRole->id,
+            'status' => true,
+        ]);
+
+        Livewire::actingAs($this->superAdmin)
+            ->test(Form::class, ['user' => $other])
+            ->set('role_id', $this->prodRole->id)
+            ->call('save')
+            ->assertHasNoErrors();
+
+        $this->assertSame($this->prodRole->id, $other->fresh()->role_id);
+        $this->assertTrue($this->superAdmin->fresh()->status);
     }
 
     public function test_user_relationship_works(): void

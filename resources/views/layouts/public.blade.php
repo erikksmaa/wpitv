@@ -245,6 +245,8 @@
         </div>
     </footer>
 
+    <livewire:public.visitor-counter />
+
     @livewireScripts
 </body>
 

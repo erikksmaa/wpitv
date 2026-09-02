@@ -15,7 +15,6 @@ class Coverage extends Model
     protected $fillable = [
         'submission_code',
         'name',
-        'email',
         'phone',
         'event_name',
         'event_date',

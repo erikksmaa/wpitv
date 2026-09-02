@@ -1426,8 +1426,9 @@ footer {
 .kpi-news { --kpi-color: #1b8cd1; --kpi-soft: rgba(27, 140, 209, 0.1); }
 .kpi-coverage { --kpi-color: #e7861f; --kpi-soft: rgba(231, 134, 31, 0.11); }
 
-.dashboard-panel .card-body {
-    padding: 0.9rem 1rem;
+/* Match Mazer's header/body specificity so its padding-top: 0 cannot win. */
+.operations-dashboard .dashboard-panel > .card-body {
+    padding: 1rem;
 }
 
 .dashboard-panel-header {

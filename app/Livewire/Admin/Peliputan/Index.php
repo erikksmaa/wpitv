@@ -4,6 +4,7 @@ namespace App\Livewire\Admin\Peliputan;
 
 use App\Models\Coverage;
 use App\Support\CoverageWhatsApp;
+use App\Support\InputBounds;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Validation\Rule;
 use Livewire\Attributes\Layout;
@@ -195,6 +196,8 @@ class Index extends Component
     public function render()
     {
         $this->authorize('viewAny', Coverage::class);
+        $this->search = InputBounds::search($this->search);
+        $this->perPage = InputBounds::perPage($this->perPage);
 
         $allowedSortFields = ['event_date', 'created_at', 'event_name', 'name', 'status'];
         $sortField = in_array($this->sortField, $allowedSortFields, true) ? $this->sortField : 'created_at';
@@ -216,7 +219,6 @@ class Index extends Component
                 $query->where(function ($q) {
                     $q->where('submission_code', 'like', '%'.$this->search.'%')
                         ->orWhere('name', 'like', '%'.$this->search.'%')
-                        ->orWhere('email', 'like', '%'.$this->search.'%')
                         ->orWhere('phone', 'like', '%'.$this->search.'%')
                         ->orWhere('event_name', 'like', '%'.$this->search.'%')
                         ->orWhere('location', 'like', '%'.$this->search.'%')

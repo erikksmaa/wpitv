@@ -4,8 +4,9 @@ namespace App\Livewire\Admin\TVClub\Members;
 
 use App\Models\TVClubGeneration;
 use App\Models\TVClubMember;
+use App\Services\OptimizedImageStorage;
+use App\Support\InputBounds;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
-use Illuminate\Support\Facades\Storage;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Attributes\Url;
@@ -73,7 +74,7 @@ class Index extends Component
         }
     }
 
-    public function delete(int $id): void
+    public function delete(int $id, OptimizedImageStorage $imageStorage): void
     {
         $member = TVClubMember::withCount('groups')->findOrFail($id);
 
@@ -86,13 +87,10 @@ class Index extends Component
             return;
         }
 
-        // Cleanup local photo file if present
-        if ($member->photo && Storage::disk('public')->exists('tvclub/members/'.$member->photo)) {
-            Storage::disk('public')->delete('tvclub/members/'.$member->photo);
-        }
-
+        $oldFilename = $member->photo;
         $memberName = $member->name;
         $member->delete();
+        $imageStorage->deleteOwned(OptimizedImageStorage::TVCLUB_MEMBERS, $oldFilename, 'TVClubMember', $member->id);
 
         session()->flash('success', "Anggota \"{$memberName}\" berhasil dihapus.");
     }
@@ -100,6 +98,8 @@ class Index extends Component
     public function render()
     {
         $this->authorize('viewAny', TVClubMember::class);
+        $this->search = InputBounds::search($this->search);
+        $this->perPage = InputBounds::perPage($this->perPage);
 
         $allowedSortFields = ['name', 'student_number', 'generation', 'status', 'created_at'];
         $sortField = in_array($this->sortField, $allowedSortFields, true) ? $this->sortField : 'name';

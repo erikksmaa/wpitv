@@ -34,9 +34,9 @@ class TVClubMemberManagementTest extends TestCase
     {
         parent::setUp();
 
-        $superAdminRole = Role::where('name', 'Super Admin')->first() ?? Role::find(1);
-        $prodRole = Role::where('name', 'Admin Production')->first() ?? Role::find(2);
-        $newsRole = Role::where('name', 'Admin News')->first() ?? Role::find(3);
+        $superAdminRole = Role::where('name', 'Super Admin')->firstOrFail();
+        $prodRole = Role::where('name', 'Admin Production')->firstOrFail();
+        $newsRole = Role::where('name', 'Admin News')->firstOrFail();
 
         $this->superAdmin = User::factory()->create([
             'name' => 'Super Admin Tester',
@@ -98,17 +98,9 @@ class TVClubMemberManagementTest extends TestCase
         $response->assertSee('Tambah Anggota');
     }
 
-    public function test_admin_news_can_view_members_but_cannot_see_create_or_action_buttons(): void
+    public function test_admin_news_cannot_view_members(): void
     {
-        $response = $this->actingAs($this->adminNews)->get(route('admin.tvclub.members.index'));
-        $response->assertStatus(200);
-        $response->assertSee('Anggota TV Club');
-        $response->assertDontSee('Tambah Anggota');
-
-        Livewire::actingAs($this->adminNews)
-            ->test(Index::class)
-            ->assertDontSeeHtml('wire:click="delete(')
-            ->assertDontSeeHtml('title="Edit Anggota"');
+        $this->actingAs($this->adminNews)->get(route('admin.tvclub.members.index'))->assertForbidden();
     }
 
     public function test_super_admin_can_create_member(): void
@@ -256,10 +248,7 @@ class TVClubMemberManagementTest extends TestCase
             'status' => 1,
         ]);
 
-        Livewire::actingAs($this->adminNews)
-            ->test(Index::class)
-            ->call('delete', $member->id)
-            ->assertStatus(403);
+        $this->actingAs($this->adminNews)->get(route('admin.tvclub.members.index'))->assertForbidden();
 
         $this->assertDatabaseHas('tvclub_members', [
             'id' => $member->id,

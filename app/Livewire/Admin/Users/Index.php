@@ -4,8 +4,10 @@ namespace App\Livewire\Admin\Users;
 
 use App\Models\Role;
 use App\Models\User;
+use App\Support\InputBounds;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Attributes\Url;
@@ -75,39 +77,46 @@ class Index extends Component
 
     public function delete(int $id): void
     {
-        $user = User::with('role')->findOrFail($id);
+        $result = DB::transaction(function () use ($id): array {
+            $superAdminRole = Role::where('name', User::ROLE_SUPER_ADMIN)->lockForUpdate()->firstOrFail();
+            $user = User::with('role')->lockForUpdate()->findOrFail($id);
+            $this->authorize('delete', $user);
 
-        $this->authorize('delete', $user);
+            if ($user->id === Auth::id()) {
+                return [false, 'Anda tidak dapat menghapus akun Anda sendiri yang sedang aktif.'];
+            }
 
-        // Protection 1: Cannot delete currently logged in user
-        if ($user->id === Auth::id()) {
-            session()->flash('error', 'Anda tidak dapat menghapus akun Anda sendiri yang sedang aktif.');
+            if ((int) $user->role_id === (int) $superAdminRole->id && $user->status) {
+                $activeSuperAdmins = User::where('role_id', $superAdminRole->id)
+                    ->where('status', true)
+                    ->lockForUpdate()
+                    ->count();
+
+                if ($activeSuperAdmins <= 1) {
+                    return [false, 'Sistem harus mempertahankan minimal satu Super Admin yang aktif.'];
+                }
+            }
+
+            $userName = $user->name ?: $user->username;
+            $user->delete();
+
+            return [true, $userName];
+        });
+
+        if (! $result[0]) {
+            session()->flash('error', $result[1]);
 
             return;
         }
 
-        // Protection 2: Cannot delete the last active Super Admin
-        if ($user->isSuperAdmin()) {
-            $activeSuperAdminsCount = User::whereHas('role', function ($q) {
-                $q->where('name', 'Super Admin');
-            })->where('status', 1)->count();
-
-            if ($activeSuperAdminsCount <= 1) {
-                session()->flash('error', 'Sistem harus mempertahankan minimal satu Super Admin yang aktif.');
-
-                return;
-            }
-        }
-
-        $userName = $user->name ?: $user->username;
-        $user->delete();
-
-        session()->flash('success', "User \"{$userName}\" berhasil dihapus.");
+        session()->flash('success', "User \"{$result[1]}\" berhasil dihapus.");
     }
 
     public function render()
     {
         $this->authorize('viewAny', User::class);
+        $this->search = InputBounds::search($this->search);
+        $this->perPage = InputBounds::perPage($this->perPage);
 
         $allowedSortFields = ['name', 'username', 'role', 'status', 'created_at'];
         $sortField = in_array($this->sortField, $allowedSortFields, true) ? $this->sortField : 'name';

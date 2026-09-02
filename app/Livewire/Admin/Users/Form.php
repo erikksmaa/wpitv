@@ -5,10 +5,13 @@ namespace App\Livewire\Admin\Users;
 use App\Models\Role;
 use App\Models\User;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
+use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Layout;
+use Livewire\Attributes\Locked;
 use Livewire\Component;
 
 #[Layout('layouts.admin')]
@@ -18,6 +21,7 @@ class Form extends Component
 
     public ?User $user = null;
 
+    #[Locked]
     public ?int $userId = null;
 
     public string $name = '';
@@ -99,25 +103,6 @@ class Form extends Component
 
         $validated = $this->validate();
 
-        // Super Admin Protection: Prevent removing the last active Super Admin
-        if ($this->userId && $this->user->isSuperAdmin()) {
-            $superAdminRole = Role::where('name', 'Super Admin')->first();
-            $isDemotedOrDeactivated = ((int) $this->role_id !== (int) $superAdminRole->id) || (! $this->status);
-
-            if ($isDemotedOrDeactivated) {
-                $otherActiveSuperAdmins = User::where('role_id', $superAdminRole->id)
-                    ->where('status', 1)
-                    ->where('id', '!=', $this->userId)
-                    ->count();
-
-                if ($otherActiveSuperAdmins < 1) {
-                    $this->addError('status', 'Sistem harus mempertahankan minimal satu Super Admin yang aktif.');
-
-                    return null;
-                }
-            }
-        }
-
         $payload = [
             'name' => $validated['name'],
             'username' => $validated['username'],
@@ -130,7 +115,29 @@ class Form extends Component
         }
 
         if ($this->userId) {
-            $this->user->update($payload);
+            DB::transaction(function () use ($payload): void {
+                $superAdminRole = Role::where('name', User::ROLE_SUPER_ADMIN)->lockForUpdate()->firstOrFail();
+                $user = User::lockForUpdate()->findOrFail($this->userId);
+                $removesActiveSuperAdmin = (int) $user->role_id === (int) $superAdminRole->id
+                    && $user->status
+                    && ((int) $payload['role_id'] !== (int) $superAdminRole->id || ! $payload['status']);
+
+                if ($removesActiveSuperAdmin) {
+                    $activeSuperAdmins = User::where('role_id', $superAdminRole->id)
+                        ->where('status', true)
+                        ->lockForUpdate()
+                        ->count();
+
+                    if ($activeSuperAdmins <= 1) {
+                        throw ValidationException::withMessages([
+                            'status' => 'Sistem harus mempertahankan minimal satu Super Admin yang aktif.',
+                        ]);
+                    }
+                }
+
+                $user->update($payload);
+                $this->user = $user->fresh();
+            });
             session()->flash('success', "Akun user \"{$this->name}\" berhasil diperbarui.");
         } else {
             User::create($payload);
@@ -142,6 +149,8 @@ class Form extends Component
 
     public function render()
     {
+        $this->authorize($this->user?->exists ? 'update' : 'create', $this->user?->exists ? $this->user : User::class);
+
         $isEdit = (bool) $this->userId;
         $roles = Role::orderBy('name', 'asc')->get();
 

@@ -26,9 +26,9 @@ class RoleManagementTest extends TestCase
     {
         parent::setUp();
 
-        $superAdminRole = Role::where('name', 'Super Admin')->first() ?? Role::find(1);
-        $prodRole = Role::where('name', 'Admin Production')->first() ?? Role::find(2);
-        $newsRole = Role::where('name', 'Admin News')->first() ?? Role::find(3);
+        $superAdminRole = Role::where('name', 'Super Admin')->firstOrFail();
+        $prodRole = Role::where('name', 'Admin Production')->firstOrFail();
+        $newsRole = Role::where('name', 'Admin News')->firstOrFail();
 
         $this->superAdmin = User::factory()->create([
             'name' => 'Super Admin Tester',
@@ -166,6 +166,28 @@ class RoleManagementTest extends TestCase
             ->assertSee("Role 'Super Admin' adalah role inti sistem dan tidak dapat dihapus.");
 
         $this->assertDatabaseHas('roles', ['id' => $superAdminRole->id]);
+    }
+
+    public function test_all_core_role_names_are_immutable_and_roles_cannot_be_deleted(): void
+    {
+        foreach (Role::CORE_NAMES as $name) {
+            $role = Role::where('name', $name)->firstOrFail();
+
+            Livewire::actingAs($this->superAdmin)
+                ->test(Form::class, ['role' => $role])
+                ->set('name', $name.' Renamed')
+                ->call('save')
+                ->assertHasErrors(['name']);
+
+            $this->assertDatabaseHas('roles', ['id' => $role->id, 'name' => $name]);
+
+            Livewire::actingAs($this->superAdmin)
+                ->test(Index::class)
+                ->call('delete', $role->id)
+                ->assertSee("Role '{$name}' adalah role inti sistem dan tidak dapat dihapus.");
+
+            $this->assertDatabaseHas('roles', ['id' => $role->id, 'name' => $name]);
+        }
     }
 
     public function test_unauthorized_direct_url_returns_403(): void

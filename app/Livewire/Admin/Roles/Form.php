@@ -6,6 +6,7 @@ use App\Models\Role;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Validation\Rule;
 use Livewire\Attributes\Layout;
+use Livewire\Attributes\Locked;
 use Livewire\Component;
 
 #[Layout('layouts.admin')]
@@ -15,6 +16,7 @@ class Form extends Component
 
     public ?Role $role = null;
 
+    #[Locked]
     public ?int $roleId = null;
 
     public string $name = '';
@@ -75,7 +77,14 @@ class Form extends Component
         $validated = $this->validate();
 
         if ($this->roleId) {
-            $this->role->update($validated);
+            $role = Role::findOrFail($this->roleId);
+            if ($role->isCore() && $validated['name'] !== $role->name) {
+                $this->addError('name', 'Nama role inti sistem tidak dapat diubah.');
+
+                return null;
+            }
+
+            $role->update($validated);
             session()->flash('success', "Role \"{$this->name}\" berhasil diperbarui.");
         } else {
             Role::create($validated);
@@ -87,6 +96,8 @@ class Form extends Component
 
     public function render()
     {
+        $this->authorize($this->role?->exists ? 'update' : 'create', $this->role?->exists ? $this->role : Role::class);
+
         $isEdit = (bool) $this->roleId;
 
         return view('livewire.admin.roles.form', [

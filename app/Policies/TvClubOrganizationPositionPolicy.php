@@ -9,12 +9,12 @@ class TvClubOrganizationPositionPolicy
 {
     public function viewAny(User $user): bool
     {
-        return (bool) $user->status;
+        return $this->canManage($user);
     }
 
     public function view(User $user, TvClubOrganizationPosition $position): bool
     {
-        return (bool) $user->status;
+        return $this->canManage($user);
     }
 
     public function create(User $user): bool
@@ -39,6 +39,6 @@ class TvClubOrganizationPositionPolicy
 
     private function canManage(User $user): bool
     {
-        return $user->status && ($user->isSuperAdmin() || $user->isAdminProduction());
+        return $user->canManageProgramsAndTVClub();
     }
 }

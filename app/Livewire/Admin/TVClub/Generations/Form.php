@@ -106,6 +106,8 @@ class Form extends Component
 
     public function render()
     {
+        $this->authorize($this->generation?->exists ? 'update' : 'create', $this->generation?->exists ? $this->generation : TVClubGeneration::class);
+
         $isEdit = (bool) $this->generationId;
 
         return view('livewire.admin.tvclub.generations.form', [

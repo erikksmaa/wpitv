@@ -162,74 +162,7 @@
         </div>
     </section>
 
-    <!-- SOROTAN KAMPUS (CAMPUS SPOTLIGHT) -->
-    <section class="pb-16" aria-label="Sorotan Kampus">
-        <div class="pub-container" data-reveal>
-            <div class="flex items-end justify-between gap-5 flex-wrap mb-6">
-                <div>
-                    <div class="sec-label">Sorotan Kampus</div>
-                    <h2 class="sec-h2">Momen Terbaik & Informasi Utama</h2>
-                </div>
-            </div>
 
-            <div class="spotlight-wrap">
-                <div class="spotlight-track" id="spotlightTrack" role="list">
-                    @forelse($banners as $banner)
-                        <div class="spotlight-slide" role="listitem">
-                            <img src="{{ $banner->image_url }}" alt="{{ $banner->title }}" loading="lazy">
-                            <div class="spotlight-info">
-                                <span
-                                    class="text-xs font-semibold tracking-widest uppercase text-brand-orange mb-2 flex items-center gap-2">
-                                    <span class="inline-block w-3.5 h-0.5 bg-brand-orange rounded-full"></span>
-                                    Sorotan WPiTV
-                                </span>
-                                <div
-                                    class="font-heading font-extrabold text-xl md:text-3xl text-white leading-tight mb-2.5 max-w-xl">
-                                    {{ $banner->title }}
-                                </div>
-                                @if($banner->content)
-                                    <p class="text-sm text-white/75 max-w-md line-clamp-2 mb-5">
-                                        {{ strip_tags($banner->content) }}
-                                    </p>
-                                @endif
-                            </div>
-                        </div>
-                    @empty
-                        <div class="spotlight-slide" role="listitem">
-                            <div class="w-full h-full bg-brand-navy-dk flex items-center justify-center p-8">
-                                <div class="text-center text-white/70">
-                                    <span
-                                        class="text-xs font-semibold tracking-widest uppercase text-brand-orange mb-2 block">WPiTV
-                                        Media</span>
-                                    <h3 class="font-heading font-bold text-2xl text-white mb-2">Brings The World Into You
-                                    </h3>
-                                    <p class="text-sm text-white/60">Ikuti terus kabar dan karya digital kampus Institut
-                                        Widya Pratama.</p>
-                                </div>
-                            </div>
-                        </div>
-                    @endforelse
-                </div>
-
-                @if($banners->count() > 1)
-                    <button class="spot-nav-btn left-4" id="spotPrev" aria-label="Slide sebelumnya" type="button">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
-                            stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                            <path d="M15 18l-6-6 6-6" />
-                        </svg>
-                    </button>
-                    <button class="spot-nav-btn right-4" id="spotNext" aria-label="Slide berikutnya" type="button">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
-                            stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                            <path d="M9 18l6-6-6-6" />
-                        </svg>
-                    </button>
-                    <div class="spot-dots absolute bottom-4 right-5 flex gap-1.5" id="spotDots" role="tablist"
-                        aria-label="Pilih slide"></div>
-                @endif
-            </div>
-        </div>
-    </section>
 
     <!-- PROGRAM ACARA -->
     <section class="pub-section" id="program" aria-labelledby="programH">

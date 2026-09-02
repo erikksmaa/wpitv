@@ -22,8 +22,6 @@ class Form extends Component
 
     public string $name = '';
 
-    public string $email = '';
-
     public string $phone = '';
 
     public string $event_name = '';
@@ -51,7 +49,6 @@ class Form extends Component
             $this->coverageId = $coverage->id;
             $this->submission_code = $coverage->submission_code;
             $this->name = $coverage->name;
-            $this->email = $coverage->email;
             $this->phone = $coverage->phone;
             $this->event_name = $coverage->event_name;
             $this->event_date = $coverage->event_date ? $coverage->event_date->format('Y-m-d') : '';
@@ -79,11 +76,17 @@ class Form extends Component
                 Rule::unique('tr_perliputan', 'submission_code')->ignore($this->coverageId),
             ],
             'name' => ['required', 'string', 'max:100'],
-            'email' => ['required', 'email', 'max:150'],
-            'phone' => ['required', 'string', 'max:25'],
+            'phone' => [
+                'required',
+                'string',
+                'max:25',
+                fn ($attribute, $value, $fail) => app(CoverageWhatsApp::class)->normalizePhone($value)
+                    ? null
+                    : $fail('Nomor Telepon / WhatsApp tidak valid.'),
+            ],
             'event_name' => ['required', 'string', 'max:200'],
             'event_date' => ['required', 'date'],
-            'event_time' => ['nullable', 'string', 'max:8'],
+            'event_time' => ['nullable', 'date_format:H:i'],
             'location' => ['required', 'string', 'max:255'],
             'description' => ['required', 'string'],
             'status' => ['required', 'string', Rule::in(array_keys(Coverage::getStatusOptions()))],
@@ -96,7 +99,6 @@ class Form extends Component
         return [
             'submission_code' => 'Kode Pengajuan',
             'name' => 'Nama Pemohon',
-            'email' => 'Email Pemohon',
             'phone' => 'Nomor Telepon / WhatsApp',
             'event_name' => 'Nama Agenda / Acara',
             'event_date' => 'Tanggal Acara',
@@ -146,6 +148,7 @@ class Form extends Component
 
         $validated = $this->validate();
         $validated['event_time'] = empty($validated['event_time']) ? null : $validated['event_time'];
+        $validated['phone'] = app(CoverageWhatsApp::class)->normalizePhone($validated['phone']);
 
         if ($this->coverageId) {
             $this->coverage->update($validated);
@@ -162,6 +165,8 @@ class Form extends Component
 
     public function render()
     {
+        $this->authorize($this->coverage?->exists ? 'update' : 'create', $this->coverage?->exists ? $this->coverage : Coverage::class);
+
         $isEdit = (bool) $this->coverageId;
 
         return view('livewire.admin.peliputan.form', [
