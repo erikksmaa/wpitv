@@ -46,11 +46,11 @@ final class TestingDatabaseGuard
     ): void {
         if (
             $environment !== 'testing'
-            || $database !== 'wpitv_testing'
+            || $database !== 'wpitv_rebuild_testing'
             || $database === $sourceDatabase
             || $configurationCached
         ) {
-            throw new RuntimeException('TEST SAFETY ABORT: testing requires uncached configuration and the approved wpitv_testing database.');
+            throw new RuntimeException('TEST SAFETY ABORT: testing requires uncached configuration and the approved wpitv_rebuild_testing database.');
         }
     }
 }

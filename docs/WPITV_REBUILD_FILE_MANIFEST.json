@@ -1,0 +1,743 @@
+[
+  {
+    "file": "app/Exceptions/LiveStreamOperationException.php",
+    "archive_source": "app/Exceptions/LiveStreamOperationException.php",
+    "transformation_lines": 0,
+    "module": "live"
+  },
+  {
+    "file": "app/Livewire/Admin/Agenda/Form.php",
+    "archive_source": "app/Livewire/Admin/Agenda/Form.php",
+    "transformation_lines": 0,
+    "module": "live"
+  },
+  {
+    "file": "app/Livewire/Admin/Agenda/Index.php",
+    "archive_source": "app/Livewire/Admin/Agenda/Index.php",
+    "transformation_lines": 0,
+    "module": "live"
+  },
+  {
+    "file": "app/Livewire/Admin/LiveStreams/Form.php",
+    "archive_source": "app/Livewire/Admin/LiveStreams/Form.php",
+    "transformation_lines": 0,
+    "module": "live"
+  },
+  {
+    "file": "app/Livewire/Admin/LiveStreams/Index.php",
+    "archive_source": "app/Livewire/Admin/LiveStreams/Index.php",
+    "transformation_lines": 0,
+    "module": "live"
+  },
+  {
+    "file": "app/Livewire/Admin/LiveStreams/Show.php",
+    "archive_source": "app/Livewire/Admin/LiveStreams/Show.php",
+    "transformation_lines": 0,
+    "module": "live"
+  },
+  {
+    "file": "app/Livewire/Concerns/HandlesLiveStreamErrors.php",
+    "archive_source": "app/Livewire/Concerns/HandlesLiveStreamErrors.php",
+    "transformation_lines": 0,
+    "module": "live"
+  },
+  {
+    "file": "app/Livewire/Concerns/InteractsWithLiveStreams.php",
+    "archive_source": "app/Livewire/Concerns/InteractsWithLiveStreams.php",
+    "transformation_lines": 0,
+    "module": "live"
+  },
+  {
+    "file": "app/Livewire/Public/Agenda/Index.php",
+    "archive_source": "app/Livewire/Public/Agenda/Index.php",
+    "transformation_lines": 0,
+    "module": "live"
+  },
+  {
+    "file": "app/Livewire/Public/Home.php",
+    "archive_source": "app/Livewire/Public/Home.php",
+    "transformation_lines": 0,
+    "module": "live"
+  },
+  {
+    "file": "app/Livewire/Public/LiveStreams/Index.php",
+    "archive_source": "app/Livewire/Public/LiveStreams/Index.php",
+    "transformation_lines": 0,
+    "module": "live"
+  },
+  {
+    "file": "app/Livewire/Public/LiveStreams/Show.php",
+    "archive_source": "app/Livewire/Public/LiveStreams/Show.php",
+    "transformation_lines": 0,
+    "module": "live"
+  },
+  {
+    "file": "app/Livewire/Public/Programs/Show.php",
+    "archive_source": "app/Livewire/Public/Programs/Show.php",
+    "transformation_lines": 0,
+    "module": "live"
+  },
+  {
+    "file": "app/Models/LiveStream.php",
+    "archive_source": "app/Models/LiveStream.php",
+    "transformation_lines": 0,
+    "module": "live"
+  },
+  {
+    "file": "app/Models/LiveStreamEvent.php",
+    "archive_source": "app/Models/LiveStreamEvent.php",
+    "transformation_lines": 0,
+    "module": "live"
+  },
+  {
+    "file": "app/Models/WpitvAgenda.php",
+    "archive_source": "app/Models/WpitvAgenda.php",
+    "transformation_lines": 0,
+    "module": "live"
+  },
+  {
+    "file": "app/Policies/LiveStreamPolicy.php",
+    "archive_source": "app/Policies/LiveStreamPolicy.php",
+    "transformation_lines": 0,
+    "module": "live"
+  },
+  {
+    "file": "app/Services/LiveDashboardMetrics.php",
+    "archive_source": "app/Services/LiveDashboardMetrics.php",
+    "transformation_lines": 0,
+    "module": "live"
+  },
+  {
+    "file": "app/Services/LiveStreamHighlights.php",
+    "archive_source": "app/Services/LiveStreamHighlights.php",
+    "transformation_lines": 0,
+    "module": "live"
+  },
+  {
+    "file": "app/Services/LiveStreamLifecycle.php",
+    "archive_source": "app/Services/LiveStreamLifecycle.php",
+    "transformation_lines": 0,
+    "module": "live"
+  },
+  {
+    "file": "app/Support/AgendaLiveGuard.php",
+    "archive_source": "app/Support/AgendaLiveGuard.php",
+    "transformation_lines": 0,
+    "module": "live"
+  },
+  {
+    "file": "app/Support/LiveStreamAgendaChanges.php",
+    "archive_source": "app/Support/LiveStreamAgendaChanges.php",
+    "transformation_lines": 0,
+    "module": "live"
+  },
+  {
+    "file": "app/Support/LiveStreamErrors.php",
+    "archive_source": "app/Support/LiveStreamErrors.php",
+    "transformation_lines": 0,
+    "module": "live"
+  },
+  {
+    "file": "app/Support/LiveStreamFilters.php",
+    "archive_source": "app/Support/LiveStreamFilters.php",
+    "transformation_lines": 0,
+    "module": "live"
+  },
+  {
+    "file": "app/Support/LiveStreamSchedule.php",
+    "archive_source": "app/Support/LiveStreamSchedule.php",
+    "transformation_lines": 0,
+    "module": "live"
+  },
+  {
+    "file": "app/Support/LiveStreamState.php",
+    "archive_source": "app/Support/LiveStreamState.php",
+    "transformation_lines": 0,
+    "module": "live"
+  },
+  {
+    "file": "app/Support/PublicLiveStreams.php",
+    "archive_source": "app/Support/PublicLiveStreams.php",
+    "transformation_lines": 0,
+    "module": "live"
+  },
+  {
+    "file": "app/Support/YouTubeVideoId.php",
+    "archive_source": "app/Support/YouTubeVideoId.php",
+    "transformation_lines": 0,
+    "module": "live"
+  },
+  {
+    "file": "database/migrations/2026_11_09_000001_create_live_streams_table.php",
+    "archive_source": "database/migrations/2026_11_09_000001_create_live_streams_table.php",
+    "transformation_lines": 0,
+    "module": "live"
+  },
+  {
+    "file": "database/migrations/2026_11_09_000002_create_live_stream_events_table.php",
+    "archive_source": "database/migrations/2026_11_09_000002_create_live_stream_events_table.php",
+    "transformation_lines": 0,
+    "module": "live"
+  },
+  {
+    "file": "database/migrations/2026_11_18_000001_support_manual_live_streams.php",
+    "archive_source": "database/migrations/2026_11_18_000001_support_manual_live_streams.php",
+    "transformation_lines": 0,
+    "module": "live"
+  },
+  {
+    "file": "database/migrations/2026_11_18_000002_allow_manual_live_audit_event.php",
+    "archive_source": "database/migrations/2026_11_18_000002_allow_manual_live_audit_event.php",
+    "transformation_lines": 0,
+    "module": "live"
+  },
+  {
+    "file": "resources/views/livewire/admin/agenda/form.blade.php",
+    "archive_source": "resources/views/livewire/admin/agenda/form.blade.php",
+    "transformation_lines": 0,
+    "module": "live"
+  },
+  {
+    "file": "resources/views/livewire/admin/agenda/index.blade.php",
+    "archive_source": "resources/views/livewire/admin/agenda/index.blade.php",
+    "transformation_lines": 0,
+    "module": "live"
+  },
+  {
+    "file": "resources/views/livewire/admin/dashboard/live.blade.php",
+    "archive_source": "resources/views/livewire/admin/dashboard/live.blade.php",
+    "transformation_lines": 0,
+    "module": "live"
+  },
+  {
+    "file": "resources/views/livewire/admin/live-streams/feedback.blade.php",
+    "archive_source": "resources/views/livewire/admin/live-streams/feedback.blade.php",
+    "transformation_lines": 0,
+    "module": "live"
+  },
+  {
+    "file": "resources/views/livewire/admin/live-streams/form.blade.php",
+    "archive_source": "resources/views/livewire/admin/live-streams/form.blade.php",
+    "transformation_lines": 0,
+    "module": "live"
+  },
+  {
+    "file": "resources/views/livewire/admin/live-streams/index.blade.php",
+    "archive_source": "resources/views/livewire/admin/live-streams/index.blade.php",
+    "transformation_lines": 0,
+    "module": "live"
+  },
+  {
+    "file": "resources/views/livewire/admin/live-streams/show.blade.php",
+    "archive_source": "resources/views/livewire/admin/live-streams/show.blade.php",
+    "transformation_lines": 0,
+    "module": "live"
+  },
+  {
+    "file": "resources/views/livewire/public/agenda/index.blade.php",
+    "archive_source": "resources/views/livewire/public/agenda/index.blade.php",
+    "transformation_lines": 0,
+    "module": "live"
+  },
+  {
+    "file": "resources/views/livewire/public/home.blade.php",
+    "archive_source": "resources/views/livewire/public/home.blade.php",
+    "transformation_lines": 0,
+    "module": "live"
+  },
+  {
+    "file": "resources/views/livewire/public/live-streams/highlights.blade.php",
+    "archive_source": "resources/views/livewire/public/live-streams/highlights.blade.php",
+    "transformation_lines": 0,
+    "module": "live"
+  },
+  {
+    "file": "resources/views/livewire/public/live-streams/index.blade.php",
+    "archive_source": "resources/views/livewire/public/live-streams/index.blade.php",
+    "transformation_lines": 0,
+    "module": "live"
+  },
+  {
+    "file": "resources/views/livewire/public/live-streams/show.blade.php",
+    "archive_source": "resources/views/livewire/public/live-streams/show.blade.php",
+    "transformation_lines": 0,
+    "module": "live"
+  },
+  {
+    "file": "resources/views/livewire/public/programs/show.blade.php",
+    "archive_source": "resources/views/livewire/public/programs/show.blade.php",
+    "transformation_lines": 0,
+    "module": "live"
+  },
+  {
+    "file": "tests/Browser/LiveFinalBrowserTest.php",
+    "archive_source": "tests/Browser/LiveFinalBrowserTest.php",
+    "module": "live"
+  },
+  {
+    "file": "tests/Browser/LiveHighlightsBrowserTest.php",
+    "archive_source": "tests/Browser/LiveHighlightsBrowserTest.php",
+    "module": "live"
+  },
+  {
+    "file": "tests/Browser/LiveStreamingBrowserTest.php",
+    "archive_source": "tests/Browser/LiveStreamingBrowserTest.php",
+    "transformation_lines": 35,
+    "module": "live"
+  },
+  {
+    "file": "tests/Browser/PublicLiveStreamingBrowserTest.php",
+    "archive_source": "tests/Browser/PublicLiveStreamingBrowserTest.php",
+    "transformation_lines": 14,
+    "module": "live"
+  },
+  {
+    "file": "tests/Concurrency/Live/LiveConcurrencyTest.php",
+    "archive_source": "tests/Concurrency/Live/LiveConcurrencyTest.php",
+    "transformation_lines": 0,
+    "module": "live"
+  },
+  {
+    "file": "tests/Concurrency/Live/worker.php",
+    "archive_source": "tests/Concurrency/Live/worker.php",
+    "transformation_lines": 29,
+    "module": "live"
+  },
+  {
+    "file": "tests/Feature/Admin/LiveStreamingManagementTest.php",
+    "archive_source": "tests/Feature/Admin/LiveStreamingManagementTest.php",
+    "transformation_lines": 22,
+    "module": "live"
+  },
+  {
+    "file": "tests/Feature/Public/LiveHighlightsTest.php",
+    "archive_source": "tests/Feature/Public/LiveHighlightsTest.php",
+    "transformation_lines": 0,
+    "module": "live"
+  },
+  {
+    "file": "tests/Feature/Public/LiveStreamingPublicTest.php",
+    "archive_source": "tests/Feature/Public/LiveStreamingPublicTest.php",
+    "transformation_lines": 11,
+    "module": "live"
+  },
+  {
+    "file": "tests/Support/LiveScenarioTestCase.php",
+    "archive_source": "tests/Support/LiveScenarioTestCase.php",
+    "transformation_lines": 77,
+    "module": "live"
+  },
+  {
+    "file": "tests/Unit/AgendaLiveIntegrationTest.php",
+    "archive_source": "tests/Unit/AgendaLiveIntegrationTest.php",
+    "transformation_lines": 0,
+    "module": "live"
+  },
+  {
+    "file": "tests/Unit/LiveStreamingAdminTest.php",
+    "archive_source": "tests/Unit/LiveStreamingAdminTest.php",
+    "transformation_lines": 19,
+    "module": "live"
+  },
+  {
+    "file": "tests/Unit/LiveStreamingFoundationTest.php",
+    "archive_source": "tests/Unit/LiveStreamingFoundationTest.php",
+    "transformation_lines": 0,
+    "module": "live"
+  },
+  {
+    "file": "app/Exceptions/MonthlyActivityException.php",
+    "archive_source": "app/Exceptions/MonthlyActivityException.php",
+    "transformation_lines": 0,
+    "module": "monthly"
+  },
+  {
+    "file": "app/Http/Controllers/MonthlyActivityAttachmentController.php",
+    "archive_source": "app/Http/Controllers/MonthlyActivityAttachmentController.php",
+    "transformation_lines": 0,
+    "module": "monthly"
+  },
+  {
+    "file": "app/Http/Controllers/MonthlyActivityDocumentController.php",
+    "archive_source": "app/Http/Controllers/MonthlyActivityDocumentController.php",
+    "transformation_lines": 20,
+    "module": "monthly"
+  },
+  {
+    "file": "app/Livewire/Admin/MonthlyReports/Index.php",
+    "archive_source": "app/Livewire/Admin/MonthlyReports/Index.php",
+    "transformation_lines": 0,
+    "module": "monthly"
+  },
+  {
+    "file": "app/Livewire/Admin/MonthlyReports/Show.php",
+    "archive_source": "app/Livewire/Admin/MonthlyReports/Show.php",
+    "transformation_lines": 0,
+    "module": "monthly"
+  },
+  {
+    "file": "app/Models/Concerns/MonthlyActivityHistory.php",
+    "archive_source": "app/Models/Concerns/MonthlyActivityHistory.php",
+    "transformation_lines": 0,
+    "module": "monthly"
+  },
+  {
+    "file": "app/Models/Concerns/MonthlyActivityRecord.php",
+    "archive_source": "app/Models/Concerns/MonthlyActivityRecord.php",
+    "transformation_lines": 0,
+    "module": "monthly"
+  },
+  {
+    "file": "app/Models/MonthlyActivityAttachment.php",
+    "archive_source": "app/Models/MonthlyActivityAttachment.php",
+    "transformation_lines": 0,
+    "module": "monthly"
+  },
+  {
+    "file": "app/Models/MonthlyActivityEvent.php",
+    "archive_source": "app/Models/MonthlyActivityEvent.php",
+    "transformation_lines": 0,
+    "module": "monthly"
+  },
+  {
+    "file": "app/Models/MonthlyActivityItem.php",
+    "archive_source": "app/Models/MonthlyActivityItem.php",
+    "transformation_lines": 0,
+    "module": "monthly"
+  },
+  {
+    "file": "app/Models/MonthlyActivityReport.php",
+    "archive_source": "app/Models/MonthlyActivityReport.php",
+    "transformation_lines": 0,
+    "module": "monthly"
+  },
+  {
+    "file": "app/Models/MonthlyActivityVersion.php",
+    "archive_source": "app/Models/MonthlyActivityVersion.php",
+    "transformation_lines": 0,
+    "module": "monthly"
+  },
+  {
+    "file": "app/Policies/MonthlyActivityReportPolicy.php",
+    "archive_source": "app/Policies/MonthlyActivityReportPolicy.php",
+    "transformation_lines": 0,
+    "module": "monthly"
+  },
+  {
+    "file": "app/Services/MonthlyActivityCandidates.php",
+    "archive_source": "app/Services/MonthlyActivityCandidates.php",
+    "transformation_lines": 0,
+    "module": "monthly"
+  },
+  {
+    "file": "app/Services/MonthlyActivityDashboard.php",
+    "archive_source": "app/Services/MonthlyActivityDashboard.php",
+    "transformation_lines": 0,
+    "module": "monthly"
+  },
+  {
+    "file": "app/Services/MonthlyActivityFiles.php",
+    "archive_source": "app/Services/MonthlyActivityFiles.php",
+    "transformation_lines": 0,
+    "module": "monthly"
+  },
+  {
+    "file": "app/Services/MonthlyActivityLifecycle.php",
+    "archive_source": "app/Services/MonthlyActivityLifecycle.php",
+    "transformation_lines": 0,
+    "module": "monthly"
+  },
+  {
+    "file": "app/Support/CsvCell.php",
+    "archive_source": null,
+    "transformation_lines": 17,
+    "module": "monthly"
+  },
+  {
+    "file": "app/Support/MonthlyActivityRules.php",
+    "archive_source": "app/Support/MonthlyActivityRules.php",
+    "transformation_lines": 0,
+    "module": "monthly"
+  },
+  {
+    "file": "database/migrations/2026_11_11_000001_create_monthly_activity_reports_table.php",
+    "archive_source": "database/migrations/2026_11_11_000001_create_monthly_activity_reports_table.php",
+    "transformation_lines": 0,
+    "module": "monthly"
+  },
+  {
+    "file": "database/migrations/2026_11_11_000002_create_monthly_activity_items_table.php",
+    "archive_source": "database/migrations/2026_11_11_000002_create_monthly_activity_items_table.php",
+    "transformation_lines": 0,
+    "module": "monthly"
+  },
+  {
+    "file": "database/migrations/2026_11_11_000003_create_monthly_activity_attachments_table.php",
+    "archive_source": "database/migrations/2026_11_11_000003_create_monthly_activity_attachments_table.php",
+    "transformation_lines": 0,
+    "module": "monthly"
+  },
+  {
+    "file": "database/migrations/2026_11_11_000004_create_monthly_activity_versions_table.php",
+    "archive_source": "database/migrations/2026_11_11_000004_create_monthly_activity_versions_table.php",
+    "transformation_lines": 0,
+    "module": "monthly"
+  },
+  {
+    "file": "database/migrations/2026_11_11_000005_create_monthly_activity_events_table.php",
+    "archive_source": "database/migrations/2026_11_11_000005_create_monthly_activity_events_table.php",
+    "transformation_lines": 0,
+    "module": "monthly"
+  },
+  {
+    "file": "public/css/monthly-report-print.css",
+    "archive_source": "public/css/monthly-report-print.css",
+    "transformation_lines": 0,
+    "module": "monthly"
+  },
+  {
+    "file": "resources/views/admin/monthly-report-print.blade.php",
+    "archive_source": "resources/views/admin/monthly-report-print.blade.php",
+    "transformation_lines": 0,
+    "module": "monthly"
+  },
+  {
+    "file": "resources/views/livewire/admin/dashboard/monthly.blade.php",
+    "archive_source": "resources/views/livewire/admin/dashboard/monthly.blade.php",
+    "transformation_lines": 0,
+    "module": "monthly"
+  },
+  {
+    "file": "resources/views/livewire/admin/monthly-reports/history.blade.php",
+    "archive_source": "resources/views/livewire/admin/monthly-reports/history.blade.php",
+    "transformation_lines": 0,
+    "module": "monthly"
+  },
+  {
+    "file": "resources/views/livewire/admin/monthly-reports/index.blade.php",
+    "archive_source": "resources/views/livewire/admin/monthly-reports/index.blade.php",
+    "transformation_lines": 0,
+    "module": "monthly"
+  },
+  {
+    "file": "resources/views/livewire/admin/monthly-reports/show.blade.php",
+    "archive_source": "resources/views/livewire/admin/monthly-reports/show.blade.php",
+    "transformation_lines": 0,
+    "module": "monthly"
+  },
+  {
+    "file": "resources/views/livewire/admin/monthly-reports/upload.blade.php",
+    "archive_source": "resources/views/livewire/admin/monthly-reports/upload.blade.php",
+    "transformation_lines": 0,
+    "module": "monthly"
+  },
+  {
+    "file": "tests/Browser/MonthlyActivityBrowserTest.php",
+    "archive_source": "tests/Browser/MonthlyActivityBrowserTest.php",
+    "transformation_lines": 34,
+    "module": "monthly"
+  },
+  {
+    "file": "tests/Concurrency/Monthly/worker.php",
+    "archive_source": "tests/Concurrency/Monthly/worker.php",
+    "transformation_lines": 20,
+    "module": "monthly"
+  },
+  {
+    "file": "tests/Integration/MonthlyActivityAttachmentTest.php",
+    "archive_source": "tests/Integration/MonthlyActivityAttachmentTest.php",
+    "transformation_lines": 27,
+    "module": "monthly"
+  },
+  {
+    "file": "tests/Integration/MonthlyActivityEditorTest.php",
+    "archive_source": "tests/Integration/MonthlyActivityEditorTest.php",
+    "transformation_lines": 29,
+    "module": "monthly"
+  },
+  {
+    "file": "tests/Integration/MonthlyActivityIntegrationTest.php",
+    "archive_source": "tests/Integration/MonthlyActivityIntegrationTest.php",
+    "transformation_lines": 36,
+    "module": "monthly"
+  },
+  {
+    "file": "tests/Unit/MonthlyActivityFoundationTest.php",
+    "archive_source": "tests/Unit/MonthlyActivityFoundationTest.php",
+    "transformation_lines": 0,
+    "module": "monthly"
+  },
+  {
+    "file": "app/Casts/UtcDateTime.php",
+    "archive_source": "app/Casts/UtcDateTime.php",
+    "transformation_lines": 0,
+    "module": "shared"
+  },
+  {
+    "file": "app/Models/Concerns/HasUtcTimestamps.php",
+    "archive_source": "app/Models/Concerns/HasUtcTimestamps.php",
+    "transformation_lines": 0,
+    "module": "shared"
+  },
+  {
+    "file": "app/Models/Program.php",
+    "archive_source": "app/Models/Program.php",
+    "transformation_lines": 0,
+    "module": "shared"
+  },
+  {
+    "file": "app/Models/Video.php",
+    "archive_source": "app/Models/Video.php",
+    "transformation_lines": 0,
+    "module": "shared"
+  },
+  {
+    "file": "app/Providers/AppServiceProvider.php",
+    "archive_source": "app/Providers/AppServiceProvider.php",
+    "transformation_lines": 0,
+    "module": "shared"
+  },
+  {
+    "file": "app/Services/AdminDashboardMetrics.php",
+    "archive_source": "app/Services/AdminDashboardMetrics.php",
+    "transformation_lines": 88,
+    "module": "shared"
+  },
+  {
+    "file": "app/Support/AdminNavigation.php",
+    "archive_source": "app/Support/AdminNavigation.php",
+    "transformation_lines": 69,
+    "module": "shared"
+  },
+  {
+    "file": "app/Support/TestingDatabaseGuard.php",
+    "archive_source": "app/Support/TestingDatabaseGuard.php",
+    "transformation_lines": 16,
+    "module": "shared"
+  },
+  {
+    "file": "bootstrap/app.php",
+    "archive_source": "bootstrap/app.php",
+    "transformation_lines": 26,
+    "module": "shared"
+  },
+  {
+    "file": "composer.lock",
+    "archive_source": "composer.lock",
+    "transformation_lines": 523,
+    "module": "shared"
+  },
+  {
+    "file": "public/js/admin-theme-init.js",
+    "archive_source": "public/js/admin-theme-init.js",
+    "transformation_lines": 0,
+    "module": "shared"
+  },
+  {
+    "file": "resources/css/admin.css",
+    "archive_source": "resources/css/admin.css",
+    "transformation_lines": 0,
+    "module": "shared"
+  },
+  {
+    "file": "resources/css/public.css",
+    "archive_source": "resources/css/public.css",
+    "transformation_lines": 0,
+    "module": "shared"
+  },
+  {
+    "file": "resources/js/admin.js",
+    "archive_source": "resources/js/admin.js",
+    "transformation_lines": 0,
+    "module": "shared"
+  },
+  {
+    "file": "resources/views/layouts/admin.blade.php",
+    "archive_source": "resources/views/layouts/admin.blade.php",
+    "transformation_lines": 0,
+    "module": "shared"
+  },
+  {
+    "file": "resources/views/layouts/public.blade.php",
+    "archive_source": "resources/views/layouts/public.blade.php",
+    "transformation_lines": 0,
+    "module": "shared"
+  },
+  {
+    "file": "resources/views/livewire/admin/dashboard/index.blade.php",
+    "archive_source": "resources/views/livewire/admin/dashboard/index.blade.php",
+    "transformation_lines": 54,
+    "module": "shared"
+  },
+  {
+    "file": "routes/web.php",
+    "archive_source": "routes/web.php",
+    "transformation_lines": 72,
+    "module": "shared"
+  },
+  {
+    "file": "tests/Browser/ReleaseBrowserTest.php",
+    "archive_source": "tests/Browser/EquipmentBrowserTest.php",
+    "transformation_lines": 52,
+    "module": "shared"
+  },
+  {
+    "file": "tests/Browser/ReleaseQaSession.php",
+    "archive_source": "tests/Browser/ReleaseQaSession.php",
+    "module": "shared"
+  },
+  {
+    "file": "tests/Browser/router.php",
+    "archive_source": "tests/Browser/router.php",
+    "transformation_lines": 72,
+    "module": "shared"
+  },
+  {
+    "file": "tests/Feature/Admin/DashboardTest.php",
+    "archive_source": "tests/Feature/Admin/DashboardTest.php",
+    "transformation_lines": 0,
+    "module": "shared"
+  },
+  {
+    "file": "tests/Feature/TestEnvironmentTest.php",
+    "archive_source": "tests/Feature/TestEnvironmentTest.php",
+    "transformation_lines": 11,
+    "module": "shared"
+  },
+  {
+    "file": "tests/ReleaseConcurrencyTestCase.php",
+    "archive_source": "tests/EquipmentConcurrencyTestCase.php",
+    "transformation_lines": 184,
+    "module": "shared"
+  },
+  {
+    "file": "tests/Support/ReleaseConcurrencyGuard.php",
+    "archive_source": "tests/Support/EquipmentConcurrencyGuard.php",
+    "transformation_lines": 88,
+    "module": "shared"
+  },
+  {
+    "file": "tests/Support/ReleaseScenarioTestCase.php",
+    "archive_source": "tests/Support/EquipmentScenarioTestCase.php",
+    "transformation_lines": 326,
+    "module": "shared"
+  },
+  {
+    "file": "tests/Support/TestEnvironment.php",
+    "archive_source": "tests/Support/TestEnvironment.php",
+    "module": "shared",
+    "reason": "Windows shutdown cleanup must not append HTTP 500 after successful rendering"
+  },
+  {
+    "file": "tests/Unit/TestEnvironmentGuardTest.php",
+    "archive_source": "tests/Unit/TestEnvironmentGuardTest.php",
+    "transformation_lines": 34,
+    "module": "shared"
+  },
+  {
+    "file": "tests/Unit/admin-theme.test.cjs",
+    "archive_source": "tests/Unit/admin-theme.test.cjs",
+    "transformation_lines": 0,
+    "module": "shared"
+  }
+]

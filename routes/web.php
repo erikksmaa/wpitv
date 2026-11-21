@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\MonthlyActivityAttachmentController;
+use App\Http\Controllers\MonthlyActivityDocumentController;
 use App\Livewire\Admin\Dashboard\Index as AdminDashboard;
 use App\Livewire\Admin\Programs\Form;
 use App\Livewire\Admin\Programs\Index;
@@ -35,6 +37,8 @@ Route::get('/peliputan', App\Livewire\Public\Peliputan\Index::class)->name('peli
 Route::get('/peliputan/ajukan', Create::class)->name('peliputan.create');
 Route::get('/peliputan/berhasil/{code}', Success::class)->middleware('throttle:15,1')->name('peliputan.success');
 Route::get('/peliputan/status', Status::class)->name('peliputan.status');
+Route::get('/live', App\Livewire\Public\LiveStreams\Index::class)->name('live.index');
+Route::get('/live/{liveStream}', App\Livewire\Public\LiveStreams\Show::class)->whereNumber('liveStream')->name('live.show');
 Route::get('/agenda', App\Livewire\Public\Agenda\Index::class)->name('agenda.index');
 
 /*
@@ -43,8 +47,22 @@ Route::get('/agenda', App\Livewire\Public\Agenda\Index::class)->name('agenda.ind
 |--------------------------------------------------------------------------
 */
 Route::prefix('admin')->middleware(['auth', 'session.valid', 'active', 'role:'.implode(',', User::ADMIN_ROLES)])->group(function () {
+    Route::get('/monthly-reports', App\Livewire\Admin\MonthlyReports\Index::class)->name('admin.monthly-reports.index');
+    Route::get('/monthly-reports/{reportId}', App\Livewire\Admin\MonthlyReports\Show::class)->whereNumber('reportId')->name('admin.monthly-reports.show');
+    Route::post('/monthly-reports/{report}/csv', [MonthlyActivityDocumentController::class, 'csv'])->whereNumber('report')->name('admin.monthly-reports.csv');
+    Route::get('/monthly-reports/{report}/print', [MonthlyActivityDocumentController::class, 'print'])->whereNumber('report')->name('admin.monthly-reports.print');
+    Route::post('/monthly-reports/{report}/attachments', [MonthlyActivityAttachmentController::class, 'store'])->whereNumber('report')->name('admin.monthly-reports.attachments.store');
+    Route::get('/monthly-reports/{report}/attachments/{attachment}', [MonthlyActivityAttachmentController::class, 'download'])->whereNumber(['report', 'attachment'])->name('admin.monthly-reports.attachments.download');
+    Route::get('/monthly-reports/{report}/versions/{revision}/attachments/{attachment}', [MonthlyActivityAttachmentController::class, 'historical'])->whereNumber(['report', 'revision', 'attachment'])->name('admin.monthly-reports.attachments.historical');
     Route::get('/', AdminDashboard::class)->name('admin.index');
     Route::get('/dashboard', AdminDashboard::class)->name('admin.dashboard');
+
+    Route::middleware('role:'.User::ROLE_SUPER_ADMIN.','.User::ROLE_PRODUCTION)->group(function () {
+        Route::get('/live-streams', App\Livewire\Admin\LiveStreams\Index::class)->name('admin.live-streams.index');
+        Route::get('/live-streams/create', App\Livewire\Admin\LiveStreams\Form::class)->name('admin.live-streams.create');
+        Route::get('/live-streams/{streamId}/edit', App\Livewire\Admin\LiveStreams\Form::class)->whereNumber('streamId')->name('admin.live-streams.edit');
+        Route::get('/live-streams/{streamId}', App\Livewire\Admin\LiveStreams\Show::class)->whereNumber('streamId')->name('admin.live-streams.show');
+    });
 
     // Program Management
     Route::get('/programs', Index::class)->name('admin.programs.index');

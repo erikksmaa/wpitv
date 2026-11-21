@@ -6,6 +6,7 @@ use App\Http\Middleware\EnsureAdminSessionIsValid;
 use App\Http\Middleware\EnsureUserHasRole;
 use App\Http\Middleware\EnsureUserIsActive;
 use App\Models\User;
+use App\Support\AgendaLiveGuard;
 use App\Support\TestingDatabaseGuard;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\URL;
@@ -19,7 +20,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->scoped(AgendaLiveGuard::class);
     }
 
     /**

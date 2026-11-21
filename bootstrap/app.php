@@ -1,10 +1,12 @@
 <?php
 
+use App\Exceptions\MonthlyActivityException;
 use App\Http\Middleware\AddSecurityHeaders;
 use App\Http\Middleware\EnsureAdminSessionIsValid;
 use App\Http\Middleware\EnsureRecentPasswordConfirmation;
 use App\Http\Middleware\EnsureUserHasRole;
 use App\Http\Middleware\EnsureUserIsActive;
+use App\Support\LiveStreamErrors;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -28,5 +30,13 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
-        //
+        // Scope sanitization to Live and monthly admin paths before reporting
+        // and rendering, including debug responses and shared Livewire requests.
+        $exceptions->map(function (Throwable $exception): Throwable {
+            $request = app()->bound('request') ? request() : null;
+
+            $exception = MonthlyActivityException::forHandler($exception, $request);
+
+            return LiveStreamErrors::forHandler($exception, $request);
+        });
     })->create();

@@ -41,6 +41,17 @@ class AdminDashboardMetrics
                     ->orderBy('agenda_date')->orderBy('start_time')->limit(5)
                     ->get(['id', 'title', 'agenda_date', 'start_time', 'end_time', 'type', 'visibility']),
             ];
+
+        }
+
+        $live = app(LiveDashboardMetrics::class)->get($user);
+        if ($live !== null) {
+            $data['live'] = $live;
+        }
+
+        $monthly = app(MonthlyActivityDashboard::class)->get($user);
+        if ($monthly !== null) {
+            $data['monthly'] = $monthly;
         }
 
         return $data;

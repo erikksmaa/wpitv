@@ -10,10 +10,13 @@ import 'sweetalert2/dist/sweetalert2.min.css';
     'use strict';
 
     const seenMessages = new Map();
+    window.WPiAdminTheme?.sync();
 
     const Toast = Swal.mixin({
         toast: true,
         position: 'top-end',
+        background: 'var(--wp-surface)',
+        color: 'var(--wp-ink)',
         showConfirmButton: false,
         showCloseButton: true,
         timer: 4200,
@@ -68,10 +71,12 @@ import 'sweetalert2/dist/sweetalert2.min.css';
             title: options.title || 'Apakah Anda yakin?',
             text: options.message || undefined,
             icon: type,
+            background: 'var(--wp-surface)',
+            color: 'var(--wp-ink)',
             showCancelButton: true,
             confirmButtonText: options.confirmText || 'Ya, lanjutkan',
             cancelButtonText: options.cancelText || 'Batal',
-            confirmButtonColor: type === 'warning' || type === 'error' ? '#dc3545' : '#2788d8',
+            confirmButtonColor: type === 'warning' || type === 'error' ? 'var(--wp-action-danger)' : 'var(--wp-action-primary)',
             cancelButtonColor: '#6c757d',
             reverseButtons: true,
             focusCancel: true,
@@ -144,6 +149,14 @@ import 'sweetalert2/dist/sweetalert2.min.css';
                 message: 'Sesi Anda akan diakhiri.',
                 confirmText: 'Ya, keluar',
                 type: 'warning',
+            };
+        }
+
+        if (form.dataset.adminConfirmTitle) {
+            return {
+                title: form.dataset.adminConfirmTitle,
+                confirmText: form.dataset.adminConfirmText || 'Ya, simpan',
+                type: 'info',
             };
         }
 

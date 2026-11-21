@@ -78,7 +78,7 @@
                             </a>
                         </div>
                     </li>
-                    <li><a href="{{ route('public.about') }}"
+                    <li><a href="{{ route('live.index') }}" class="nav-link {{ request()->routeIs('live.*') ? 'active' : '' }}">Live</a></li><li><a href="{{ route('public.about') }}"
                             class="nav-link {{ request()->routeIs('public.about') ? 'active' : '' }}">Tentang</a></li>
                 </ul>
             </nav>
@@ -116,7 +116,7 @@
                         class="text-base font-medium text-[var(--text-secondary)] py-2.5 px-2 rounded-lg hover:text-brand-blue hover:bg-brand-blue/10">Peliputan</a>
                     <a href="{{ route('agenda.index') }}"
                         class="text-base font-medium text-[var(--text-secondary)] py-2.5 px-2 rounded-lg hover:text-brand-blue hover:bg-brand-blue/10">Agenda</a>
-                    <div class="tvclub-mobile-accordion" data-tvclub-mobile>
+                    <a href="{{ route('live.index') }}" class="text-base font-medium py-2.5 px-2">Live</a><div class="tvclub-mobile-accordion" data-tvclub-mobile>
                         <button type="button" class="tvclub-mobile-trigger {{ request()->routeIs('tvclub.*') ? 'active' : '' }}"
                             aria-expanded="false" aria-controls="tvclubMobileMenu" data-tvclub-mobile-trigger>
                             <span>TV Club</span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>

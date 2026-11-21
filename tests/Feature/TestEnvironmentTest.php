@@ -14,7 +14,7 @@ class TestEnvironmentTest extends TestCase
     public function test_database_and_services_resolve_to_isolated_environment(): void
     {
         $this->assertTrue(app()->environment('testing'));
-        $this->assertSame('wpitv_testing', DB::selectOne('SELECT DATABASE() AS name')->name);
+        $this->assertSame('wpitv_rebuild_testing', DB::selectOne('SELECT DATABASE() AS name')->name);
         $this->assertFalse(app()->configurationIsCached());
         $this->assertSame('array', config('cache.default'));
         $this->assertSame('array', config('session.driver'));

@@ -22,6 +22,8 @@
         </div>
     @else
         @include('livewire.admin.dashboard.quick-actions')
+        @if(isset($dashboard['monthly'])) @include('livewire.admin.dashboard.monthly') @endif
+        @if(isset($dashboard['live'])) @include('livewire.admin.dashboard.live') @endif
         @if(!$user->isSuperAdmin())
             @include('livewire.admin.dashboard.focused')
         @else
@@ -31,7 +33,7 @@
             <div class="col-12 col-sm-6 col-xl-3">
                 <article class="dashboard-kpi kpi-program h-100">
                     <div class="dashboard-kpi-icon"><i class="bi bi-collection-play"></i></div>
-                    <div class="dashboard-kpi-copy"><span>Program</span><strong>{{ number_format($dashboard['kpis']['programs']['total']) }}</strong><small>{{ number_format($dashboard['kpis']['programs']['active']) }} aktif @if($dashboard['kpis']['programs']['without_videos'] > 0) · {{ number_format($dashboard['kpis']['programs']['without_videos']) }} perlu ditinjau @endif</small></div>
+                    <div class="dashboard-kpi-copy"><span>Program</span><strong>{{ number_format($dashboard['kpis']['programs']['total']) }}</strong><small>{{ number_format($dashboard['kpis']['programs']['active']) }} aktif @if($dashboard['kpis']['programs']['without_videos'] > 0) Â· {{ number_format($dashboard['kpis']['programs']['without_videos']) }} perlu ditinjau @endif</small></div>
                 </article>
             </div>
             <div class="col-12 col-sm-6 col-xl-3">
@@ -172,7 +174,7 @@
                     <div class="card-header dashboard-panel-header"><div><span class="dashboard-section-kicker">Publikasi</span><h2 id="latest-videos-title"><i class="bi bi-camera-video me-2"></i>Tayangan Terbaru</h2></div><a href="{{ route('admin.videos.index') }}" class="btn btn-sm btn-outline-primary">Lihat semua</a></div>
                     <div class="card-body dashboard-list">
                         @forelse($dashboard['latest']['videos'] as $video)
-                            <div class="dashboard-list-item"><img src="{{ $video->thumbnail_url }}" alt="" loading="lazy" class="media-thumb"><div class="list-copy"><strong>{{ $video->title }}</strong><span>{{ $video->program?->name ?? 'Belum terhubung' }} · {{ $video->air_date?->locale('id')->translatedFormat('d F Y') ?? 'Tanggal belum diatur' }}</span></div>@can('update', $video)<a href="{{ route('admin.videos.edit', $video) }}" aria-label="Buka {{ $video->title }}"><i class="bi bi-arrow-right"></i></a>@endcan</div>
+                            <div class="dashboard-list-item"><img src="{{ $video->thumbnail_url }}" alt="" loading="lazy" class="media-thumb"><div class="list-copy"><strong>{{ $video->title }}</strong><span>{{ $video->program?->name ?? 'Belum terhubung' }} Â· {{ $video->air_date?->locale('id')->translatedFormat('d F Y') ?? 'Tanggal belum diatur' }}</span></div>@can('update', $video)<a href="{{ route('admin.videos.edit', $video) }}" aria-label="Buka {{ $video->title }}"><i class="bi bi-arrow-right"></i></a>@endcan</div>
                         @empty
                             <div class="dashboard-empty"><i class="bi bi-camera-video-off"></i><span>Belum ada tayangan terbaru.</span></div>
                         @endforelse
@@ -184,7 +186,7 @@
                     <div class="card-header dashboard-panel-header"><div><span class="dashboard-section-kicker">Redaksi</span><h2 id="latest-news-title"><i class="bi bi-newspaper me-2"></i>Berita Terbaru</h2></div><a href="{{ route('admin.news.index') }}" class="btn btn-sm btn-outline-primary">Lihat semua</a></div>
                     <div class="card-body dashboard-list">
                         @forelse($dashboard['latest']['news'] as $news)
-                            <div class="dashboard-list-item"><div class="list-icon info"><i class="bi bi-file-earmark-text"></i></div><div class="list-copy"><strong>{{ $news->title }}</strong><span>{{ $news->author_display_name }} · {{ $news->created_at->locale('id')->translatedFormat('d F Y') }}</span></div>@can('update', $news)<a href="{{ route('admin.news.edit', $news) }}" aria-label="Buka {{ $news->title }}"><i class="bi bi-arrow-right"></i></a>@endcan</div>
+                            <div class="dashboard-list-item"><div class="list-icon info"><i class="bi bi-file-earmark-text"></i></div><div class="list-copy"><strong>{{ $news->title }}</strong><span>{{ $news->author_display_name }} Â· {{ $news->created_at->locale('id')->translatedFormat('d F Y') }}</span></div>@can('update', $news)<a href="{{ route('admin.news.edit', $news) }}" aria-label="Buka {{ $news->title }}"><i class="bi bi-arrow-right"></i></a>@endcan</div>
                         @empty
                             <div class="dashboard-empty"><i class="bi bi-newspaper"></i><span>Belum ada berita terbaru.</span></div>
                         @endforelse
@@ -205,7 +207,7 @@
                 <div class="table-responsive dashboard-table-wrap">
                     <table class="table align-middle mb-0"><thead><tr><th>Kelompok</th><th>Generasi</th><th>Program</th><th class="text-end">Kru</th></tr></thead><tbody>
                         @forelse($dashboard['tv_club']['top_groups'] as $group)
-                            <tr><td class="fw-semibold">{{ $group->name }}</td><td>{{ $group->generation?->name ?? '—' }}</td><td>{{ $group->program?->name ?? 'Belum terhubung' }}</td><td class="text-end"><span class="badge bg-primary"><i class="bi bi-people me-1"></i>{{ $group->members_count }}</span></td></tr>
+                            <tr><td class="fw-semibold">{{ $group->name }}</td><td>{{ $group->generation?->name ?? 'â€”' }}</td><td>{{ $group->program?->name ?? 'Belum terhubung' }}</td><td class="text-end"><span class="badge bg-primary"><i class="bi bi-people me-1"></i>{{ $group->members_count }}</span></td></tr>
                         @empty
                             <tr><td colspan="4"><div class="dashboard-empty compact"><i class="bi bi-people"></i><span>Belum ada kelompok produksi.</span></div></td></tr>
                         @endforelse

@@ -12,15 +12,15 @@ class TestEnvironmentGuardTest extends TestCase
 {
     public function test_resolved_guard_accepts_only_uncached_testing_database(): void
     {
-        TestingDatabaseGuard::validateResolved('testing', 'wpitv_testing');
+        TestingDatabaseGuard::validateResolved('testing', 'wpitv_rebuild_testing');
         $this->addToAssertionCount(1);
     }
 
     public static function unsafeResolvedConfiguration(): iterable
     {
-        yield 'wrong environment' => ['local', 'wpitv_testing', false];
+        yield 'wrong environment' => ['local', 'wpitv_rebuild_testing', false];
         yield 'application database' => ['testing', 'wpitv', false];
-        yield 'stale cached configuration' => ['testing', 'wpitv_testing', true];
+        yield 'stale cached configuration' => ['testing', 'wpitv_rebuild_testing', true];
     }
 
     #[DataProvider('unsafeResolvedConfiguration')]
@@ -50,10 +50,10 @@ class TestEnvironmentGuardTest extends TestCase
     {
         $settings = [
             'APP_ENV' => 'testing', 'DB_CONNECTION' => 'mysql', 'DB_HOST' => '127.0.0.1',
-            'DB_PORT' => '3306', 'DB_DATABASE' => 'wpitv_testing', 'DB_USERNAME' => 'wpitv_test_runner',
+            'DB_PORT' => '3306', 'DB_DATABASE' => 'wpitv_rebuild_testing', 'DB_USERNAME' => 'wpitv_rebuild_runner',
             'WPITV_TEST_DATABASE_ISOLATED' => 'true', 'APP_KEY' => 'base64:'.base64_encode(str_repeat('t', 32)),
         ];
-        $approved = ['source_database' => 'wpitv', 'database' => 'wpitv_testing', 'host' => '127.0.0.1', 'port' => '3306', 'username' => 'wpitv_test_runner'];
+        $approved = ['source_database' => 'wpitv', 'database' => 'wpitv_rebuild_testing', 'host' => '127.0.0.1', 'port' => '3306', 'username' => 'wpitv_rebuild_runner'];
         $settings[$key] = $value;
         $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('TEST SAFETY ABORT');
