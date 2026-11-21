@@ -70,17 +70,21 @@ class RoleAuthorizationTest extends TestCase
             $links = collect($sections)->flatMap(fn ($section) => $section['links'])->keyBy('route');
             $this->assertSame($role === User::ROLE_SUPER_ADMIN, $links->has('admin.users.index'));
             $this->assertSame($role === User::ROLE_SUPER_ADMIN, $links->has('admin.roles.index'));
+            $this->assertSame($role !== User::ROLE_TVCLUB, $links->has('admin.monthly-reports.index'));
+            $this->assertSame(in_array($role, [User::ROLE_SUPER_ADMIN, User::ROLE_TVCLUB], true), $links->has('admin.tvclub.social-reports.index'));
             if ($role === User::ROLE_TVCLUB) {
                 $this->assertSame('Program Acara', $sections[0]['title']);
                 $this->assertSame('Portal TV Club', $sections[1]['parent']);
                 $this->assertSame(
-                    ['admin.programs.index', 'admin.tvclub.generations.index', 'admin.tvclub.members.index', 'admin.tvclub.groups.index'],
+                    ['admin.programs.index', 'admin.tvclub.generations.index', 'admin.tvclub.members.index', 'admin.tvclub.groups.index',
+                        'admin.tvclub.social-accounts.index', 'admin.tvclub.social-posts.index', 'admin.tvclub.social-reports.index'],
                     $links->keys()->all(),
                 );
             }
             if ($role === User::ROLE_NEWS) {
                 $this->assertSame('admin.news.index', $sections[0]['links'][0]['route']);
-                $this->assertSame(['admin.news.index', 'admin.videos.index'], $links->keys()->all());
+                // Phase 4C gives News a separate entry point for its own monthly reports.
+                $this->assertSame(['admin.news.index', 'admin.videos.index', 'admin.monthly-reports.index'], $links->keys()->all());
             }
             if ($role === User::ROLE_PRODUCTION) {
                 $this->assertFalse($links->has('admin.news.index'));

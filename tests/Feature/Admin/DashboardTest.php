@@ -53,7 +53,7 @@ class DashboardTest extends TestCase
         $this->actingAs($this->superAdmin)
             ->get(route('admin.dashboard'))
             ->assertOk()
-            ->assertSee('class="burger-btn admin-menu-toggle"', false)
+            ->assertSee('class="burger-btn admin-menu-toggle d-xl-none"', false)
             ->assertSee('aria-controls="sidebar"', false)
             ->assertSee('aria-expanded="false"', false)
             ->assertDontSee('mazer/static/js/components/sidebar.js', false)

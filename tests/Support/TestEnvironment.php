@@ -129,6 +129,9 @@ final class TestEnvironment
                 unlink($file->getPathname());
             }
         }
-        rmdir($path);
+        // Windows may retain compiled PHP handles until shutdown completes.
+        // A deferred removal of this private runtime directory must not append
+        // an error response to an otherwise successful browser/Livewire request.
+        @rmdir($path);
     }
 }

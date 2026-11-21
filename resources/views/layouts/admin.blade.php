@@ -14,7 +14,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
 
     <!-- Mazer Theme Init (Prevent Flash) -->
-    <script src="{{ asset('mazer/static/js/initTheme.js') }}"></script>
+    <script src="{{ asset('js/admin-theme-init.js') }}" data-navigate-once></script>
 
     <!-- Mazer Original Core Stylesheets -->
     <link rel="stylesheet" href="{{ asset('mazer/compiled/css/app.css') }}">
@@ -73,14 +73,17 @@
 
         <!-- Mazer Main Content Container -->
         <div id="main" class="layout-navbar">
-            <header class="admin-mobile-bar d-xl-none" aria-label="Navigasi admin seluler">
-                <button type="button" class="burger-btn admin-menu-toggle" aria-controls="sidebar" aria-expanded="false" aria-label="Buka menu admin">
+            <header class="admin-topbar" aria-label="Navigasi panel admin">
+                <button type="button" class="burger-btn admin-menu-toggle d-xl-none" aria-controls="sidebar" aria-expanded="false" aria-label="Buka menu admin">
                     <i class="bi bi-list" aria-hidden="true"></i>
                 </button>
-                <a href="{{ route('admin.dashboard') }}" class="admin-mobile-brand" aria-label="Ke Dasbor WPiTV">
+                <a href="{{ route('admin.dashboard') }}" class="admin-topbar-brand" aria-label="Ke Dasbor WPiTV">
                     <img src="{{ asset('logo-wpi.png') }}" alt="" aria-hidden="true">
                     <span>WPiTV Admin</span>
                 </a>
+                <button type="button" class="btn admin-theme-toggle ms-auto" data-admin-theme-toggle aria-label="Aktifkan mode gelap" aria-pressed="false">
+                    <i class="bi bi-sun" data-admin-theme-icon aria-hidden="true"></i><span data-admin-theme-label class="d-none d-sm-inline">Mode terang</span>
+                </button>
             </header>
 
             <div id="main-content">
@@ -138,7 +141,6 @@
     </div>
 
     <!-- Mazer Original JavaScript -->
-    <script src="{{ asset('mazer/static/js/components/dark.js') }}"></script>
     <script src="{{ asset('mazer/extensions/perfect-scrollbar/perfect-scrollbar.min.js') }}"></script>
     <script src="{{ asset('mazer/compiled/js/bootstrap.bundle.min.js') }}"></script>
     <script src="{{ asset('mazer/compiled/js/app.js') }}"></script>

@@ -1,6 +1,11 @@
 <section class="card dashboard-panel quick-actions-panel mb-3" aria-labelledby="quick-actions-title">
     <div class="card-header dashboard-panel-header"><div><span class="dashboard-section-kicker">Langkah berikutnya</span><h2 id="quick-actions-title"><i class="bi bi-lightning-charge me-2"></i>Aksi Cepat</h2></div></div>
     <div class="card-body quick-actions-grid">
+        @if($user->isSuperAdmin() || $user->isAdminProduction())
+            @can('viewAny', App\Models\InventoryUnit::class)<a href="{{ route('admin.inventory.units.index') }}"><i class="bi bi-box-seam"></i>Inventaris</a>@endcan
+            @can('viewAny', App\Models\EquipmentLoan::class)<a href="{{ route('admin.equipment-loans.index') }}"><i class="bi bi-box-arrow-up-right"></i>Peminjaman Alat</a>@endcan
+            @can('viewReport', App\Models\EquipmentLoan::class)<a href="{{ route('admin.equipment-reports.index') }}"><i class="bi bi-file-earmark-spreadsheet"></i>Laporan Inventaris & Peminjaman</a>@endcan
+        @endif
         @can('create', App\Models\Program::class)<a href="{{ route('admin.programs.create') }}"><i class="bi bi-collection-play"></i>Tambah Program</a>@endcan
         @can('create', App\Models\News::class)<a href="{{ route('admin.news.create') }}"><i class="bi bi-pencil-square"></i>Tulis Berita</a>@endcan
         @can('create', App\Models\Video::class)<a href="{{ route('admin.videos.create') }}"><i class="bi bi-camera-video"></i>Tambah Tayangan</a>@endcan

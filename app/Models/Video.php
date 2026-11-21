@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Video extends Model
 {
@@ -36,6 +37,11 @@ class Video extends Model
     public function user()
     {
         return $this->belongsTo(User::class, 'user_id');
+    }
+
+    public function archivedLiveStream(): HasOne
+    {
+        return $this->hasOne(LiveStream::class, 'archive_video_id');
     }
 
     public function getWatchUrlAttribute(): string

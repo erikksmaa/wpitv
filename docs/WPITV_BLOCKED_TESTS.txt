@@ -1,0 +1,8 @@
+tests\Browser\LiveStreamingBrowserTest.php
+tests\Browser\MonthlyActivityBrowserTest.php
+tests\Browser\PublicLiveStreamingBrowserTest.php
+tests\Integration\MonthlyActivityAttachmentTest.php
+tests\Integration\MonthlyActivityEditorTest.php
+tests\Integration\MonthlyActivityIntegrationTest.php
+tests\Unit\LiveStreamingAdminTest.php
+tests/Concurrency/Monthly/worker.php

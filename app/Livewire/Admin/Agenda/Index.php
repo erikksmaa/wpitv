@@ -2,11 +2,15 @@
 
 namespace App\Livewire\Admin\Agenda;
 
+use App\Livewire\Concerns\HandlesLiveStreamErrors;
 use App\Models\WpitvAgenda;
+use App\Services\LiveStreamLifecycle;
+use App\Support\AgendaLiveGuard;
 use App\Support\InputBounds;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Livewire\Attributes\Layout;
+use Livewire\Attributes\Locked;
 use Livewire\Attributes\Title;
 use Livewire\Attributes\Url;
 use Livewire\Component;
@@ -16,7 +20,7 @@ use Livewire\WithPagination;
 #[Title('Agenda WPiTV - Admin')]
 class Index extends Component
 {
-    use AuthorizesRequests, WithPagination;
+    use AuthorizesRequests, HandlesLiveStreamErrors, WithPagination;
 
     protected string $paginationTheme = 'bootstrap';
 
@@ -40,9 +44,18 @@ class Index extends Component
 
     public int $perPage = 10;
 
+    #[Locked]
     public ?WpitvAgenda $selectedAgenda = null;
 
     public bool $showDetailModal = false;
+
+    #[Locked]
+    public ?int $expectedLiveVersion = null;
+
+    #[Locked]
+    public ?string $selectedLiveStatus = null;
+
+    public string $cancellationReason = '';
 
     public function mount(): void
     {
@@ -91,6 +104,14 @@ class Index extends Component
     {
         $agenda = WpitvAgenda::with(['program', 'coverage', 'group.generation', 'creator'])->findOrFail($id);
         $this->authorize('view', $agenda);
+        $stream = app(AgendaLiveGuard::class)->stream($agenda);
+        if ($stream !== null) {
+            $this->authorize('view', $stream);
+        }
+        $this->resetErrorBag();
+        $this->expectedLiveVersion = $stream?->version;
+        $this->selectedLiveStatus = $stream?->status;
+        $this->cancellationReason = '';
         $this->selectedAgenda = $agenda;
         $this->showDetailModal = true;
     }
@@ -99,13 +120,18 @@ class Index extends Component
     {
         $this->showDetailModal = false;
         $this->selectedAgenda = null;
+        $this->expectedLiveVersion = null;
+        $this->selectedLiveStatus = null;
+        $this->cancellationReason = '';
     }
 
     public function cancel(int $id): void
     {
         $agenda = WpitvAgenda::findOrFail($id);
         $this->authorize('update', $agenda);
-        $agenda->update(['status' => 'cancelled']);
+        app(LiveStreamLifecycle::class)->cancelAgenda(auth()->user(), $id,
+            $this->selectedAgenda?->id === $id ? $this->expectedLiveVersion : null,
+            trim($this->cancellationReason) ?: null);
         session()->flash('success', 'Agenda berhasil dibatalkan.');
         $this->closeDetail();
     }
@@ -114,7 +140,7 @@ class Index extends Component
     {
         $agenda = WpitvAgenda::findOrFail($id);
         $this->authorize('delete', $agenda);
-        $agenda->delete();
+        app(LiveStreamLifecycle::class)->deleteAgenda(auth()->user(), $id);
         session()->flash('success', 'Data agenda berhasil dihapus.');
         $this->closeDetail();
     }
@@ -133,6 +159,12 @@ class Index extends Component
     public function render()
     {
         $this->authorize('viewAny', WpitvAgenda::class);
+        if ($this->selectedAgenda !== null) {
+            $this->authorize('view', $this->selectedAgenda);
+            if ($stream = app(AgendaLiveGuard::class)->stream($this->selectedAgenda)) {
+                $this->authorize('view', $stream);
+            }
+        }
         $this->month = InputBounds::month($this->month);
         $this->perPage = InputBounds::perPage($this->perPage);
 

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit bootstrap="tests/bootstrap.php" colors="false" cacheResult="false">
+    <testsuites>
+        <testsuite name="EquipmentPure">
+            <file>tests/Unit/EquipmentSafetyTest.php</file>
+            <file>tests/Unit/EquipmentConcurrencyGuardTest.php</file>
+            <file>tests/Unit/TestEnvironmentGuardTest.php</file>
+        </testsuite>
+        <testsuite name="EquipmentIntegration"><directory>tests/Integration/Equipment</directory></testsuite>
+        <testsuite name="EquipmentConcurrency"><directory>tests/Concurrency/Equipment</directory></testsuite>
+    </testsuites>
+</phpunit>

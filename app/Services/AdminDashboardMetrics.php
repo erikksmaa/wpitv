@@ -2,7 +2,10 @@
 
 namespace App\Services;
 
+use App\Exceptions\EquipmentOperationException;
 use App\Models\Coverage;
+use App\Models\EquipmentLoan;
+use App\Models\InventoryUnit;
 use App\Models\News;
 use App\Models\Program;
 use App\Models\Role;
@@ -15,10 +18,13 @@ use App\Models\User;
 use App\Models\UserCounter;
 use App\Models\Video;
 use App\Models\WpitvAgenda;
+use App\Support\EquipmentErrors;
 use Carbon\Carbon;
+use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Log;
 
 class AdminDashboardMetrics
 {
@@ -41,9 +47,65 @@ class AdminDashboardMetrics
                     ->orderBy('agenda_date')->orderBy('start_time')->limit(5)
                     ->get(['id', 'title', 'agenda_date', 'start_time', 'end_time', 'type', 'visibility']),
             ];
+            // Do not construct or execute equipment queries for editorial/TVClub.
+            if (Gate::forUser($user)->allows('viewAny', InventoryUnit::class)
+                && Gate::forUser($user)->allows('viewAny', EquipmentLoan::class)) {
+                try {
+                    $data['equipment'] = EquipmentErrors::run(fn () => $this->equipmentOverview($user));
+                } catch (EquipmentOperationException $exception) {
+                    // The additive module may not yet be provisioned. Keep the
+                    // existing dashboard usable without inventing zero metrics.
+                    $data['equipment'] = ['data_available' => false];
+                    Log::warning('Equipment dashboard metrics unavailable.', ['error_code' => $exception->errorCode]);
+                }
+            }
+        }
+
+        $live = app(LiveDashboardMetrics::class)->get($user);
+        if ($live !== null) {
+            $data['live'] = $live;
+        }
+
+        $monthly = app(MonthlyActivityDashboard::class)->get($user);
+        if ($monthly !== null) {
+            $data['monthly'] = $monthly;
         }
 
         return $data;
+    }
+
+    private function equipmentOverview(User $user): array
+    {
+        Gate::forUser($user)->authorize('viewAny', InventoryUnit::class);
+        Gate::forUser($user)->authorize('viewAny', EquipmentLoan::class);
+        $asOf = CarbonImmutable::now('UTC');
+
+        $stock = app(EquipmentStock::class);
+        $units = DB::query()->fromSub($stock->units()->toBase(), 'physical')
+            ->selectRaw("COUNT(*) AS total_units, COUNT(DISTINCT product_id) AS item_types, SUM(is_active = 1) AS active_units,
+                SUM(stock_status = 'available') AS available_units, SUM(stock_status = 'borrowed') AS borrowed_units,
+                SUM(stock_status = 'damaged') AS damaged_units, SUM(stock_status = 'lost') AS lost_units")->first();
+        $openLoans = EquipmentLoan::query()->whereHas('items', fn ($q) => $q->whereNull('returned_at'));
+        $loanCounts = (clone $openLoans)->selectRaw('COUNT(*) AS active, SUM(due_at < ?) AS overdue', [$asOf->format('Y-m-d H:i:s.u')])->first();
+
+        return [
+            'data_available' => true,
+            'as_of' => $asOf,
+            'total_units' => (int) ($units->total_units ?? 0),
+            'kpis' => [
+                'item_types' => (int) ($units->item_types ?? 0),
+                'total_units' => (int) ($units->total_units ?? 0),
+                'active_loans' => (int) ($loanCounts->active ?? 0),
+                'lost_units' => (int) ($units->lost_units ?? 0),
+                'active_units' => (int) ($units->active_units ?? 0),
+                'available_units' => (int) ($units->available_units ?? 0),
+                'borrowed_units' => (int) ($units->borrowed_units ?? 0),
+                'damaged_units' => (int) ($units->damaged_units ?? 0),
+                'overdue_loans' => (int) ($loanCounts->overdue ?? 0),
+            ],
+            // No borrower/contact/note columns are required by the widget.
+            'due_loans' => (clone $openLoans)->orderBy('due_at')->orderBy('id')->limit(5)->get(['id', 'loan_code', 'due_at']),
+        ];
     }
 
     private function systemOverview(): array

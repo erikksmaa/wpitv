@@ -2,9 +2,11 @@
 
 namespace App\Models;
 
+use App\Support\AgendaLiveGuard;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class WpitvAgenda extends Model
 {
@@ -42,6 +44,16 @@ class WpitvAgenda extends Model
         return ['agenda_date' => 'date'];
     }
 
+    public function save(array $options = [])
+    {
+        return app(AgendaLiveGuard::class)->write($this, 'save', fn () => parent::save($options));
+    }
+
+    public function delete()
+    {
+        return app(AgendaLiveGuard::class)->write($this, 'delete', fn () => parent::delete());
+    }
+
     public function program()
     {
         return $this->belongsTo(Program::class, 'program_id');
@@ -60,6 +72,11 @@ class WpitvAgenda extends Model
     public function creator()
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function liveStream(): HasOne
+    {
+        return $this->hasOne(LiveStream::class, 'agenda_id');
     }
 
     public function scopePublicVisible(Builder $query): Builder
@@ -100,6 +117,10 @@ class WpitvAgenda extends Model
 
         $start = str_replace(':', '.', substr($this->start_time, 0, 5));
         $end = $this->end_time ? '–'.str_replace(':', '.', substr($this->end_time, 0, 5)) : '';
+
+        if ($this->type === 'live' && $this->end_time && $this->end_time < $this->start_time) {
+            $end .= ' (+1 hari)';
+        }
 
         return $start.$end.' WIB';
     }

@@ -22,6 +22,16 @@
         </div>
     @else
         @include('livewire.admin.dashboard.quick-actions')
+        @if(isset($dashboard['monthly'])) @include('livewire.admin.dashboard.monthly') @endif
+        @if(isset($dashboard['social'])) @include('livewire.admin.dashboard.social') @endif
+        @if(isset($dashboard['live'])) @include('livewire.admin.dashboard.live') @endif
+        @if(($user->isSuperAdmin() || $user->isAdminProduction()) && isset($dashboard['equipment']))
+            @can('viewAny', App\Models\InventoryUnit::class)
+                @can('viewAny', App\Models\EquipmentLoan::class)
+                    @include('livewire.admin.dashboard.equipment')
+                @endcan
+            @endcan
+        @endif
         @if(!$user->isSuperAdmin())
             @include('livewire.admin.dashboard.focused')
         @else

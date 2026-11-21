@@ -91,7 +91,9 @@ class ProductionSecurityTest extends TestCase
 
     public function test_trust_storage_and_route_boundaries_remain_explicit(): void
     {
-        $this->assertSame(['^localhost$'], config('security.trusted_hosts'));
+        // These two explicit loopback hosts are approved for the local QA harness.
+        // Keep the list closed: additional hosts or wildcard patterns must fail.
+        $this->assertEqualsCanonicalizing(['^localhost$', '^127\\.0\\.0\\.1$'], config('security.trusted_hosts'));
         $this->assertNull(config('trustedproxy.proxies'));
         $this->assertStringNotContainsString(public_path(), config('filesystems.disks.local.root'));
         $this->assertSame('local', config('livewire.temporary_file_upload.disk'));
@@ -107,5 +109,25 @@ class ProductionSecurityTest extends TestCase
 
         $webMiddleware = $this->app->make(Application::class)->make('router')->getMiddlewareGroups()['web'];
         $this->assertContains(ValidateCsrfToken::class, $webMiddleware);
+    }
+
+    public function test_approved_loopback_hosts_work_but_unapproved_hosts_are_rejected(): void
+    {
+        $environment = $this->app['env'];
+        $trustedHosts = Request::getTrustedHosts();
+        try {
+            // Laravel skips TrustHosts in testing/local. Exercise the real
+            // middleware in production mode without changing DB/config files.
+            $this->app['env'] = 'production';
+            foreach (['localhost', '127.0.0.1'] as $host) {
+                $this->get('http://'.$host.'/live')->assertOk();
+            }
+            foreach (['unapproved.example.test', 'localhost.evil.test', '127.0.0.1.evil.test', 'child.localhost'] as $host) {
+                $this->get('http://'.$host.'/live')->assertBadRequest();
+            }
+        } finally {
+            $this->app['env'] = $environment;
+            Request::setTrustedHosts($trustedHosts);
+        }
     }
 }
