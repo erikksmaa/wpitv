@@ -7,6 +7,7 @@
     </div>
 
     @if(session('success')) <div class="alert alert-success">{{ session('success') }}</div> @endif
+    @if($errors->any())<div class="alert alert-danger" role="alert"><ul class="mb-0">@foreach($errors->all() as $message)<li>{{ $message }}</li>@endforeach</ul></div>@endif
 
     <section class="card agenda-admin-shell">
         <div class="agenda-tabs" role="tablist">
@@ -80,8 +81,25 @@
                         <div><small>Peliputan</small><strong>{{ $selectedAgenda->coverage?->event_name ?? '—' }}</strong>@if($selectedAgenda->coverage)<a href="{{ route('admin.peliputan.index', ['agenda_coverage' => $selectedAgenda->coverage_id]) }}">Buka Peliputan</a>@endif</div><div><small>Dibuat oleh</small><strong>{{ $selectedAgenda->creator?->name ?? 'Sistem' }}</strong></div>
                     </div>
                     @if($selectedAgenda->description)<div class="agenda-description"><small>Deskripsi</small><p>{{ $selectedAgenda->description }}</p></div>@endif
+                    @if($selectedLiveStatus !== null)
+                        <div class="border rounded p-3 mt-3"><strong>Live Streaming: {{ $selectedLiveStatus }}</strong><p>Agenda ini tidak dapat dihapus karena memiliki histori Live Streaming. Gunakan pembatalan sebelum siaran dimulai atau ubah visibilitas melalui Edit Agenda.</p>
+                            @if($selectedLiveStatus === 'scheduled')
+                                <label for="agenda-cancel-reason">Alasan pembatalan</label><textarea id="agenda-cancel-reason" wire:model="cancellationReason" maxlength="1000" class="form-control" rows="2"></textarea>
+                                @error('reason')<div class="text-danger">{{ $message }}</div>@enderror
+                            @endif
+                            @if($selectedLiveStatus === 'live')<p class="mb-0">Untuk menutup siaran, pilih status Selesai melalui Edit Agenda.</p>@endif
+                        </div>
+                    @endif
                 </div>
-                <div class="modal-footer"><small>Gunakan status Dibatalkan untuk menyimpan riwayat agenda nyata.</small><div>@can('delete',$selectedAgenda)<button wire:click="delete({{ $selectedAgenda->id }})" data-admin-confirm class="btn btn-outline-danger">Hapus</button>@endcan @can('update',$selectedAgenda)@if($selectedAgenda->status !== 'cancelled')<button wire:click="cancel({{ $selectedAgenda->id }})" data-admin-confirm data-admin-confirm-kind="update" class="btn btn-outline-warning">Batalkan Agenda</button>@endif<a href="{{ route('admin.agenda.edit',$selectedAgenda) }}" class="btn btn-primary">Edit Agenda</a>@endcan</div></div>
+                <div class="modal-footer"><small>Gunakan status Dibatalkan untuk menyimpan riwayat agenda nyata.</small><div>
+                    @can('delete',$selectedAgenda)<button wire:click="delete({{ $selectedAgenda->id }})" data-admin-confirm class="btn btn-outline-danger" @disabled($selectedLiveStatus !== null) wire:loading.attr="disabled">Hapus</button>@endcan
+                    @can('update',$selectedAgenda)
+                        @if($selectedAgenda->status !== 'cancelled' && in_array($selectedLiveStatus, [null, 'scheduled'], true))
+                            <form wire:submit="cancel({{ $selectedAgenda->id }})" class="d-inline" data-admin-confirm-title="Batalkan Agenda{{ $selectedLiveStatus ? ' dan siaran terkait' : '' }}?" data-admin-confirm-text="Ya, batalkan"><button type="submit" class="btn btn-outline-warning" wire:loading.attr="disabled">Batalkan Agenda</button></form>
+                        @endif
+                        <a href="{{ route('admin.agenda.edit',$selectedAgenda) }}" class="btn btn-primary">Edit Agenda</a>
+                    @endcan
+                </div></div>
             </div></div>
         </div>
     @endif

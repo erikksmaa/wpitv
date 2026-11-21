@@ -14,6 +14,7 @@
         </div>
     </div>
 
+    @include('livewire.public.live-streams.highlights')
     <!-- HERO -->
     @php($activeFeatured = $defaultFeaturedVideo)
     <section class="pub-hero home-featured-hero" id="featuredHero" aria-labelledby="heroTitle">

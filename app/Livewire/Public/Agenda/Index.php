@@ -42,12 +42,12 @@ class Index extends Component
         $gridStart = $monthStart->startOfWeek(CarbonImmutable::MONDAY);
         $gridEnd = $monthStart->endOfMonth()->endOfWeek(CarbonImmutable::SUNDAY);
         $calendarAgendas = WpitvAgenda::publicVisible()->betweenDates($gridStart->toDateString(), $gridEnd->toDateString())
-            ->with(['program' => fn ($query) => $query->where('status', true)->select('id', 'name', 'slug', 'status')])
+            ->with(['liveStream' => fn ($query) => $query->agendaPublicVisible()->select('id', 'agenda_id'), 'program' => fn ($query) => $query->where('status', true)->select('id', 'name', 'slug', 'status')])
             ->orderBy('agenda_date')->orderByRaw('start_time IS NULL')->orderBy('start_time')->orderBy('id')->get()
             ->groupBy(fn ($agenda) => $agenda->agenda_date->format('Y-m-d'));
         $days = collect(range(0, (int) $gridStart->diffInDays($gridEnd)))->map(fn ($day) => $gridStart->addDays($day));
         $upcoming = WpitvAgenda::publicVisible()->upcoming()
-            ->with(['program' => fn ($query) => $query->where('status', true)->select('id', 'name', 'slug', 'status')])
+            ->with(['liveStream' => fn ($query) => $query->agendaPublicVisible()->select('id', 'agenda_id'), 'program' => fn ($query) => $query->where('status', true)->select('id', 'name', 'slug', 'status')])
             ->orderBy('agenda_date')->orderByRaw('start_time IS NULL')->orderBy('start_time')->orderBy('id')->take(30)->get();
 
         return view('livewire.public.agenda.index', compact('monthStart', 'days', 'calendarAgendas', 'upcoming'))

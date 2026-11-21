@@ -4,6 +4,7 @@ namespace App\Livewire\Public\Programs;
 
 use App\Models\Program;
 use App\Models\TVClubGeneration;
+use App\Services\LiveStreamHighlights;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -55,6 +56,7 @@ class Show extends Component
             ->get();
 
         return view('livewire.public.programs.show', [
+            'liveHighlights' => app(LiveStreamHighlights::class)->get($this->program->id),
             'videos' => $videos,
             'otherPrograms' => $otherPrograms,
             'productionGroups' => $productionGroups,

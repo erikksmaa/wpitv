@@ -65,6 +65,7 @@
         </div>
     </section>
 
+    @include('livewire.public.live-streams.highlights')
     <!-- VIDEO LIST PER PROGRAM -->
     <section class="pub-section" id="daftar-tayangan" aria-labelledby="videoSectionTitle">
         <div class="pub-container">

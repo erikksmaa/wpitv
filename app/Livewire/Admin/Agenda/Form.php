@@ -2,13 +2,19 @@
 
 namespace App\Livewire\Admin\Agenda;
 
+use App\Livewire\Concerns\HandlesLiveStreamErrors;
 use App\Models\Coverage;
 use App\Models\Program;
 use App\Models\TVClubGroup;
 use App\Models\WpitvAgenda;
+use App\Services\LiveStreamLifecycle;
+use App\Support\AgendaLiveGuard;
+use App\Support\LiveStreamErrors;
+use App\Support\LiveStreamSchedule;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Validation\Rule;
 use Livewire\Attributes\Layout;
+use Livewire\Attributes\Locked;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 
@@ -16,11 +22,21 @@ use Livewire\Component;
 #[Title('Form Agenda WPiTV')]
 class Form extends Component
 {
-    use AuthorizesRequests;
+    use AuthorizesRequests, HandlesLiveStreamErrors;
 
+    #[Locked]
     public ?WpitvAgenda $agenda = null;
 
+    #[Locked]
     public ?int $agendaId = null;
+
+    #[Locked]
+    public ?int $expectedLiveVersion = null;
+
+    #[Locked]
+    public array $initialLiveTimes = [];
+
+    public string $reason = '';
 
     public string $title = '';
 
@@ -60,6 +76,11 @@ class Form extends Component
             $this->agenda_date = $agenda->agenda_date->format('Y-m-d');
             $this->start_time = $agenda->start_time ? substr($agenda->start_time, 0, 5) : '';
             $this->end_time = $agenda->end_time ? substr($agenda->end_time, 0, 5) : '';
+            if ($stream = app(AgendaLiveGuard::class)->stream($agenda)) {
+                $this->authorize('update', $stream);
+                $this->expectedLiveVersion = $stream->version;
+                $this->initialLiveTimes = ['start_time' => $agenda->start_time, 'end_time' => $agenda->end_time];
+            }
         } else {
             $this->authorize('create', WpitvAgenda::class);
             $this->agenda_date = request('date', now()->format('Y-m-d'));
@@ -85,11 +106,12 @@ class Form extends Component
             'group_id' => ['nullable', 'integer', 'exists:tvclub_groups,id'],
             'agenda_date' => ['required', 'date'],
             'start_time' => ['nullable', 'date_format:H:i'],
-            'end_time' => ['nullable', 'date_format:H:i', 'after_or_equal:start_time'],
+            'end_time' => $this->type === 'live' ? ['nullable', 'date_format:H:i'] : ['nullable', 'date_format:H:i', 'after_or_equal:start_time'],
             'location' => ['nullable', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
             'status' => ['required', Rule::in(array_keys(WpitvAgenda::STATUSES))],
             'visibility' => ['required', Rule::in(array_keys(WpitvAgenda::VISIBILITIES))],
+            'reason' => ['nullable', 'string', 'max:1000'],
         ];
     }
 
@@ -103,6 +125,8 @@ class Form extends Component
         $this->authorize($this->agenda?->exists ? 'update' : 'create', $this->agenda?->exists ? $this->agenda : WpitvAgenda::class);
 
         $data = $this->validate();
+        $reason = trim($data['reason'] ?? '') ?: null;
+        unset($data['reason']);
         foreach (['program_id', 'coverage_id', 'group_id'] as $field) {
             $data[$field] = $data[$field] ?: null;
         }
@@ -110,15 +134,28 @@ class Form extends Component
             $data[$field] = $data[$field] !== '' ? $data[$field] : null;
         }
 
+        // A minute-only time input must not silently rewrite historical seconds.
+        foreach ($this->initialLiveTimes as $field => $original) {
+            if ($original !== null && $data[$field] === substr($original, 0, 5)) {
+                $data[$field] = $original;
+            }
+        }
+
+        if ($data['type'] === 'live') {
+            $schedule = (new WpitvAgenda)->setDateFormat('Y-m-d H:i:s')->fill($data);
+            LiveStreamSchedule::startsAt($schedule);
+            LiveStreamSchedule::endsAt($schedule);
+        }
+
         if ($this->agendaId) {
             $agenda = WpitvAgenda::findOrFail($this->agendaId);
             $this->authorize('update', $agenda);
-            $agenda->update($data);
+            app(LiveStreamLifecycle::class)->saveAgenda(auth()->user(), $agenda->id, $this->expectedLiveVersion, $data, $reason);
             session()->flash('success', 'Data agenda berhasil diubah.');
         } else {
             $this->authorize('create', WpitvAgenda::class);
             $data['created_by'] = auth()->id();
-            WpitvAgenda::create($data);
+            LiveStreamErrors::run(fn () => WpitvAgenda::create($data));
             session()->flash('success', 'Data agenda berhasil ditambahkan.');
         }
 
@@ -129,7 +166,13 @@ class Form extends Component
     {
         $this->authorize($this->agenda?->exists ? 'update' : 'create', $this->agenda?->exists ? $this->agenda : WpitvAgenda::class);
 
+        $liveStream = $this->agendaId ? app(AgendaLiveGuard::class)->stream($this->agenda) : null;
+        if ($liveStream !== null) {
+            $this->authorize('update', $liveStream);
+        }
+
         return view('livewire.admin.agenda.form', [
+            'liveStream' => $liveStream,
             'programs' => Program::orderBy('name')->get(['id', 'name']),
             'coverages' => Coverage::orderByDesc('event_date')->limit(200)->get(['id', 'submission_code', 'event_name', 'event_date']),
             'groups' => TVClubGroup::with(['program:id,name', 'generation:id,name'])->orderBy('name')->get(),

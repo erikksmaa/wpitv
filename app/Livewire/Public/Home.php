@@ -9,6 +9,7 @@ use App\Models\TVClubGroup;
 use App\Models\TVClubMember;
 use App\Models\Video;
 use App\Models\WpitvAgenda;
+use App\Services\LiveStreamHighlights;
 use App\Services\VisitorTracker;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -26,6 +27,8 @@ class Home extends Component
         $data = app()->environment('testing')
             ? $this->homepageData()
             : Cache::remember('public.homepage.v5', now()->addSeconds(60), fn () => $this->homepageData());
+
+        $data['liveHighlights'] = app(LiveStreamHighlights::class)->get();
 
         return view('livewire.public.home', $data)->layout('layouts.public', [
             'title' => 'WPiTV — Televisi Digital Kampus Institut Widya Pratama',
