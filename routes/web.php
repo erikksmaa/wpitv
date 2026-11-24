@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\EquipmentPhotoController;
+use App\Http\Controllers\EquipmentReturnPhotoController;
 use App\Http\Controllers\MonthlyActivityAttachmentController;
 use App\Http\Controllers\MonthlyActivityDocumentController;
 use App\Livewire\Admin\Dashboard\Index as AdminDashboard;
@@ -47,6 +49,14 @@ Route::get('/agenda', App\Livewire\Public\Agenda\Index::class)->name('agenda.ind
 |--------------------------------------------------------------------------
 */
 Route::prefix('admin')->middleware(['auth', 'session.valid', 'active', 'role:'.implode(',', User::ADMIN_ROLES)])->group(function () {
+    Route::get('/inventory', App\Livewire\Admin\Inventory\Index::class)->name('admin.inventory.index');
+    Route::get('/equipment-reports/{section}/csv', App\Http\Controllers\EquipmentReportExportController::class)->whereIn('section', ['inventory', 'loans'])->name('admin.equipment-reports.csv');
+    Route::get('/equipment-reports/{section?}', App\Livewire\Admin\EquipmentReports\Index::class)->whereIn('section', ['dashboard', 'inventory', 'loans'])->name('admin.equipment-reports.index');
+    Route::get('/equipment-loans', App\Livewire\Admin\EquipmentLoans\Index::class)->name('admin.equipment-loans.index');
+    Route::get('/equipment-loans/create', App\Livewire\Admin\EquipmentLoans\Index::class)->name('admin.equipment-loans.create');
+    Route::get('/equipment-loans/{loanId}', App\Livewire\Admin\EquipmentLoans\Show::class)->whereNumber('loanId')->name('admin.equipment-loans.show');
+    Route::get('/equipment-loans/{loan}/photos/{photo}', [EquipmentReturnPhotoController::class, 'show'])->whereNumber(['loan', 'photo'])->name('admin.equipment-loans.photos');
+    Route::get('/inventory/photos/{kind}/{photo}', [EquipmentPhotoController::class, 'show'])->whereIn('kind', ['model', 'unit'])->whereNumber('photo')->name('admin.inventory.photos');
     Route::get('/monthly-reports', App\Livewire\Admin\MonthlyReports\Index::class)->name('admin.monthly-reports.index');
     Route::get('/monthly-reports/{reportId}', App\Livewire\Admin\MonthlyReports\Show::class)->whereNumber('reportId')->name('admin.monthly-reports.show');
     Route::post('/monthly-reports/{report}/csv', [MonthlyActivityDocumentController::class, 'csv'])->whereNumber('report')->name('admin.monthly-reports.csv');

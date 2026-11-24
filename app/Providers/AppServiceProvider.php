@@ -7,6 +7,7 @@ use App\Http\Middleware\EnsureUserHasRole;
 use App\Http\Middleware\EnsureUserIsActive;
 use App\Models\User;
 use App\Support\AgendaLiveGuard;
+use App\Support\EquipmentPermissions;
 use App\Support\TestingDatabaseGuard;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\URL;
@@ -29,6 +30,9 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         TestingDatabaseGuard::assertSafe($this->app);
+        foreach (EquipmentPermissions::catalog() as $permission) {
+            Gate::define($permission, fn (User $user) => EquipmentPermissions::allows($user, $permission));
+        }
         if ($this->app->environment('production')) {
             URL::forceScheme('https');
         }

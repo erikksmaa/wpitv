@@ -57,6 +57,24 @@
 
                         @include('components.admin.role-navigation')
 
+                        @can('equipment.inventory.view')
+                            <li class="sidebar-title">Peralatan</li>
+                            <li class="sidebar-item {{ request()->routeIs('admin.inventory.*') ? 'active' : '' }}">
+                                <a href="{{ route('admin.inventory.index') }}" class="sidebar-link"><i class="bi bi-box-seam"></i><span>Inventory Peralatan</span></a>
+                            </li>
+                        @endcan
+
+                        @can('equipment.report.view')
+                            <li class="sidebar-item {{ request()->routeIs('admin.equipment-reports.*') ? 'active' : '' }}">
+                                <a href="{{ route('admin.equipment-reports.index') }}" class="sidebar-link"><i class="bi bi-bar-chart"></i><span>Dashboard &amp; Laporan</span></a>
+                            </li>
+                        @endcan
+                        @can('equipment.loan.view')
+                            <li class="sidebar-item {{ request()->routeIs('admin.equipment-loans.*') ? 'active' : '' }}">
+                                <a href="{{ route('admin.equipment-loans.index') }}" class="sidebar-link"><i class="bi bi-arrow-left-right"></i><span>Peminjaman Peralatan</span></a>
+                            </li>
+                        @endcan
+
                         <li class="sidebar-item">
                             <form method="POST" action="{{ route('logout') }}" id="logout-form" data-admin-confirm="logout">
                                 @csrf

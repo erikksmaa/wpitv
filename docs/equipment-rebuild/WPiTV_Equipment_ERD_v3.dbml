@@ -1,0 +1,255 @@
+// WPiTV — Equipment Full Rebuild | Target ERD v3.0 | 23 Nov 2026
+// STATUS: DESAIN LOGIS, BUKAN migration dan BUKAN SQL yang boleh dijalankan.
+// 11 tabel domain Equipment + 1 referensi users yang SUDAH ADA (stub, tidak dibuat ulang).
+// MySQL 8.0.30. BIGINT/INT yang berelasi ditetapkan UNSIGNED pada SQL/Laravel migration.
+// Semua DATETIME(6) disimpan UTC; DATE tenggat dan penilaian terlambat memakai WIB.
+// Tidak ada VIEW, tabel laporan, inventory_unit_members, atau mutable stock counter.
+// Catatan CHECK/generation di bawah harus diwujudkan di migration MySQL, bukan oleh DBML.
+
+Project WPiTV_Equipment_Rebuild_v3 {
+  database_type: 'MySQL'
+  Note: 'Kategori > model/barang induk > unit fisik. on_loan diturunkan dari loan_units, bukan disimpan di units. Satu foto per unit retur wajib. Tidak ada VIEW.'
+}
+
+Table users [note: 'EXTERNAL STUB: existing users.id INT UNSIGNED. Jangan buat tabel ini lagi.'] {
+  id int [pk, note: 'UNSIGNED sesuai users.id existing']
+}
+
+Table equipment_categories [note: 'Kategori datar; tidak menyimpan stok. is_active=0 mencegah pemilihan kategori baru, bukan menghapus histori.'] {
+  id bigint [pk, increment, note: 'UNSIGNED']
+  name varchar(100) [not null, unique]
+  description varchar(1000)
+  sort_order smallint [not null, default: 0, note: 'UNSIGNED']
+  is_active boolean [not null, default: true]
+  created_at datetime(6) [not null]
+  updated_at datetime(6) [not null]
+
+  indexes {
+    (is_active, sort_order) [name: 'idx_eq_categories_order']
+  }
+}
+
+Table equipment_models [note: 'Barang induk/jenis; create bersama initial_units (N>=1) dalam satu DB transaction. Nama/brand boleh berubah, model_code immutable.'] {
+  id bigint [pk, increment, note: 'UNSIGNED']
+  category_id bigint [not null, note: 'UNSIGNED']
+  model_code varchar(40) [not null, unique, note: 'Mis. SON-A6400; unik dan immutable; collision diselesaikan server']
+  name varchar(150) [not null]
+  brand varchar(100)
+  model_name varchar(100)
+  description text
+  is_active boolean [not null, default: true]
+  next_unit_no int [not null, default: 1, note: 'UNSIGNED, dilock dalam transaksi, tidak pernah turun/reuse']
+  version int [not null, default: 1, note: 'UNSIGNED optimistic locking']
+  created_at datetime(6) [not null]
+  updated_at datetime(6) [not null]
+
+  indexes {
+    (category_id, is_active) [name: 'idx_eq_models_category_active']
+    (name) [name: 'idx_eq_models_name']
+  }
+}
+
+Table equipment_units [note: 'Satu baris = satu alat fisik. physical_condition vs operational_status terpisah. TIDAK menyimpan on_loan atau kategori/merek duplikat. Retire final.'] {
+  id bigint [pk, increment, note: 'UNSIGNED']
+  model_id bigint [not null, note: 'UNSIGNED']
+  unit_no int [not null, note: 'UNSIGNED; nomor dalam model']
+  asset_code varchar(60) [not null, unique, note: 'Mis. SON-A6400-001; immutable, dibuat memakai next_unit_no']
+  serial_number varchar(100)
+  physical_condition varchar(20) [not null, default: 'good', note: 'SQL ENUM/CHECK: good, minor_damage, major_damage']
+  operational_status varchar(20) [not null, default: 'active', note: 'SQL ENUM/CHECK: active, maintenance, lost, retired']
+  status_changed_at datetime(6) [not null]
+  closed_at datetime(6) [note: 'Wajib untuk lost dan retired, NULL untuk status lain']
+  closed_reason varchar(1000) [note: 'Wajib untuk lost dan retired']
+  notes text
+  version int [not null, default: 1, note: 'UNSIGNED']
+  created_at datetime(6) [not null]
+  updated_at datetime(6) [not null]
+
+  indexes {
+    (model_id, unit_no) [unique, name: 'uq_eq_units_model_number']
+    (model_id, operational_status) [name: 'idx_eq_units_model_status']
+    (model_id, physical_condition) [name: 'idx_eq_units_model_condition']
+  }
+}
+
+Table equipment_model_photos [note: 'Foto katalog; sampul aktif = revision tertinggi yang valid. File privat, riwayat revisi immutable.'] {
+  id bigint [pk, increment, note: 'UNSIGNED']
+  model_id bigint [not null, note: 'UNSIGNED']
+  revision int [not null, note: 'UNSIGNED mulai dari 1']
+  storage_key varchar(255) [not null, unique]
+  mime varchar(40) [not null]
+  byte_size bigint [not null, note: 'UNSIGNED']
+  sha256 char(64) [not null]
+  uploaded_by int [note: 'UNSIGNED; existing users']
+  created_at datetime(6) [not null]
+
+  indexes {
+    (model_id, revision) [unique, name: 'uq_eq_model_photos_revision']
+  }
+}
+
+Table equipment_unit_photos [note: 'Dokumentasi opsional tiap unit, terpisah dari foto katalog dan foto WAJIB retur.'] {
+  id bigint [pk, increment, note: 'UNSIGNED']
+  unit_id bigint [not null, note: 'UNSIGNED']
+  photo_type varchar(24) [not null, note: 'reference, inspection, damage']
+  storage_key varchar(255) [not null, unique]
+  mime varchar(40) [not null]
+  byte_size bigint [not null, note: 'UNSIGNED']
+  sha256 char(64) [not null]
+  uploaded_by int [note: 'UNSIGNED; users']
+  captured_at datetime(6) [note: 'UTC jika sumber mencatat capture time']
+  created_at datetime(6) [not null]
+
+  indexes {
+    (unit_id, created_at) [name: 'idx_eq_unit_photos_history']
+  }
+}
+
+Table equipment_loans [note: 'Header checkout; TANPA kolom status redundan. open/partially_returned/closed/voided diturunkan dari outcome loan_units. Semua identitas peminjam adalah snapshot.'] {
+  id bigint [pk, increment, note: 'UNSIGNED']
+  loan_code varchar(40) [not null, unique]
+  borrower_type varchar(20) [not null, note: 'student, lecturer, staff; external reserved for future']
+  borrower_name varchar(150) [not null]
+  identity_number varchar(40) [not null, note: 'NIM/NIDN/NIP/ID institusi; TIDAK unique']
+  organization varchar(150) [not null, note: 'Prodi/unit/instansi snapshot']
+  whatsapp_number varchar(20) [not null]
+  purpose text [not null]
+  borrowed_at datetime(6) [not null, note: 'UTC waktu serah-terima tercatat']
+  original_due_date date [not null, note: 'Tanggal WIB, immutable']
+  due_date date [not null, note: 'Tanggal WIB yang berlaku, boleh diperpanjang dengan audit']
+  recorded_by int [note: 'UNSIGNED; users; nullable hanya untuk user historis terhapus']
+  recorded_by_name varchar(100) [not null]
+  notes text
+  version int [not null, default: 1, note: 'UNSIGNED; optimistic lock']
+  created_at datetime(6) [not null]
+  updated_at datetime(6) [not null]
+
+  indexes {
+    (borrower_type, identity_number) [name: 'idx_eq_loans_borrower']
+    (due_date) [name: 'idx_eq_loans_due_date']
+    (borrowed_at) [name: 'idx_eq_loans_borrowed_at']
+  }
+}
+
+Table equipment_returns [note: 'Satu batch serah-terima; peminjaman bisa memiliki banyak batch. returned_at adalah waktu kanonis untuk item returned.'] {
+  id bigint [pk, increment, note: 'UNSIGNED']
+  loan_id bigint [not null, note: 'UNSIGNED']
+  receipt_code varchar(50) [not null, unique]
+  returned_at datetime(6) [not null, note: 'UTC']
+  received_by int [note: 'UNSIGNED; users']
+  received_by_name varchar(100) [not null]
+  notes text
+  created_at datetime(6) [not null]
+
+  indexes {
+    (id, loan_id) [unique, name: 'uq_eq_returns_id_loan', note: 'Target composite FK dari loan_units']
+    (loan_id, returned_at) [name: 'idx_eq_returns_loan_time']
+  }
+}
+
+Table equipment_loan_units [note: 'Satu baris per unit fisik checkout. Returned memiliki return_id dan kondisi; lost/voided tanpa receipt. open_unit_id generated STORED + UNIQUE untuk mencegah double checkout.'] {
+  id bigint [pk, increment, note: 'UNSIGNED']
+  loan_id bigint [not null, note: 'UNSIGNED']
+  unit_id bigint [not null, note: 'UNSIGNED']
+  unit_snapshot json [not null, note: 'Snapshot nama/kode/model/kondisi saat checkout']
+  condition_out varchar(20) [not null, note: 'good, minor_damage, major_damage; checkout baru good']
+  checkout_notes text
+  outcome varchar(20) [not null, default: 'on_loan', note: 'SQL ENUM/CHECK: on_loan, returned, lost, voided']
+  return_id bigint [note: 'UNSIGNED; wajib hanya bila outcome=returned']
+  condition_in varchar(20) [note: 'Wajib untuk returned']
+  due_date_at_resolution date [note: 'WIB, snapshot tenggat saat returned/lost']
+  is_late boolean [note: 'Dibekukan untuk returned/lost berdasarkan tanggal WIB']
+  resolution_at datetime(6) [note: 'UTC untuk lost/voided saja; returned memakai returns.returned_at']
+  resolution_notes text [note: 'Wajib untuk lost/voided; opsional untuk returned']
+  open_unit_id bigint [note: 'GENERATED ALWAYS AS (IF(outcome=on_loan, unit_id, NULL)) STORED, UNSIGNED; UNIQUE']
+  created_at datetime(6) [not null]
+  updated_at datetime(6) [not null]
+
+  indexes {
+    (loan_id, unit_id) [unique, name: 'uq_eq_loan_units_loan_unit']
+    (open_unit_id) [unique, name: 'uq_eq_loan_units_active_unit']
+    (id, return_id) [unique, name: 'uq_eq_loan_units_id_return', note: 'Target composite FK foto retur']
+    (return_id, loan_id) [name: 'idx_eq_loan_units_return_loan']
+    (loan_id, outcome) [name: 'idx_eq_loan_units_loan_outcome']
+    (unit_id, outcome) [name: 'idx_eq_loan_units_unit_outcome']
+  }
+}
+
+Table equipment_return_photos [note: 'MINIMAL SATU FOTO PER LOAN UNIT DALAM BATCH RETUR. Tidak ada foto umum; return_id wajib dan divalidasi cocok dengan loan_unit.return_id.'] {
+  id bigint [pk, increment, note: 'UNSIGNED']
+  return_id bigint [not null, note: 'UNSIGNED']
+  loan_unit_id bigint [not null, note: 'UNSIGNED']
+  storage_key varchar(255) [not null, unique]
+  mime varchar(40) [not null]
+  byte_size bigint [not null, note: 'UNSIGNED']
+  sha256 char(64) [not null]
+  created_at datetime(6) [not null]
+
+  indexes {
+    (loan_unit_id, return_id) [name: 'idx_eq_return_photos_unit_return']
+  }
+}
+
+Table equipment_operation_keys [note: 'Idempotency key untuk checkout/return/extend/void/unit_adjust, dll; replay actor+payload identik mengembalikan hasil sama, token konflik ditolak.'] {
+  token char(36) [pk, note: 'UUID binary-safe collation pada SQL']
+  operation varchar(32) [not null]
+  actor_key varchar(64) [not null]
+  payload_hash char(64) [not null]
+  result_type varchar(32) [note: 'loan, return, model, unit, dst. Set ketika selesai']
+  result_id bigint [note: 'UNSIGNED, hasil operasi; periksa di service']
+  created_at datetime(6) [not null]
+  completed_at datetime(6)
+
+  indexes {
+    (operation, created_at) [name: 'idx_eq_opkeys_operation_time']
+  }
+}
+
+Table equipment_audit_log [note: 'APPEND-ONLY. subject_type + subject_id adalah tautan logis polymorphic; tidak ada FK polymorphic yang bisa ditegakkan oleh SQL. Tidak boleh hard-delete entitas Equipment.'] {
+  id bigint [pk, increment, note: 'UNSIGNED']
+  subject_type varchar(24) [not null, note: 'category, model, unit, loan, loan_unit, return']
+  subject_id bigint [not null, note: 'UNSIGNED; periksa keberadaan di service']
+  event_type varchar(60) [not null, note: 'Mis. loan.checked_out, loan.extended, loan.voided, unit.retired, return.created']
+  loan_id bigint [note: 'UNSIGNED; konteks opsional dan FK ke loan']
+  actor_id int [note: 'UNSIGNED; users; nullable jika akun dihapus']
+  actor_name varchar(100) [not null]
+  reason varchar(1000) [not null]
+  before_data json
+  after_data json
+  created_at datetime(6) [not null]
+
+  indexes {
+    (subject_type, subject_id, created_at) [name: 'idx_eq_audit_subject']
+    (loan_id, created_at) [name: 'idx_eq_audit_loan']
+  }
+}
+
+// RELASI: reference ke users stub berarti ke users yang sudah ada di database WPiTV.
+Ref: equipment_models.category_id > equipment_categories.id [delete: restrict]
+Ref: equipment_units.model_id > equipment_models.id [delete: restrict]
+Ref: equipment_model_photos.model_id > equipment_models.id [delete: restrict]
+Ref: equipment_model_photos.uploaded_by > users.id [delete: set null]
+Ref: equipment_unit_photos.unit_id > equipment_units.id [delete: restrict]
+Ref: equipment_unit_photos.uploaded_by > users.id [delete: set null]
+Ref: equipment_loans.recorded_by > users.id [delete: set null]
+Ref: equipment_returns.loan_id > equipment_loans.id [delete: restrict]
+Ref: equipment_returns.received_by > users.id [delete: set null]
+Ref: equipment_loan_units.loan_id > equipment_loans.id [delete: restrict]
+Ref: equipment_loan_units.unit_id > equipment_units.id [delete: restrict]
+// Wajib: return_id milik loan_id yang sama, bukan sekadar ID receipt yang valid.
+Ref: equipment_loan_units.(return_id, loan_id) > equipment_returns.(id, loan_id) [delete: restrict]
+// Wajib: setiap foto milik loan_unit yang benar-benar menunjuk return_id itu.
+Ref: equipment_return_photos.return_id > equipment_returns.id [delete: restrict]
+Ref: equipment_return_photos.(loan_unit_id, return_id) > equipment_loan_units.(id, return_id) [delete: restrict]
+Ref: equipment_audit_log.loan_id > equipment_loans.id [delete: restrict]
+Ref: equipment_audit_log.actor_id > users.id [delete: set null]
+
+// MIGRATION CONTRACT (bukan elemen DBML executable):
+// 1. Sql CHECK outcome: on_loan = semua resolusi NULL; returned = return_id/condition_in/due_date_at_resolution/is_late nonnull, resolution_at NULL;
+//    lost = return_id/condition_in NULL, due_date_at_resolution/is_late/resolution_at/reason nonnull;
+//    voided = return_id/condition_in/due_date_at_resolution/is_late NULL, resolution_at/reason nonnull.
+// 2. Sql CHECK closed_at+closed_reason untuk status unit lost/retired. Retired final.
+// 3. open_unit_id adalah generated STORED, tidak boleh diinput dari Laravel.
+// 4. Model is_active + unit operational_status + condition + no open loan => eligible (di Service Laravel).
+// 5. Indeks & constraint tidak dapat menjamin '>=1 foto per unit retur': Service harus memastikan sebelum COMMIT dan menyediakan cleanup file gagal.
+// 6. Pembuatan kategori/model/unit dan checkout/return harus melalui transaksi & locking; deadline WIB DATE, timestamp UTC.

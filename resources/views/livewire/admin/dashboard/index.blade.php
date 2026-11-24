@@ -16,6 +16,18 @@
         </div>
     </section>
 
+    @can('equipment.report.view')
+        <section class="card dashboard-panel mb-3">
+            <div class="card-header dashboard-panel-header"><h2 class="h5 mb-0">Peralatan</h2><a href="{{ route('admin.equipment-reports.index') }}" class="btn btn-sm btn-outline-primary">Dashboard Equipment</a></div>
+            <div class="card-body">
+                @if($equipment)
+                    <dl class="row mb-0">@foreach(\App\Services\Equipment\EquipmentReports::STOCK as $key => $label)<div class="col-6 col-md-2"><dt class="small text-muted">{{ $label }}</dt><dd class="fs-4 mb-0">{{ $equipment->$key }}</dd></div>@endforeach</dl>
+                @else
+                    <p class="mb-0 text-muted">Ringkasan peralatan belum dapat dimuat.</p>
+                @endif
+            </div>
+        </section>
+    @endcan
     @unless($dashboardAvailable)
         <div class="alert alert-danger" role="alert">
             <i class="bi bi-exclamation-triangle-fill me-2"></i>Data dasbor belum dapat dimuat. Silakan muat ulang halaman.
