@@ -31,6 +31,8 @@ class Form extends Component
 
     public string $title = '';
 
+    public string $description = '';
+
     public ?int $program_id = null;
 
     public string $agenda_date = '';
@@ -59,6 +61,7 @@ class Form extends Component
                 $this->youtubeInput = $stream->youtube_id ?? '';
                 if ($stream->isManual()) {
                     $this->title = $stream->manual_title ?? '';
+                    $this->description = $stream->manual_description ?? '';
                     $this->program_id = $stream->manual_program_id;
                     $start = $stream->manual_starts_at?->setTimezone('Asia/Jakarta');
                     $this->agenda_date = $start?->format('Y-m-d') ?? '';
@@ -95,7 +98,7 @@ class Form extends Component
     private function manualInput(): array
     {
         return [
-            'title' => $this->title, 'program_id' => $this->program_id, 'agenda_date' => $this->agenda_date,
+            'title' => $this->title, 'description' => $this->description, 'program_id' => $this->program_id, 'agenda_date' => $this->agenda_date,
             'start_time' => $this->start_time, 'end_time' => $this->end_time === '' ? null : $this->end_time, 'visibility' => $this->visibility,
         ];
     }

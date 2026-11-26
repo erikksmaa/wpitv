@@ -17,7 +17,7 @@ final class InventoryRules
             default => null,
         };
         if ($borrowed || $next === null) {
-            throw ValidationException::withMessages(['action' => 'Transisi tidak diizinkan. Unit dipinjam tidak boleh diubah; retired terminal dan found hanya lost → maintenance.']);
+            throw ValidationException::withMessages(['action' => $borrowed ? 'Unit sedang dipinjam.' : 'Tindakan ini tidak tersedia untuk kondisi atau status unit saat ini.']);
         }
 
         return $next;
@@ -26,7 +26,7 @@ final class InventoryRules
     public static function reserve(int $next, int $quantity): array
     {
         if ($next < 1 || $quantity < 1 || $quantity > 100 || $next + $quantity > 1000000) {
-            throw ValidationException::withMessages(['quantity' => 'Stok 1–100 unit per operasi; kapasitas nomor unit telah terlampaui.']);
+            throw ValidationException::withMessages(['quantity' => 'Jumlah unit harus antara 1 dan 100 dan tidak boleh melebihi kapasitas kode aset.']);
         }
 
         return range($next, $next + $quantity - 1);

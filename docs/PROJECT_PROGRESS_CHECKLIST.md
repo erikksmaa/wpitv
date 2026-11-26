@@ -1,5 +1,7 @@
 # Checklist Progres Modernisasi WPiTV
 
+> **Catatan handover, 25 November 2026:** checklist berikut dipertahankan sebagai bukti historis, bukan status working tree terkini. Tracking lintas modul kini berada di [DEVELOPMENT_STATUS.md](DEVELOPMENT_STATUS.md) dan prioritas/acceptance criteria di [ROADMAP.md](ROADMAP.md). Jangan menjalankan full suite, migration, commit atau deployment hanya karena direkomendasikan checklist lama; ikuti scope tugas dan [AGENTS.md](../AGENTS.md).
+
 Terakhir diperbarui: 1 September 2026
 
 Dokumen ini menjadi pusat tracking pekerjaan modernisasi portal publik dan admin WPiTV.

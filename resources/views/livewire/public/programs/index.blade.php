@@ -38,9 +38,9 @@
                     <input 
                         type="text" 
                         wire:model.live.debounce.300ms="search"
-                        placeholder="Cari Program..." 
+                        placeholder="Cari program acara..." 
                         class="w-full pl-10 pr-4 py-2.5 bg-[var(--bg)] border border-[var(--border)] rounded-lg text-sm text-[var(--text-primary)] placeholder-[var(--text-faint)] focus:outline-none focus:border-brand-blue transition-colors"
-                        aria-label="Cari Program"
+                        aria-label="Cari program acara"
                     >
                 </div>
 
@@ -93,7 +93,7 @@
                                 </h2>
 
                                 <p class="text-xs text-[var(--text-muted)] leading-relaxed line-clamp-2 mb-5 flex-grow">
-                                    {{ $program->description ? strip_tags($program->description) : 'Program siaran resmi dari WPiTV Institut Widya Pratama.' }}
+                                    {{ $program->description ? strip_tags($program->description) : 'Program acara produksi WPiTV Institut Widya Pratama.' }}
                                 </p>
 
                                 <a 
@@ -120,10 +120,10 @@
                         </svg>
                     </div>
                     <h3 class="font-heading font-bold text-lg text-[var(--text-primary)] mb-1">
-                        Program tidak ditemukan.
+                        {{ $search !== '' ? 'Program tidak ditemukan.' : 'Belum ada program acara.' }}
                     </h3>
                     <p class="text-sm text-[var(--text-muted)] max-w-xs mx-auto mb-6">
-                        Coba gunakan kata kunci yang berbeda.
+                        {{ $search !== '' ? 'Coba gunakan kata kunci yang berbeda.' : 'Daftar program acara akan ditampilkan di sini.' }}
                     </p>
                     @if($search !== '')
                         <button 
@@ -131,7 +131,7 @@
                             wire:click="$set('search', '')" 
                             class="pub-btn pub-btn--primary !text-xs !py-2 !px-4"
                         >
-                            Reset Pencarian
+                            Reset Filter
                         </button>
                     @endif
                 </div>

@@ -95,8 +95,8 @@
             <div class="pub-container">
                 <div class="flex items-end justify-between gap-5 flex-wrap mb-8">
                     <div>
-                        <div class="sec-label">WPiTV News</div>
-                        <h2 class="sec-h2" id="relatedNewsHeading">Berita Terkini Lainnya</h2>
+                        <div class="sec-label">Redaksi WPiTV</div>
+                        <h2 class="sec-h2" id="relatedNewsHeading">Berita Lainnya</h2>
                     </div>
                     <a href="{{ route('news.index') }}" class="sec-link">
                         Lihat Semua Berita

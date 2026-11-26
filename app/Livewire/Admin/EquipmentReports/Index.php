@@ -13,7 +13,7 @@ use Livewire\Component;
 use Livewire\WithPagination;
 
 #[Layout('layouts.admin')]
-#[Title('Monitoring Peralatan - WPiTV')]
+#[Title('Laporan Peralatan - WPiTV')]
 class Index extends Component
 {
     use WithPagination;
@@ -21,14 +21,14 @@ class Index extends Component
     protected string $paginationTheme = 'bootstrap';
 
     #[Locked]
-    public string $section = 'dashboard';
+    public string $section = 'inventory';
 
     #[Locked]
     public array $filters = [];
 
     public array $draft = [];
 
-    public function mount(string $section = 'dashboard'): void
+    public function mount(string $section = 'inventory'): void
     {
         Gate::authorize('equipment.report.view');
         $this->section = $section;
@@ -38,7 +38,13 @@ class Index extends Component
     {
         Gate::authorize('equipment.report.view');
         $this->resetValidation();
-        $this->filters = $reports->filters($this->section, $this->draft);
+        try {
+            $this->filters = $reports->filters($this->section, $this->draft);
+        } catch (QueryException $error) {
+            report($error);
+            $this->addError('action', 'Filter belum dapat diterapkan. Silakan coba lagi.');
+            return;
+        }
         $this->resetPage();
     }
 
@@ -55,12 +61,11 @@ class Index extends Component
         Gate::authorize('equipment.report.view');
         try {
             $data = match ($this->section) {
-                'dashboard' => $reports->dashboard(Gate::allows('equipment.audit.view')),
                 'inventory' => [
                     'counts' => $reports->stock($this->filters),
                     'rows' => $reports->inventory($this->filters)->paginate(20),
                     'categories' => DB::table('equipment_categories')->orderBy('name')->get(['id','name']),
-                    'models' => DB::table('equipment_models')->orderBy('name')->get(['id','name','model_code']),
+                    'models' => DB::table('equipment_models')->orderBy('name')->get(['id','name','model_code','category_id'])->keyBy('id'),
                 ],
                 'loans' => $this->loanData($reports),
             };

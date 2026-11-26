@@ -61,8 +61,8 @@ class Form extends Component
     protected function validationAttributes(): array
     {
         return [
-            'name' => 'Nama Role',
-            'description' => 'Deskripsi Role',
+            'name' => 'Nama Peran',
+            'description' => 'Deskripsi Peran',
         ];
     }
 
@@ -79,16 +79,16 @@ class Form extends Component
         if ($this->roleId) {
             $role = Role::findOrFail($this->roleId);
             if ($role->isCore() && $validated['name'] !== $role->name) {
-                $this->addError('name', 'Nama role inti sistem tidak dapat diubah.');
+                $this->addError('name', 'Nama peran inti sistem tidak dapat diubah.');
 
                 return null;
             }
 
             $role->update($validated);
-            session()->flash('success', "Role \"{$this->name}\" berhasil diperbarui.");
+            session()->flash('success', "Peran \"{$this->name}\" berhasil diperbarui.");
         } else {
             Role::create($validated);
-            session()->flash('success', "Role \"{$this->name}\" berhasil ditambahkan.");
+            session()->flash('success', "Peran \"{$this->name}\" berhasil ditambahkan.");
         }
 
         return redirect()->route('admin.roles.index');

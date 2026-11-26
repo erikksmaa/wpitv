@@ -82,7 +82,7 @@ class Index extends Component
 
         // Delete Protection: Block deletion if assigned to any group
         if ($member->groups_count > 0) {
-            session()->flash('error', 'Member cannot be deleted because this member is still assigned to one or more production groups.');
+            session()->flash('error', 'Anggota tidak dapat dihapus karena masih ditugaskan pada satu atau lebih kelompok produksi.');
 
             return;
         }

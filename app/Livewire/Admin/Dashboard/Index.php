@@ -40,7 +40,7 @@ class Index extends Component
             'dashboardAvailable' => $dashboardAvailable,
             'user' => $user,
         ])->layout('layouts.admin', [
-            'title' => 'Dasbor Admin - WPiTV',
+            'title' => 'Dashboard Admin - WPiTV',
         ]);
     }
 }

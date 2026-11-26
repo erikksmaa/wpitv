@@ -282,7 +282,7 @@ class TVClubMemberManagementTest extends TestCase
         Livewire::actingAs($this->superAdmin)
             ->test(Index::class)
             ->call('delete', $member->id)
-            ->assertSee('Member cannot be deleted because this member is still assigned to one or more production groups.');
+            ->assertSee('Anggota tidak dapat dihapus karena masih ditugaskan pada satu atau lebih kelompok produksi.');
 
         $this->assertDatabaseHas('tvclub_members', [
             'id' => $member->id,

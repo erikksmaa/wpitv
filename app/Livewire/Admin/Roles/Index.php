@@ -65,14 +65,14 @@ class Index extends Component
 
         // Core system roles cannot be deleted
         if ($role->isCore()) {
-            session()->flash('error', "Role '{$role->name}' adalah role inti sistem dan tidak dapat dihapus.");
+            session()->flash('error', "Peran '{$role->name}' adalah peran inti sistem dan tidak dapat dihapus.");
 
             return;
         }
 
         // Delete Protection: Role currently assigned to users cannot be deleted
         if ($role->users_count > 0) {
-            session()->flash('error', 'Role cannot be deleted because it is currently assigned to one or more users.');
+            session()->flash('error', 'Peran tidak dapat dihapus karena masih digunakan oleh satu atau lebih pengguna.');
 
             return;
         }
@@ -80,7 +80,7 @@ class Index extends Component
         $roleName = $role->name;
         $role->delete();
 
-        session()->flash('success', "Role \"{$roleName}\" berhasil dihapus.");
+        session()->flash('success', "Peran \"{$roleName}\" berhasil dihapus.");
     }
 
     public function render()

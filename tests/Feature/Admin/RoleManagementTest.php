@@ -151,7 +151,7 @@ class RoleManagementTest extends TestCase
         Livewire::actingAs($this->superAdmin)
             ->test(Index::class)
             ->call('delete', $role->id)
-            ->assertSee('Role cannot be deleted because it is currently assigned to one or more users.');
+            ->assertSee('Peran tidak dapat dihapus karena masih digunakan oleh satu atau lebih pengguna.');
 
         $this->assertDatabaseHas('roles', ['id' => $role->id]);
     }
@@ -163,7 +163,7 @@ class RoleManagementTest extends TestCase
         Livewire::actingAs($this->superAdmin)
             ->test(Index::class)
             ->call('delete', $superAdminRole->id)
-            ->assertSee("Role 'Super Admin' adalah role inti sistem dan tidak dapat dihapus.");
+            ->assertSee("Peran 'Super Admin' adalah peran inti sistem dan tidak dapat dihapus.");
 
         $this->assertDatabaseHas('roles', ['id' => $superAdminRole->id]);
     }
@@ -184,7 +184,7 @@ class RoleManagementTest extends TestCase
             Livewire::actingAs($this->superAdmin)
                 ->test(Index::class)
                 ->call('delete', $role->id)
-                ->assertSee("Role '{$name}' adalah role inti sistem dan tidak dapat dihapus.");
+                ->assertSee("Peran '{$name}' adalah peran inti sistem dan tidak dapat dihapus.");
 
             $this->assertDatabaseHas('roles', ['id' => $role->id, 'name' => $name]);
         }

@@ -86,7 +86,7 @@ class Form extends Component
         return [
             'name' => 'Nama Pengguna',
             'username' => 'Username',
-            'role_id' => 'Role Hak Akses',
+            'role_id' => 'Peran Hak Akses',
             'status' => 'Status Akun',
             'password' => 'Kata Sandi',
             'password_confirmation' => 'Konfirmasi Kata Sandi',
@@ -138,10 +138,10 @@ class Form extends Component
                 $user->update($payload);
                 $this->user = $user->fresh();
             });
-            session()->flash('success', "Akun user \"{$this->name}\" berhasil diperbarui.");
+            session()->flash('success', "Akun pengguna \"{$this->name}\" berhasil diperbarui.");
         } else {
             User::create($payload);
-            session()->flash('success', "Akun user \"{$this->name}\" berhasil ditambahkan.");
+            session()->flash('success', "Akun pengguna \"{$this->name}\" berhasil ditambahkan.");
         }
 
         return redirect()->route('admin.users.index');

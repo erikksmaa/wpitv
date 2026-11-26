@@ -59,7 +59,7 @@
                             <div class="tvclub-production-crew">
                                 <div class="tvclub-production-crew__heading"><span>Kru dalam Tim</span><strong>{{ $group->members_count }} Kru</strong></div>
                                 @if($group->members->isNotEmpty())
-                                    <div class="tvclub-production-crew__avatars" aria-label="Preview kru {{ $group->name }}">
+                                    <div class="tvclub-production-crew__avatars" aria-label="Daftar kru {{ $group->name }}">
                                         @foreach($group->members->take(4) as $member)
                                             @php($memberRole = filled(trim((string) $member->pivot?->role)) ? trim($member->pivot->role) : 'Anggota Kru')
                                             <a href="{{ route('tvclub.members.show', $member->id) }}" class="tvclub-production-avatar {{ $loop->iteration === 4 ? 'is-fourth' : '' }}" aria-label="{{ $member->name }}, {{ $memberRole }}" title="{{ $member->name }} · {{ $memberRole }}">

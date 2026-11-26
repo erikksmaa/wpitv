@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Services\Equipment\EquipmentReports;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Validation\ValidationException;
 
 class EquipmentReportExportController extends Controller
 {
@@ -12,7 +13,11 @@ class EquipmentReportExportController extends Controller
     {
         Gate::authorize('equipment.report.view');
         Gate::authorize('equipment.report.export');
-        $filters = $reports->filters($section, $request->query());
+        try {
+            $filters = $reports->filters($section, $request->query());
+        } catch (ValidationException $error) {
+            abort(422, $error->validator->errors()->first());
+        }
         $inventory = $section === 'inventory';
         $columns = EquipmentReports::columns($section, $filters);
         $rows = $inventory ? $reports->inventory($filters) : $reports->loans($filters);

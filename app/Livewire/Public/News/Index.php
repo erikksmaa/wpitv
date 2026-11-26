@@ -78,6 +78,7 @@ class Index extends Component
             'yearsList' => $yearsList,
         ])->layout('layouts.public', [
             'title' => 'Berita | WPiTV — Televisi Digital Kampus',
+            'description' => 'Berita kampus, informasi kegiatan, dan artikel jurnalistik WPiTV Institut Widya Pratama.',
         ]);
     }
 }

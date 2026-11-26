@@ -3,6 +3,7 @@
 namespace App\Support;
 
 use App\Models\Coverage;
+use App\Services\WebsiteSettings;
 
 class CoverageWhatsApp
 {
@@ -24,7 +25,7 @@ class CoverageWhatsApp
 
     public function adminNumber(): ?string
     {
-        return $this->normalizePhone(config('wpitv.whatsapp.admin_number'));
+        return app(WebsiteSettings::class)->coverageWhatsAppNumber();
     }
 
     public function publicToAdminMessage(Coverage $coverage): string

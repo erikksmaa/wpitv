@@ -107,7 +107,7 @@ final class LoanService
     {
         $actor = $this->actor($user, $op);
         if ((int) $key->actor_id !== (int) $actor->id || $key->actor_key !== 'users:'.$actor->id || $key->operation !== $op || ! hash_equals($key->payload_hash, $hash)) {
-            $this->fail('action', 'Token sudah digunakan untuk permintaan berbeda. Buka ulang formulir.');
+            $this->fail('action', 'Permintaan sudah berubah. Buka kembali formulir.');
         }
         abort_unless($key->completed_at && $key->result_id && $key->result_type, 503, 'Operasi belum lengkap; hubungi administrator.');
 
@@ -151,7 +151,7 @@ final class LoanService
                 }
             }
         }
-        $data = Validator::make($input, $rules)->validate();
+        $data = EquipmentValidation::validate($input, $rules);
         foreach (['loan_id', 'version'] as $key) {
             if (isset($data[$key])) {
                 $data[$key] = (int) $data[$key];
@@ -188,10 +188,13 @@ final class LoanService
         $expected = array_column($data['items'], 'loan_unit_id');
         $actual = array_map('intval', array_keys($uploads));
         sort($actual);
+        foreach (array_diff($expected, $actual) as $id) {
+            $this->fail('photos.'.$id, 'Unggah minimal satu foto untuk unit ini.');
+        }
         if ($actual !== $expected) {
             $this->fail('photos', 'Setiap unit terpilih wajib memiliki foto sendiri; foto unit lain tidak diterima.');
         }
-        Validator::make(['photos' => $uploads], ['photos' => 'array|max:10', 'photos.*' => 'required|array|min:1|max:8', 'photos.*.*' => 'required|file|max:4883'])->validate();
+        EquipmentValidation::validate(['photos' => $uploads], ['photos' => 'array|max:10', 'photos.*' => 'required|array|min:1|max:8', 'photos.*.*' => 'required|file|max:4883']);
         $count = array_sum(array_map('count', $uploads));
         $inputBytes = 0;
         foreach ($uploads as $files) {
@@ -200,16 +203,20 @@ final class LoanService
             }
         }
         if ($count > 40 || $inputBytes > 100000000) {
-            $this->fail('photos', 'Batch maksimal 40 foto dan total input 100.000.000 byte.');
+            $this->fail('photos', 'Unggah maksimal 40 foto dengan total maksimal 100 MB.');
         }
         $prepared = [];
         $outputBytes = 0;
         foreach ($expected as $id) {
             foreach ($uploads[$id] as $file) {
-                $photo = app(InventoryPhotos::class)->prepare($file);
+                try {
+                    $photo = app(InventoryPhotos::class)->prepare($file);
+                } catch (ValidationException $error) {
+                    $this->fail('photos.'.$id, $error->validator->errors()->first());
+                }
                 $outputBytes += $photo['file_size'];
                 if ($outputBytes > 100000000) {
-                    $this->fail('photos', 'Total foto final maksimal 100.000.000 byte.');
+                    $this->fail('photos', 'Total foto setelah diproses melebihi 100 MB.');
                 }
                 $metadata = app(InventoryPhotos::class)->store($photo);
                 $paths[] = $metadata['storage_path'];
@@ -225,7 +232,7 @@ final class LoanService
     {
         $units = $this->lockUnits($d['units'], true);
         if (count(array_unique(array_column($units, 'model_id'))) > 20) {
-            $this->fail('units', 'Maksimal 20 model dalam satu peminjaman.');
+            $this->fail('units', 'Pilih unit dari maksimal 20 jenis peralatan.');
         }
         $event = now('UTC');
         if ($d['due_date'] < $event->copy()->timezone('Asia/Jakarta')->toDateString()) {
@@ -265,7 +272,7 @@ final class LoanService
         $all = DB::table('equipment_loan_units')->where('loan_id', $loan->id)->orderBy('id')->get();
         $progress = LoanRules::progress($all->pluck('outcome')->all());
         if (! in_array($progress, ['active', 'partially_resolved'], true)) {
-            $this->fail('action', 'Transaksi tidak mempunyai unit aktif atau integritas outcome tidak valid.');
+            $this->fail('action', 'Tindakan ini tidak tersedia untuk transaksi ini.');
         }
         $before = ['loan' => (array) $loan];
         $receipt = null;
@@ -281,7 +288,7 @@ final class LoanService
         } else {
             if ($op === 'loan.void') {
                 if ($progress !== 'active') {
-                    $this->fail('action', 'Void hanya sebelum serah terima dan seluruh unit masih on_loan.');
+                    $this->fail('action', 'Peminjaman hanya dapat dibatalkan sebelum serah terima dan sebelum ada unit yang diselesaikan.');
                 }
                 $selected = $all;
                 $byId = [];
@@ -300,7 +307,7 @@ final class LoanService
             foreach ($selected as $row) {
                 $locked[$row->id] = DB::table('equipment_loan_units')->where('id', $row->id)->lockForUpdate()->first();
                 if ($locked[$row->id]->outcome !== 'on_loan' || $physical[$row->unit_id]->operational_status !== 'active') {
-                    $this->fail('items', 'Status unit berubah atau tidak konsisten. Muat ulang; histori tidak boleh ditimpa.');
+                    $this->fail('items', 'Status unit telah berubah. Buka kembali formulir.');
                 }
             }
             $event = now('UTC');
@@ -310,7 +317,7 @@ final class LoanService
                 foreach ($selected as $row) {
                     $item = $byId[$row->id];
                     if (($late || $item['condition'] !== 'good') && ! $item['notes']) {
-                        $this->fail('items', 'Catatan per unit wajib untuk retur terlambat atau kondisi rusak.');
+                        $this->fail('unitNotes.'.$row->id, 'Isi catatan untuk unit yang rusak atau terlambat dikembalikan.');
                     }
                 }
                 $receipt = DB::table('equipment_returns')->insertGetId(['loan_id' => $loan->id, 'returned_at' => $now, 'received_by' => $actor->id, 'notes' => $d['notes'] ?? null, 'created_at' => $now]);

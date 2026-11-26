@@ -10,7 +10,7 @@
             <div class="tvclub-crew-directory__intro">
                 <span class="tvclub-crew-eyebrow"><i aria-hidden="true"></i>Kru TV Club</span>
                 <h1 id="crewDirectoryTitle">Mereka yang Berkarya di Balik Layar</h1>
-                <p>Kenali mahasiswa TV Club yang terlibat dalam produksi program, tayangan, broadcasting, jurnalistik, dan media digital WPiTV.</p>
+                <p>Kenali mahasiswa anggota TV Club yang bergerak di balik produksi program, berita, dan media digital WPiTV.</p>
             </div>
         </div>
     </section>

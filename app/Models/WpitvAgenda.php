@@ -31,7 +31,7 @@ class WpitvAgenda extends Model
     ];
 
     public const STATUSES = [
-        'draft' => 'Draft',
+        'draft' => 'Draf',
         'scheduled' => 'Terjadwal',
         'completed' => 'Selesai',
         'cancelled' => 'Dibatalkan',

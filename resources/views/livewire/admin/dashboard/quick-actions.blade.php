@@ -5,6 +5,8 @@
         @can('create', App\Models\News::class)<a href="{{ route('admin.news.create') }}"><i class="bi bi-pencil-square"></i>Tulis Berita</a>@endcan
         @can('create', App\Models\Video::class)<a href="{{ route('admin.videos.create') }}"><i class="bi bi-camera-video"></i>Tambah Tayangan</a>@endcan
         @can('create', App\Models\WpitvAgenda::class)<a href="{{ route('admin.agenda.create') }}"><i class="bi bi-calendar-plus"></i>Tambah Agenda</a>@endcan
+        @can('create', App\Models\LiveStream::class)<a href="{{ route('admin.live-streams.create') }}"><i class="bi bi-broadcast"></i>Tambah Live</a>@endcan
+        @can('equipment.loan.checkout')<a href="{{ route('admin.equipment-loans.create') }}"><i class="bi bi-box-arrow-right"></i>Buat Peminjaman</a>@endcan
         @can('updateStatus', App\Models\Coverage::class)<a href="{{ route('admin.peliputan.index') }}"><i class="bi bi-camera-reels"></i>Proses Peliputan</a>@endcan
         @can('create', App\Models\TVClubGeneration::class)<a href="{{ route('admin.tvclub.generations.create') }}"><i class="bi bi-calendar-plus"></i>Tambah Generasi</a>@endcan
         @can('create', App\Models\TVClubMember::class)<a href="{{ route('admin.tvclub.members.create') }}"><i class="bi bi-person-plus"></i>Tambah Kru</a>@endcan

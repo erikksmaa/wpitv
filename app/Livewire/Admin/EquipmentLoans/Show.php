@@ -3,6 +3,9 @@
 namespace App\Livewire\Admin\EquipmentLoans;
 
 use App\Services\Equipment\LoanService;
+use App\Services\Equipment\EquipmentValidation;
+use Illuminate\Database\QueryException;
+use Illuminate\Validation\ValidationException;
 use App\Support\EquipmentPermissions;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Gate;
@@ -49,7 +52,6 @@ class Show extends Component
     {
         Gate::authorize('equipment.loan.view');
         $this->loanId = $loanId;
-        app(LoanService::class)->detail($loanId);
     }
 
     public function begin(string $operation): void
@@ -102,10 +104,11 @@ class Show extends Component
     {
         Gate::authorize('equipment.loan.view');
         Gate::authorize(EquipmentPermissions::OPERATIONS[$this->operation] ?? 'equipment.unknown');
+        $this->resetValidation();
         $data = ['loan_id' => $this->loanId, 'version' => $this->version];
         $uploads = [];
         if (in_array($this->operation, ['return.create', 'loan.loss'], true)) {
-            $this->validate(['selected' => 'required|array|min:1|max:10', 'selected.*' => 'required|integer|min:1|distinct']);
+            EquipmentValidation::validate(['selected' => $this->selected], ['selected' => 'required|array|min:1|max:10', 'selected.*' => 'required|integer|min:1|distinct']);
             $data['items'] = [];
             foreach ($this->selected as $id) {
                 $data['items'][] = ['loan_unit_id' => (int) $id, 'condition' => $this->items[$id]['condition'] ?? '', 'notes' => $this->items[$id]['notes'] ?? ''];
@@ -124,9 +127,41 @@ class Show extends Component
         if ($this->operation !== 'return.create') {
             $data['reason'] = $this->reason;
         }
-        $service->execute(auth()->user(), $this->operation, $this->token, $data, $uploads);
+        try {
+            $service->execute(auth()->user(), $this->operation, $this->token, $data, $uploads);
+        } catch (ValidationException $error) {
+            $messages = [];
+            foreach ($error->errors() as $field => $message) {
+                $key = match ($field) {
+                    'due_date' => 'dueDate',
+                    'not_handed_over' => 'notHandedOver',
+                    'items' => 'selected',
+                    'id', 'loan_id', 'version', 'token' => 'action',
+                    default => $field,
+                };
+                if (preg_match('/^items\.(\d+)\.(condition|notes)$/', $field, $match)) {
+                    $key = 'items.'.($data['items'][$match[1]]['loan_unit_id'] ?? 0).'.'.$match[2];
+                } elseif (str_starts_with($field, 'unitNotes.')) {
+                    $key = 'items.'.substr($field, 10).'.notes';
+                } elseif (str_starts_with($field, 'items.')) {
+                    $key = 'selected';
+                }
+                $messages[$key] ??= $message;
+            }
+            throw ValidationException::withMessages($messages);
+        } catch (QueryException $error) {
+            report($error);
+            $this->dispatch('equipment-feedback', message: 'Data gagal disimpan. Silakan coba lagi.', type: 'error');
+            return;
+        }
+        $message = match ($this->operation) {
+            'return.create' => 'Pengembalian berhasil dicatat.',
+            'loan.extend' => 'Peminjaman berhasil diperpanjang.',
+            'loan.void' => 'Peminjaman berhasil dibatalkan.',
+            'loan.loss' => 'Unit ditandai hilang.',
+        };
         $this->cancel();
-        session()->flash('success', 'Tindakan berhasil dicatat beserta audit. Ketersediaan unit telah diperbarui.');
+        $this->dispatch('equipment-feedback', message: $message, type: 'success');
     }
 
     public function render(LoanService $service)

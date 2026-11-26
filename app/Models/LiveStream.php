@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Schema;
 use LogicException;
 
 class LiveStream extends Model
@@ -18,6 +19,13 @@ class LiveStream extends Model
     use HasUtcTimestamps;
 
     public const STATUSES = ['scheduled', 'live', 'ended', 'cancelled'];
+
+    public const STATUS_LABELS = [
+        'scheduled' => 'Terjadwal',
+        'live' => 'Sedang Live',
+        'ended' => 'Selesai',
+        'cancelled' => 'Dibatalkan',
+    ];
 
     // Queries using these expressions join wpitv_agendas as schedule.
     public const START_WIB = "COALESCE(TIMESTAMPADD(HOUR, 7, live_streams.manual_starts_at), TIMESTAMP(schedule.agenda_date, COALESCE(schedule.start_time, '00:00:00')))";
@@ -105,9 +113,32 @@ class LiveStream extends Model
         return $this->agenda_id === null;
     }
 
+    public static function supportsManualDescription(): bool
+    {
+        static $cached = [];
+        $connection = (new static)->getConnectionName() ?: config('database.default');
+        if (! array_key_exists($connection, $cached)) {
+            try {
+                $cached[$connection] = Schema::connection($connection)->hasColumn('live_streams', 'manual_description');
+            } catch (\Throwable) {
+                $cached[$connection] = false;
+            }
+        }
+
+        return $cached[$connection];
+    }
+
     public function getDisplayTitleAttribute(): ?string
     {
         return $this->isManual() ? $this->manual_title : $this->agenda?->title;
+    }
+
+    public function getDisplayDescriptionAttribute(): ?string
+    {
+        $raw = $this->isManual() ? ($this->attributes['manual_description'] ?? null) : $this->agenda?->description;
+        $trimmed = is_string($raw) ? trim($raw) : '';
+
+        return $trimmed !== '' ? $trimmed : null;
     }
 
     public function getDisplayProgramAttribute(): ?Program
@@ -176,6 +207,11 @@ class LiveStream extends Model
     public function getEmbedUrlAttribute(): ?string
     {
         return YouTubeVideoId::embedUrl($this->youtube_id);
+    }
+
+    public function getThumbnailUrlAttribute(): ?string
+    {
+        return YouTubeVideoId::thumbnailUrl($this->youtube_id);
     }
 
     public function getScheduledStartsAtAttribute(): ?CarbonImmutable

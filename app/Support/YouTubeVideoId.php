@@ -61,4 +61,9 @@ final class YouTubeVideoId
     {
         return self::isValid($id) ? 'https://www.youtube-nocookie.com/embed/'.$id.'?playsinline=1&autoplay=0' : null;
     }
+
+    public static function thumbnailUrl(?string $id): ?string
+    {
+        return self::isValid($id) ? 'https://i.ytimg.com/vi/'.$id.'/hqdefault.jpg' : null;
+    }
 }

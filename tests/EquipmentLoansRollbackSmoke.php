@@ -142,7 +142,10 @@ try {
     $badReturn = ['loan_id' => $loanC, 'version' => 1, 'items' => [['loan_unit_id' => $luC[0], 'condition' => 'major_damage', 'notes' => '']]];
     $reject(fn () => $loans->execute($actor, 'return.create', $token(), $badReturn, [$luC[0] => [$photo]]), 'damaged return requires per-unit notes');
     $component = Livewire::actingAs($actor)->test(Show::class, ['loanId' => $loanC])->assertSee('Synthetic Borrower')->call('begin', 'return.create');
-    $component->set('selected', [(string) $luC[0]])->set('items.'.$luC[0].'.condition', 'major_damage')->set('items.'.$luC[0].'.notes', 'Synthetic damage')
+    $component->set('selected', [(string) $luC[0]])->call('save')
+        ->assertHasErrors('photos.'.$luC[0])->assertSee('Unggah minimal satu foto untuk unit ini.')
+        ->assertSet('operation', 'return.create');
+    $component->set('items.'.$luC[0].'.condition', 'major_damage')->set('items.'.$luC[0].'.notes', 'Synthetic damage')
         ->set('photos.'.$luC[0], [UploadedFile::fake()->image('ui-evidence.png', 64, 64)])->call('save')->assertHasNoErrors()->assertSee('Selesai sebagian');
     $check(DB::table('equipment_units')->where('id', $units[3])->value('physical_condition') === 'major_damage', 'Livewire partial return updates Inventory condition');
     $reject(fn () => $loans->execute($actor, 'loan.checkout', $token(), $later + ['units' => [$units[3]]]), 'damaged returned unit not loanable');
@@ -160,7 +163,7 @@ try {
     $reject(fn () => app(EquipmentReturnPhotoController::class)->show($loan, $photoA->id), 'photo access requires loan and file permissions');
     Livewire::actingAs($news)->test(Index::class)->assertForbidden();
     $check(true, 'Livewire list denies unauthorized role');
-    Livewire::actingAs($actor)->test(Index::class)->set('search', $code)->assertSee($loans->detail($loanC)['loan']->loan_number)->set('search', 'NO-MATCH-'.$code)->assertSee('Belum ada transaksi');
+    Livewire::actingAs($actor)->test(Index::class)->set('search', $code)->assertSee($loans->detail($loanC)['loan']->loan_number)->set('search', 'NO-MATCH-'.$code)->assertSee('Tidak ada peminjaman yang cocok')->call('resetFilters')->assertSet('search', '');
     Livewire::actingAs($actor)->test(Index::class)->set('search', 'Synthetic Borrower')->assertSee($loans->detail($loanC)['loan']->loan_number)->set('status', 'partially_resolved')->assertSee('Selesai sebagian');
     $check(true, 'Livewire listing search and progress filter render');
     $component = Livewire::actingAs($actor)->test(Show::class, ['loanId' => $loanC])->call('begin', 'loan.loss')->set('selected', [(string) $luC[1]])->set('reason', 'Synthetic final loss')->call('save')->assertHasNoErrors()->assertSee('Selesai');
@@ -195,6 +198,10 @@ try {
     $query = $reports->loans($window)->whereIn('id',[$loan,$loanC,$loanD]);
     $summary = $reports->loanCounts($query,true);
     $check((int)$summary->transactions === 1 && (int)$summary->returned === 2 && $query->first()->id === $loanD, 'period uses receipt time and actual returned units');
+    $check((int)$query->first()->period_late_returns === 2, 'return period counts only late returns in its own window');
+    $onTimeReturnWindow = ['period'=>'return','from'=>'2026-11-24','until'=>'2026-11-24'];
+    $check($reports->loans($onTimeReturnWindow)->where('id',$loan)->exists()
+        && !$reports->loans($onTimeReturnWindow + ['late'=>'resolved_late'])->where('id',$loan)->exists(), 'later loss does not count as a late return in earlier period');
     $check(!$reports->loans(array_replace($window,['period'=>'checkout']))->where('id',$loanD)->exists(), 'checkout and receipt windows differ');
     // Fixture-only checkout at midnight WIB, still the previous UTC day.
     Carbon::setTestNow(Carbon::parse('2026-11-28 17:00:00','UTC'));
@@ -204,15 +211,26 @@ try {
     $check((int)$reports->stock(['model'=>$model])->borrowed === 1, 'open allocation contributes to KPI');
     $page = Livewire::actingAs($production)->test(ReportPage::class,['section'=>'loans'])->set('draft',$window)->call('apply')->assertHasNoErrors()
         ->assertSee($loans->detail($loanD)['loan']->loan_number)->assertDontSee('Synthetic Borrower')->assertSee('Kembali dalam periode');
-    $page->set('draft.until','2026-11-27')->call('apply')->assertHasErrors(['until']);
+    $page->set('draft.until','2026-11-27')->call('apply')->assertHasErrors(['until'])
+        ->assertSee('Tanggal akhir tidak boleh sebelum tanggal mulai.')->assertSet('filters', $window)
+        ->call('clear')->assertSet('filters', [])->assertHasNoErrors();
     $check(true,'report page validates ranges and excludes borrower identity');
     Livewire::actingAs($actor)->test(ReportPage::class,['section'=>'inventory'])->set('draft',['model'=>$model,'category'=>$category])->call('apply')->assertHasNoErrors()->assertSee($code);
-    Livewire::actingAs($actor)->test(ReportPage::class)->assertSee('Aktivitas terbaru')->assertSee($loans->detail($boundary)['loan']->loan_number);
-    $check(true,'inventory drill-down and due dashboard render');
+    Livewire::actingAs($actor)->test(ReportPage::class)->assertSee('Laporan Inventaris')->assertDontSee('Aktivitas terbaru');
+    Livewire::actingAs($actor)->test(\App\Livewire\Admin\Inventory\Index::class)
+        ->assertSee('Ringkasan peralatan')->assertDontSee('Aktivitas terbaru')->assertDontSee('Terlambat atau jatuh tempo dalam 3 hari');
+    $check(true,'inventory drill-down and stock summary render');
     $export = app(EquipmentReportExportController::class);
     $capture = function ($response) { ob_start(); $response->sendContent(); return ob_get_clean(); };
     Auth::setUser($production);
     $csv = $capture($export(Request::create('/','GET',$window),'loans',$reports));
+    $check(str_contains($csv,'Retur terakhir dalam periode (WIB)') && str_contains($csv,'Retur terlambat dalam periode'), 'CSV matches return-period columns');
+    try {
+        $export(Request::create('/','GET',['from'=>'2026-11-29','until'=>'2026-11-28']),'loans',$reports);
+        throw new RuntimeException('Expected invalid CSV filter rejection');
+    } catch (HttpExceptionInterface $exception) {
+        $check($exception->getStatusCode() === 422, 'CSV rejects invalid dates without redirect or download');
+    }
     $check(str_contains($csv,$loans->detail($loanD)['loan']->loan_number) && !str_contains($csv,$loans->detail($loanC)['loan']->loan_number)
         && !str_contains($csv,'Synthetic Borrower') && !str_contains($csv,$code), 'filtered receipt CSV excludes private fields');
     $inventoryCsv = $capture($export(Request::create('/','GET',['model'=>$model,'condition'=>'major_damage']),'inventory',$reports));

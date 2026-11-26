@@ -109,7 +109,7 @@ class Index extends Component
             return;
         }
 
-        session()->flash('success', "User \"{$result[1]}\" berhasil dihapus.");
+        session()->flash('success', "Pengguna \"{$result[1]}\" berhasil dihapus.");
     }
 
     public function render()

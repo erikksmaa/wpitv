@@ -45,7 +45,7 @@
                                 </a>
                             @else
                                 <span class="inline-flex items-center gap-1.5 bg-gray-100 dark:bg-gray-800 text-[var(--text-muted)] text-xs font-semibold px-3 py-1 rounded-full">
-                                    WPiTV Special
+                                    Tayangan Lepas WPiTV
                                 </span>
                             @endif
 
@@ -77,7 +77,7 @@
                                     href="{{ route('program.show', $video->program->slug) }}" 
                                     class="pub-btn pub-btn--secondary !text-xs !py-2.5 !px-4"
                                 >
-                                    Lihat Semua Episode Program &rarr;
+                                    Lihat Semua Tayangan Program &rarr;
                                 </a>
                             @endif
                         </div>
@@ -86,7 +86,7 @@
                         @if(!empty($video->description))
                             <div class="mt-6 pt-6 border-t border-[var(--border)]">
                                 <h2 class="font-heading font-bold text-xs uppercase tracking-wider text-[var(--text-faint)] mb-2.5">
-                                    Deskripsi Tayangan
+                                    Tentang Tayangan
                                 </h2>
                                 <div class="text-sm text-[var(--text-secondary)] leading-relaxed whitespace-pre-line break-words">
                                     {{ $video->description }}
@@ -133,7 +133,7 @@
                                 loading="lazy"
                             >
                             <div class="min-w-0 flex-1">
-                                <span class="text-[10px] font-semibold uppercase tracking-wider text-brand-blue dark:text-brand-cyan block mb-0.5">Program</span>
+                                <span class="text-[10px] font-semibold uppercase tracking-wider text-brand-blue dark:text-brand-cyan block mb-0.5">Program Acara</span>
                                 <h3 class="font-heading font-bold text-sm text-[var(--text-primary)] truncate mb-1">
                                     {{ $video->program->name }}
                                 </h3>

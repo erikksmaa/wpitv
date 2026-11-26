@@ -70,7 +70,12 @@ final class InventoryService
                 if ($key) {
                     return $this->replay($key, $actor, $operation, $hash);
                 }
-                throw ValidationException::withMessages(['code' => 'Kode kategori/model/aset sudah digunakan. Muat ulang dan gunakan kode lain.']);
+                $message = match ($operation) {
+                    'category.create' => 'Kode kategori sudah digunakan.',
+                    'model.create' => 'Kode peralatan sudah digunakan.',
+                    default => 'Kode aset sudah digunakan.',
+                };
+                throw ValidationException::withMessages(['code' => $message]);
             }
             throw $e;
         } finally {
@@ -112,7 +117,7 @@ final class InventoryService
     {
         Gate::forUser(User::with('role')->findOrFail($actor->id))->authorize(EquipmentPermissions::OPERATIONS[$operation]);
         if ((int) $key->actor_id !== (int) $actor->id || $key->actor_key !== 'users:'.$actor->id || $key->operation !== $operation || ! hash_equals($key->payload_hash, $hash)) {
-            throw ValidationException::withMessages(['action' => 'Token sudah digunakan untuk permintaan berbeda. Buka kembali formulir.']);
+            throw ValidationException::withMessages(['action' => 'Permintaan sudah berubah. Buka kembali formulir.']);
         }
         abort_unless($key->completed_at && $key->result_type && $key->result_id, 503, 'Operasi belum lengkap; hubungi administrator.');
 
@@ -152,7 +157,11 @@ final class InventoryService
             $rules += ['condition' => ['required', Rule::in(['good', 'minor_damage', 'major_damage'])], 'serial_number' => 'nullable|string|max:150'];
         }
 
-        return Validator::make($input, $rules)->validate();
+        $category = str_starts_with($operation, 'category.');
+        return EquipmentValidation::validate($input, $rules, [
+            'name' => $category ? 'Nama kategori' : 'Nama peralatan',
+            'code' => $category ? 'Kode kategori' : 'Kode peralatan',
+        ]);
     }
 
     private function lock(string $table, int $id, int $version): object
@@ -210,9 +219,11 @@ final class InventoryService
                 $categories[$categoryId] = DB::table('equipment_categories')->where('id', $categoryId)->lockForUpdate()->first();
             }
             $category = $categories[$d['category_id']] ?? null;
-            abort_unless($category, 404);
+            if (! $category) {
+                throw ValidationException::withMessages(['category_id' => 'Kategori tidak ditemukan. Pilih kategori lain.']);
+            }
             if ((! $old || $old->category_id != $d['category_id']) && ! $category->is_active) {
-                throw ValidationException::withMessages(['category_id' => 'Kategori tujuan harus aktif.']);
+                throw ValidationException::withMessages(['category_id' => 'Pilih kategori yang aktif.']);
             }
             $changes = ['category_id' => $d['category_id'], 'name' => $d['name'], 'description' => $d['description'] ?: null, 'is_active' => (bool) $d['is_active']];
             if ($op === 'model.create') {
@@ -226,7 +237,7 @@ final class InventoryService
                     throw ValidationException::withMessages(['action' => 'Kategori model berubah; muat ulang.']);
                 }
                 if (! $d['is_active'] && $this->modelBorrowed($row->id)) {
-                    throw ValidationException::withMessages(['action' => 'Model dengan unit dipinjam tidak dapat dinonaktifkan.']);
+                    throw ValidationException::withMessages(['action' => 'Peralatan masih memiliki unit yang sedang dipinjam.']);
                 }
                 $before = (array) $row;
                 $id = $row->id;
@@ -249,7 +260,7 @@ final class InventoryService
             }
             $row = $this->lock($table, $d['id'], $d['version']);
             if (! $isModel && ($row->operational_status === 'retired' || $this->borrowed($row->id))) {
-                throw ValidationException::withMessages(['action' => 'Foto unit retired/dipinjam tidak boleh ditambah melalui Inventory.']);
+                throw ValidationException::withMessages(['action' => 'Foto tidak dapat ditambahkan untuk unit yang dipinjam atau dinonaktifkan permanen.']);
             }
             $photoTable = $isModel ? 'equipment_model_photos' : 'equipment_unit_photos';
             $parent = $isModel ? 'model_id' : 'unit_id';
@@ -279,7 +290,7 @@ final class InventoryService
             $borrowed = $this->borrowed($id);
             if ($op === 'unit.condition') {
                 if ($borrowed || ! in_array($row->operational_status, ['active', 'maintenance'], true)) {
-                    throw ValidationException::withMessages(['action' => 'Kondisi/serial hanya dapat diubah pada unit bebas active/maintenance.']);
+                    throw ValidationException::withMessages(['action' => 'Kondisi dan serial hanya dapat diubah pada unit aktif atau dalam perawatan yang tidak dipinjam.']);
                 }
                 $changes = ['physical_condition' => $d['condition'], 'serial_number' => $d['serial_number'] ?: null, 'condition_notes' => $reason];
             } else {
@@ -305,7 +316,7 @@ final class InventoryService
         $numbers = InventoryRules::reserve((int) $model->next_unit_no, $quantity);
         $maximum = DB::table('equipment_units')->where('model_id', $model->id)->max('unit_no') ?? 0;
         if ($model->next_unit_no <= $maximum) {
-            throw ValidationException::withMessages(['quantity' => 'Counter tidak konsisten dengan unit existing; hentikan dan periksa tanpa mengubah schema.']);
+            throw ValidationException::withMessages(['quantity' => 'Nomor unit tidak dapat diterbitkan. Hubungi admin.']);
         }
         $ids = [];
         foreach ($numbers as $number) {

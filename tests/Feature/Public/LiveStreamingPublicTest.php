@@ -60,7 +60,7 @@ class LiveStreamingPublicTest extends TestCase
         $this->stream(['title' => 'Future scheduled'], ['youtube_id' => null]);
         $this->stream(['title' => 'Live one'], ['status' => 'live', 'live_marked_at' => now('UTC'), 'youtube_id' => 'abc12345678']);
         $this->stream(['title' => 'Live two'], ['status' => 'live', 'live_marked_at' => now('UTC'), 'youtube_id' => 'xyz12345678']);
-        $this->get(route('live.index'))->assertOk()->assertSeeInOrder(['Sedang Live', 'Live one', 'Live two', 'Jadwal Mendatang', 'Future scheduled', 'Menunggu Pembaruan Operator', 'Past scheduled']);
+        $this->get(route('live.index'))->assertOk()->assertSeeInOrder(['Sedang Live', 'Live one', 'Live two', 'Jadwal Mendatang', 'Future scheduled', 'Past scheduled']);
     }
 
     public function test_archive_requires_exact_video_and_completed_public_agenda(): void

@@ -139,7 +139,7 @@ class Form extends Component
 
         // Generation consistency validation
         if ((int) $member->generation_id !== (int) $this->generation_id) {
-            session()->flash('assignment_error', 'Member must belong to the same generation as this production group.');
+            session()->flash('assignment_error', 'Anggota harus berasal dari generasi yang sama dengan kelompok produksi ini.');
 
             return;
         }
@@ -150,7 +150,7 @@ class Form extends Component
             'member_id' => $member->id,
             'name' => $member->name,
             'student_number' => $member->student_number,
-            'role' => $finalRole ?: 'Crew Member',
+            'role' => $finalRole ?: 'Anggota Kru',
             'photo_url' => $member->photo_url,
             'initials' => $member->initials,
         ];
@@ -176,7 +176,7 @@ class Form extends Component
 
         foreach ($this->assignedMembers as &$assigned) {
             if ((int) $assigned['member_id'] === $memberId) {
-                $assigned['role'] = trim($newRole) ?: 'Crew Member';
+                $assigned['role'] = trim($newRole) ?: 'Anggota Kru';
                 break;
             }
         }
@@ -220,7 +220,7 @@ class Form extends Component
         foreach ($this->assignedMembers as $item) {
             $member = TVClubMember::find($item['member_id']);
             if (! $member || (int) $member->generation_id !== (int) $this->generation_id) {
-                $this->addError('generation_id', 'Member must belong to the same generation as this production group.');
+                $this->addError('generation_id', 'Anggota harus berasal dari generasi yang sama dengan kelompok produksi ini.');
 
                 return null;
             }

@@ -49,11 +49,6 @@ class AdminDashboardMetrics
             $data['live'] = $live;
         }
 
-        $monthly = app(MonthlyActivityDashboard::class)->get($user);
-        if ($monthly !== null) {
-            $data['monthly'] = $monthly;
-        }
-
         return $data;
     }
 

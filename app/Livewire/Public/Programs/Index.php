@@ -56,6 +56,7 @@ class Index extends Component
             'programs' => $programs,
         ])->layout('layouts.public', [
             'title' => 'Program Acara | WPiTV — Televisi Digital Kampus',
+            'description' => 'Jelajahi berbagai program acara dan katalog tayangan produksi WPiTV Institut Widya Pratama.',
         ]);
     }
 }

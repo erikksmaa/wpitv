@@ -36,7 +36,7 @@
             </div>
         </section>
         <section class="card agenda-form-section">
-            <div class="agenda-form-title"><span>04</span><div><h4>Status & Publikasi</h4><p>Draft dan agenda internal tidak akan muncul kepada publik.</p></div></div>
+            <div class="agenda-form-title"><span>04</span><div><h4>Status & Publikasi</h4><p>Draf dan agenda internal tidak akan muncul kepada publik.</p></div></div>
             <div class="row g-3">
                 <div class="col-md-6"><label>Status</label><select wire:model="status" class="form-select">@foreach(App\Models\WpitvAgenda::STATUSES as $key=>$label)<option value="{{ $key }}">{{ $label }}</option>@endforeach</select></div>
                 <div class="col-md-6"><label>Visibilitas</label><select wire:model="visibility" class="form-select">@foreach(App\Models\WpitvAgenda::VISIBILITIES as $key=>$label)<option value="{{ $key }}">{{ $label }}</option>@endforeach</select></div>

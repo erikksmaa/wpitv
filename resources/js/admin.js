@@ -27,6 +27,11 @@ import 'sweetalert2/dist/sweetalert2.min.css';
         },
     });
 
+    function swalTarget() {
+        const openDialogs = document.querySelectorAll('dialog[open]');
+        return openDialogs.length ? openDialogs[openDialogs.length - 1] : document.body;
+    }
+
     function normalizeType(type) {
         return type === 'danger' ? 'error' : (type || 'info');
     }
@@ -59,6 +64,7 @@ import 'sweetalert2/dist/sweetalert2.min.css';
 
         const duration = options.duration ?? (normalizedType === 'error' ? 6000 : 4200);
         return Toast.fire({
+            target: swalTarget(),
             icon: normalizedType,
             title: displayMessage,
             timer: duration,
@@ -68,6 +74,7 @@ import 'sweetalert2/dist/sweetalert2.min.css';
     function confirmAction(options = {}) {
         const type = normalizeType(options.type || 'warning');
         return Swal.fire({
+            target: swalTarget(),
             title: options.title || 'Apakah Anda yakin?',
             text: options.message || undefined,
             icon: type,
@@ -195,7 +202,7 @@ import 'sweetalert2/dist/sweetalert2.min.css';
         const isUpdate = target.dataset.adminConfirmKind === 'update';
         const approved = await confirmAction({
             title: isUpdate ? 'Apakah Anda yakin ingin mengubah status ini?' : 'Apakah Anda yakin ingin menghapus data ini?',
-            message: isUpdate ? 'Status akan disimpan sebelum draft WhatsApp disiapkan.' : 'Data yang dihapus tidak dapat dikembalikan.',
+            message: isUpdate ? 'Status akan disimpan sebelum draf WhatsApp disiapkan.' : 'Data yang dihapus tidak dapat dikembalikan.',
             confirmText: isUpdate ? 'Ya, simpan' : 'Ya, hapus',
             type: isUpdate ? 'info' : 'warning',
         });

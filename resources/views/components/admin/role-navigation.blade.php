@@ -19,6 +19,13 @@
             </li>
         @endforeach
     @endif
+    @if($section['title'] === 'Sistem')
+        @can('manage-website-settings')
+            <li class="sidebar-item {{ request()->routeIs('admin.settings.*') ? 'active' : '' }}">
+                <a href="{{ route('admin.settings.index') }}" class="sidebar-link"><i class="bi bi-gear"></i><span>Pengaturan Website</span></a>
+            </li>
+        @endcan
+    @endif
 @endforeach
 @can('view-visitor-statistics')
     <li class="sidebar-title">Analitik</li>

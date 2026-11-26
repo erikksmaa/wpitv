@@ -281,7 +281,7 @@ class TVClubGroupManagementTest extends TestCase
         Livewire::actingAs($this->superAdmin)
             ->test(Index::class)
             ->call('delete', $group->id)
-            ->assertSee('This group still has assigned members. Remove all member assignments before deleting the group.');
+            ->assertSee('Kelompok ini masih memiliki anggota terdaftar. Hapus seluruh penugasan anggota sebelum menghapus kelompok.');
 
         $this->assertDatabaseHas('tvclub_groups', [
             'id' => $group->id,
@@ -485,7 +485,7 @@ class TVClubGroupManagementTest extends TestCase
             ->set('generation_id', $this->generation->id)
             ->set('selectedMemberId', $memberOtherGen->id)
             ->call('addMember')
-            ->assertSee('Member must belong to the same generation as this production group.');
+            ->assertSee('Anggota harus berasal dari generasi yang sama dengan kelompok produksi ini.');
     }
 
     public function test_remove_member_assignment_works(): void

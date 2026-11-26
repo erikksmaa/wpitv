@@ -29,7 +29,7 @@ class Status extends Component
                 'max:25',
                 fn ($attribute, $value, $fail) => app(CoverageWhatsApp::class)->normalizePhone($value)
                     ? null
-                    : $fail('Nomor Telepon / WhatsApp tidak valid.'),
+                    : $fail('Nomor WhatsApp / Telepon tidak valid.'),
             ],
         ];
     }
@@ -38,7 +38,17 @@ class Status extends Component
     {
         return [
             'submission_code' => 'Kode Pengajuan',
-            'phone' => 'Nomor Telepon / WhatsApp',
+            'phone' => 'Nomor WhatsApp / Telepon',
+        ];
+    }
+
+    protected function messages(): array
+    {
+        return [
+            'submission_code.required' => 'Kode pengajuan harus diisi.',
+            'submission_code.max' => 'Kode pengajuan maksimal 30 karakter.',
+            'phone.required' => 'Nomor WhatsApp / Telepon harus diisi.',
+            'phone.max' => 'Nomor WhatsApp / Telepon maksimal 25 karakter.',
         ];
     }
 
@@ -103,7 +113,7 @@ class Status extends Component
                 : null,
         ])->layout('layouts.public', [
             'title' => 'Cek Status Peliputan | WPiTV — Televisi Digital Kampus',
-            'description' => 'Periksa perkembangan status pengajuan peliputan kegiatan Anda oleh tim redaksi WPiTV.',
+            'description' => 'Pantau perkembangan status pengajuan peliputan kegiatan oleh tim WPiTV.',
         ]);
     }
 }

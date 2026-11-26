@@ -43,7 +43,7 @@
                                       wire:model="description" 
                                       rows="3" 
                                       class="form-control @error('description') is-invalid @enderror" 
-                                      placeholder="Tuliskan cakupan tugas atau kewenangan role ini..."></textarea>
+                                      placeholder="Tuliskan cakupan tugas atau kewenangan peran ini..."></textarea>
                             @error('description')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror

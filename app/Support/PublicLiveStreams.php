@@ -10,9 +10,16 @@ final class PublicLiveStreams
 {
     public static function query(): Builder
     {
+        $columns = [
+            'live_streams.id', 'live_streams.agenda_id', 'live_streams.youtube_id', 'live_streams.status', 'live_streams.archive_video_id',
+            'live_streams.manual_title', 'live_streams.manual_program_id', 'live_streams.manual_starts_at', 'live_streams.manual_ends_at', 'live_streams.manual_visibility',
+        ];
+        if (LiveStream::supportsManualDescription()) {
+            $columns[] = 'live_streams.manual_description';
+        }
+
         return LiveStream::publicVisible()
-            ->select('live_streams.id', 'live_streams.agenda_id', 'live_streams.youtube_id', 'live_streams.status', 'live_streams.archive_video_id',
-                'live_streams.manual_title', 'live_streams.manual_program_id', 'live_streams.manual_starts_at', 'live_streams.manual_ends_at', 'live_streams.manual_visibility')
+            ->select($columns)
             ->with([
                 'agenda:id,title,description,type,visibility,status,agenda_date,start_time,end_time,program_id',
                 'agenda.program' => fn ($q) => $q->where('status', true)->select('id', 'name', 'slug'),

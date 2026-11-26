@@ -98,7 +98,7 @@
                         <input type="text" 
                                wire:model.live.debounce.300ms="search" 
                                class="form-control bg-light border-start-0" 
-                               placeholder="Cari nama role atau deskripsi...">
+                               placeholder="Cari nama peran atau deskripsi...">
                         @if($search)
                             <button class="btn btn-light border" type="button" wire:click="$set('search', '')">
                                 <i class="bi bi-x"></i>

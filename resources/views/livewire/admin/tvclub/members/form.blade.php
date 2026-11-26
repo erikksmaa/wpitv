@@ -140,7 +140,7 @@
                                     </div>
                                     <div wire:loading wire:target="photo" class="text-primary small mt-1">
                                         <span class="spinner-border spinner-border-sm me-1" role="status"></span>
-                                        Mengunggah dan memproses preview foto...
+                                        Mengunggah dan memproses pratinjau foto...
                                     </div>
                                 </div>
                             </div>

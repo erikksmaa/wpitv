@@ -40,7 +40,7 @@ class Create extends Component
                 'max:25',
                 fn ($attribute, $value, $fail) => app(CoverageWhatsApp::class)->normalizePhone($value)
                     ? null
-                    : $fail('Nomor Telepon / WhatsApp tidak valid.'),
+                    : $fail('Nomor WhatsApp / Telepon tidak valid.'),
             ],
             'event_name' => ['required', 'string', 'max:200'],
             'event_date' => ['required', 'date'],
@@ -54,12 +54,31 @@ class Create extends Component
     {
         return [
             'name' => 'Nama Pemohon',
-            'phone' => 'Nomor Telepon / WhatsApp',
+            'phone' => 'Nomor WhatsApp / Telepon',
             'event_name' => 'Nama Kegiatan',
             'event_date' => 'Tanggal Kegiatan',
             'event_time' => 'Waktu Kegiatan',
             'location' => 'Lokasi Kegiatan',
             'description' => 'Deskripsi Kegiatan',
+        ];
+    }
+
+    protected function messages(): array
+    {
+        return [
+            'name.required' => 'Nama pemohon harus diisi.',
+            'name.max' => 'Nama pemohon maksimal 100 karakter.',
+            'phone.required' => 'Nomor WhatsApp / Telepon harus diisi.',
+            'phone.max' => 'Nomor WhatsApp / Telepon maksimal 25 karakter.',
+            'event_name.required' => 'Nama kegiatan harus diisi.',
+            'event_name.max' => 'Nama kegiatan maksimal 200 karakter.',
+            'event_date.required' => 'Pilih tanggal kegiatan.',
+            'event_date.date' => 'Format tanggal kegiatan tidak valid.',
+            'event_time.date_format' => 'Format waktu kegiatan harus JJ:MM.',
+            'location.required' => 'Lokasi kegiatan harus diisi.',
+            'location.max' => 'Lokasi kegiatan maksimal 255 karakter.',
+            'description.required' => 'Deskripsi kegiatan harus diisi.',
+            'description.max' => 'Deskripsi kegiatan maksimal 3000 karakter.',
         ];
     }
 

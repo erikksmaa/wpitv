@@ -208,7 +208,7 @@
                 <li data-reveal><span>01</span><h3>Ide &amp; Perencanaan</h3><p>Menentukan konsep, tujuan, materi, dan arah produksi.</p></li>
                 <li data-reveal data-d="1"><span>02</span><h3>Persiapan</h3><p>Menyiapkan kru, peralatan, kebutuhan teknis, dan materi produksi.</p></li>
                 <li data-reveal data-d="2"><span>03</span><h3>Produksi</h3><p>Pengambilan gambar, rekaman, wawancara, atau peliputan.</p></li>
-                <li data-reveal data-d="3"><span>04</span><h3>Post-Production</h3><p>Editing video, audio, grafis, dan finalisasi konten.</p></li>
+                <li data-reveal data-d="3"><span>04</span><h3>Pascaproduksi</h3><p>Editing video, audio, grafis, dan finalisasi konten.</p></li>
                 <li data-reveal><span>05</span><h3>Publikasi</h3><p>Konten dipublikasikan melalui WPiTV dan media digital.</p></li>
             </ol>
         </div>
@@ -272,7 +272,7 @@
                 <div>
                     <span class="about-wpitv-kicker about-wpitv-kicker--light">Layanan Peliputan</span>
                     <h2 id="about-wpitv-coverage-title">Punya kegiatan yang ingin diliput?</h2>
-                    <p>Ceritakan kegiatanmu kepada tim WPiTV dan ajukan permohonan peliputan melalui portal layanan WPiTV.</p>
+                    <p>Ajukan jadwal dan informasi kegiatan agar tim WPiTV dapat meninjau kebutuhan peliputan.</p>
                 </div>
                 <div class="about-wpitv-actions">
                     <a href="{{ route('peliputan.create') }}" class="pub-btn pub-btn--primary">Ajukan Peliputan</a>
@@ -284,13 +284,17 @@
 
     <section class="about-wpitv-closing" aria-labelledby="about-wpitv-closing-title">
         <div class="pub-container about-wpitv-closing-inner" data-reveal>
-            <div><span class="about-wpitv-kicker">Lanjut Menjelajah</span><h2 id="about-wpitv-closing-title">Temukan lebih banyak cerita dari WPiTV.</h2><p>Jelajahi program, tayangan, berita, dan karya mahasiswa yang menjadi bagian dari perjalanan WPiTV.</p></div>
+            <div><span class="about-wpitv-kicker">Lanjut Menjelajah</span><h2 id="about-wpitv-closing-title">Temukan lebih banyak cerita dari WPiTV.</h2><p>Jelajahi program, tayangan, berita, dan karya kru TV Club WPiTV.</p></div>
             <nav class="about-wpitv-closing-links" aria-label="Jelajahi konten WPiTV">
                 <a href="{{ route('program.index') }}">Program <span aria-hidden="true">→</span></a>
                 <a href="{{ route('video.index') }}">Tayangan <span aria-hidden="true">→</span></a>
                 <a href="{{ route('news.index') }}">Berita <span aria-hidden="true">→</span></a>
                 <a href="{{ route('tvclub.index') }}">TV Club <span aria-hidden="true">→</span></a>
             </nav>
+        </div>
+        <div class="pub-container" data-reveal>
+            <x-public.contact-info variant="about" />
+            <x-public.social-links variant="about" />
         </div>
     </section>
 </div>

@@ -16,36 +16,50 @@
         </div>
     </section>
 
-    @can('equipment.report.view')
-        <section class="card dashboard-panel mb-3">
-            <div class="card-header dashboard-panel-header"><h2 class="h5 mb-0">Peralatan</h2><a href="{{ route('admin.equipment-reports.index') }}" class="btn btn-sm btn-outline-primary">Dashboard Equipment</a></div>
-            <div class="card-body">
-                @if($equipment)
-                    <dl class="row mb-0">@foreach(\App\Services\Equipment\EquipmentReports::STOCK as $key => $label)<div class="col-6 col-md-2"><dt class="small text-muted">{{ $label }}</dt><dd class="fs-4 mb-0">{{ $equipment->$key }}</dd></div>@endforeach</dl>
-                @else
-                    <p class="mb-0 text-muted">Ringkasan peralatan belum dapat dimuat.</p>
-                @endif
-            </div>
-        </section>
-    @endcan
     @unless($dashboardAvailable)
         <div class="alert alert-danger" role="alert">
             <i class="bi bi-exclamation-triangle-fill me-2"></i>Data dasbor belum dapat dimuat. Silakan muat ulang halaman.
         </div>
     @else
         @include('livewire.admin.dashboard.quick-actions')
-        @if(isset($dashboard['monthly'])) @include('livewire.admin.dashboard.monthly') @endif
-        @if(isset($dashboard['live'])) @include('livewire.admin.dashboard.live') @endif
+
         @if(!$user->isSuperAdmin())
             @include('livewire.admin.dashboard.focused')
+            @if(isset($dashboard['live']))
+                <div class="mb-3">@include('livewire.admin.dashboard.live')</div>
+            @endif
+            @can('equipment.report.view')
+                <section class="card dashboard-panel mb-3" aria-labelledby="equipment-dashboard-title">
+                    <div class="card-header dashboard-panel-header">
+                        <div><span class="dashboard-section-kicker">Aset &amp; Inventaris</span><h2 id="equipment-dashboard-title"><i class="bi bi-box-seam me-2"></i>Peralatan</h2></div>
+                        <div class="d-flex flex-wrap gap-2">
+                            @can('equipment.loan.checkout')<a href="{{ route('admin.equipment-loans.create') }}" class="btn btn-sm btn-primary">Peminjaman</a>@endcan
+                            <a href="{{ route('admin.equipment-reports.index', 'inventory') }}" class="btn btn-sm btn-outline-secondary">Laporan</a>
+                            <a href="{{ route('admin.inventory.equipment') }}" class="btn btn-sm btn-outline-primary">Lihat peralatan</a>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        @if($equipment)
+                            <div class="equipment-metrics-grid">
+                                @foreach(\App\Services\Equipment\EquipmentReports::STOCK as $key => $label)
+                                    <div class="equipment-metric-tile equipment-metric--{{ $key }}">
+                                        <span>{{ $label }}</span>
+                                        <strong>{{ number_format($equipment->$key, 0, ',', '.') }}</strong>
+                                    </div>
+                                @endforeach
+                            </div>
+                        @else
+                            <div class="dashboard-empty compact"><i class="bi bi-box-seam"></i><span>Ringkasan peralatan belum dapat dimuat.</span></div>
+                        @endif
+                    </div>
+                </section>
+            @endcan
         @else
-        @include('livewire.admin.dashboard.agenda')
-        @include('livewire.admin.dashboard.system')
         <section class="row g-3 mb-3" aria-label="Indikator utama">
             <div class="col-12 col-sm-6 col-xl-3">
                 <article class="dashboard-kpi kpi-program h-100">
                     <div class="dashboard-kpi-icon"><i class="bi bi-collection-play"></i></div>
-                    <div class="dashboard-kpi-copy"><span>Program</span><strong>{{ number_format($dashboard['kpis']['programs']['total']) }}</strong><small>{{ number_format($dashboard['kpis']['programs']['active']) }} aktif @if($dashboard['kpis']['programs']['without_videos'] > 0) Â· {{ number_format($dashboard['kpis']['programs']['without_videos']) }} perlu ditinjau @endif</small></div>
+                    <div class="dashboard-kpi-copy"><span>Program</span><strong>{{ number_format($dashboard['kpis']['programs']['total']) }}</strong><small>{{ number_format($dashboard['kpis']['programs']['active']) }} aktif @if($dashboard['kpis']['programs']['without_videos'] > 0) · {{ number_format($dashboard['kpis']['programs']['without_videos']) }} perlu ditinjau @endif</small></div>
                 </article>
             </div>
             <div class="col-12 col-sm-6 col-xl-3">
@@ -69,12 +83,17 @@
         </section>
         <section class="row g-3 mb-3" aria-label="Indikator sistem dan sumber daya">
             @foreach([
-                ['Anggota aktif', $dashboard['tv_club']['active_members']],
-                ['Agenda mendatang', $dashboard['agenda']['count']],
-                ['Pengunjung hari ini', $dashboard['traffic']['metrics']['today_visitors']],
-                ['Pengguna aktif', $dashboard['system']['active_users']],
-            ] as [$label, $value])
-                <div class="col-12 col-sm-6 col-xl-3"><article class="dashboard-kpi kpi-program h-100"><div class="dashboard-kpi-copy"><span>{{ $label }}</span><strong>{{ number_format($value) }}</strong></div></article></div>
+                ['Anggota aktif', $dashboard['tv_club']['active_members'], 'bi-people'],
+                ['Agenda mendatang', $dashboard['agenda']['count'], 'bi-calendar-event'],
+                ['Pengunjung hari ini', $dashboard['traffic']['metrics']['today_visitors'], 'bi-person-check'],
+                ['Pengguna aktif', $dashboard['system']['active_users'], 'bi-shield-check'],
+            ] as [$label, $value, $icon])
+                <div class="col-12 col-sm-6 col-xl-3">
+                    <article class="dashboard-kpi kpi-program h-100">
+                        <div class="dashboard-kpi-icon"><i class="bi {{ $icon }}"></i></div>
+                        <div class="dashboard-kpi-copy"><span>{{ $label }}</span><strong>{{ number_format($value) }}</strong></div>
+                    </article>
+                </div>
             @endforeach
         </section>
 
@@ -150,6 +169,40 @@
             </div>
         </div>
 
+        @can('equipment.report.view')
+            <section class="card dashboard-panel mb-3" aria-labelledby="equipment-dashboard-title">
+                <div class="card-header dashboard-panel-header">
+                    <div><span class="dashboard-section-kicker">Aset &amp; Inventaris</span><h2 id="equipment-dashboard-title"><i class="bi bi-box-seam me-2"></i>Peralatan</h2></div>
+                    <div class="d-flex flex-wrap gap-2">
+                        @can('equipment.loan.checkout')<a href="{{ route('admin.equipment-loans.create') }}" class="btn btn-sm btn-primary">Peminjaman</a>@endcan
+                        <a href="{{ route('admin.equipment-reports.index', 'inventory') }}" class="btn btn-sm btn-outline-secondary">Laporan</a>
+                        <a href="{{ route('admin.inventory.equipment') }}" class="btn btn-sm btn-outline-primary">Lihat peralatan</a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    @if($equipment)
+                        <div class="equipment-metrics-grid">
+                            @foreach(\App\Services\Equipment\EquipmentReports::STOCK as $key => $label)
+                                <div class="equipment-metric-tile equipment-metric--{{ $key }}">
+                                    <span>{{ $label }}</span>
+                                    <strong>{{ number_format($equipment->$key, 0, ',', '.') }}</strong>
+                                </div>
+                            @endforeach
+                        </div>
+                    @else
+                        <div class="dashboard-empty compact"><i class="bi bi-box-seam"></i><span>Ringkasan peralatan belum dapat dimuat.</span></div>
+                    @endif
+                </div>
+            </section>
+        @endcan
+
+        <div class="row g-3 mb-3">
+            @if(isset($dashboard['live']))
+                <div class="col-12 col-lg-6">@include('livewire.admin.dashboard.live')</div>
+            @endif
+            <div class="col-12 {{ isset($dashboard['live']) ? 'col-lg-6' : '' }}">@include('livewire.admin.dashboard.agenda')</div>
+        </div>
+
         <div class="row g-3 mb-3">
             <div class="col-12 col-lg-6">
                 <section class="card dashboard-panel h-100" aria-labelledby="program-ranking-title">
@@ -186,7 +239,7 @@
                     <div class="card-header dashboard-panel-header"><div><span class="dashboard-section-kicker">Publikasi</span><h2 id="latest-videos-title"><i class="bi bi-camera-video me-2"></i>Tayangan Terbaru</h2></div><a href="{{ route('admin.videos.index') }}" class="btn btn-sm btn-outline-primary">Lihat semua</a></div>
                     <div class="card-body dashboard-list">
                         @forelse($dashboard['latest']['videos'] as $video)
-                            <div class="dashboard-list-item"><img src="{{ $video->thumbnail_url }}" alt="" loading="lazy" class="media-thumb"><div class="list-copy"><strong>{{ $video->title }}</strong><span>{{ $video->program?->name ?? 'Belum terhubung' }} Â· {{ $video->air_date?->locale('id')->translatedFormat('d F Y') ?? 'Tanggal belum diatur' }}</span></div>@can('update', $video)<a href="{{ route('admin.videos.edit', $video) }}" aria-label="Buka {{ $video->title }}"><i class="bi bi-arrow-right"></i></a>@endcan</div>
+                            <div class="dashboard-list-item"><img src="{{ $video->thumbnail_url }}" alt="" loading="lazy" class="media-thumb"><div class="list-copy"><strong>{{ $video->title }}</strong><span>{{ $video->program?->name ?? 'Belum terhubung' }} · {{ $video->air_date?->locale('id')->translatedFormat('d F Y') ?? 'Tanggal belum diatur' }}</span></div>@can('update', $video)<a href="{{ route('admin.videos.edit', $video) }}" aria-label="Buka {{ $video->title }}"><i class="bi bi-arrow-right"></i></a>@endcan</div>
                         @empty
                             <div class="dashboard-empty"><i class="bi bi-camera-video-off"></i><span>Belum ada tayangan terbaru.</span></div>
                         @endforelse
@@ -198,7 +251,7 @@
                     <div class="card-header dashboard-panel-header"><div><span class="dashboard-section-kicker">Redaksi</span><h2 id="latest-news-title"><i class="bi bi-newspaper me-2"></i>Berita Terbaru</h2></div><a href="{{ route('admin.news.index') }}" class="btn btn-sm btn-outline-primary">Lihat semua</a></div>
                     <div class="card-body dashboard-list">
                         @forelse($dashboard['latest']['news'] as $news)
-                            <div class="dashboard-list-item"><div class="list-icon info"><i class="bi bi-file-earmark-text"></i></div><div class="list-copy"><strong>{{ $news->title }}</strong><span>{{ $news->author_display_name }} Â· {{ $news->created_at->locale('id')->translatedFormat('d F Y') }}</span></div>@can('update', $news)<a href="{{ route('admin.news.edit', $news) }}" aria-label="Buka {{ $news->title }}"><i class="bi bi-arrow-right"></i></a>@endcan</div>
+                            <div class="dashboard-list-item"><div class="list-icon info"><i class="bi bi-file-earmark-text"></i></div><div class="list-copy"><strong>{{ $news->title }}</strong><span>{{ $news->author_display_name }} · {{ $news->created_at->locale('id')->translatedFormat('d F Y') }}</span></div>@can('update', $news)<a href="{{ route('admin.news.edit', $news) }}" aria-label="Buka {{ $news->title }}"><i class="bi bi-arrow-right"></i></a>@endcan</div>
                         @empty
                             <div class="dashboard-empty"><i class="bi bi-newspaper"></i><span>Belum ada berita terbaru.</span></div>
                         @endforelse
@@ -207,26 +260,33 @@
             </div>
         </div>
 
-        <section class="card dashboard-panel mb-3" aria-labelledby="tvclub-title">
-            <div class="card-header dashboard-panel-header"><div><span class="dashboard-section-kicker">Sumber daya produksi</span><h2 id="tvclub-title"><i class="bi bi-people me-2"></i>TV Club Production</h2></div><a href="{{ route('admin.tvclub.groups.index') }}" class="btn btn-sm btn-outline-primary">Lihat kelompok</a></div>
-            <div class="card-body">
-                <div class="tvclub-metrics mb-3">
-                    <div><i class="bi bi-calendar2-check"></i><span>Generasi aktif</span><strong>{{ number_format($dashboard['tv_club']['active_generations']) }}</strong></div>
-                    <div><i class="bi bi-person-check"></i><span>Anggota aktif</span><strong>{{ number_format($dashboard['tv_club']['active_members']) }}</strong></div>
-                    <div><i class="bi bi-people"></i><span>Kelompok produksi</span><strong>{{ number_format($dashboard['tv_club']['groups']) }}</strong></div>
-                    <div><i class="bi bi-diagram-3"></i><span>Penugasan kru</span><strong>{{ number_format($dashboard['tv_club']['assignments']) }}</strong></div>
-                </div>
-                <div class="table-responsive dashboard-table-wrap">
-                    <table class="table align-middle mb-0"><thead><tr><th>Kelompok</th><th>Generasi</th><th>Program</th><th class="text-end">Kru</th></tr></thead><tbody>
-                        @forelse($dashboard['tv_club']['top_groups'] as $group)
-                            <tr><td class="fw-semibold">{{ $group->name }}</td><td>{{ $group->generation?->name ?? 'â€”' }}</td><td>{{ $group->program?->name ?? 'Belum terhubung' }}</td><td class="text-end"><span class="badge bg-primary"><i class="bi bi-people me-1"></i>{{ $group->members_count }}</span></td></tr>
-                        @empty
-                            <tr><td colspan="4"><div class="dashboard-empty compact"><i class="bi bi-people"></i><span>Belum ada kelompok produksi.</span></div></td></tr>
-                        @endforelse
-                    </tbody></table>
-                </div>
+        <div class="row g-3 mb-3">
+            <div class="col-12 col-xl-7">
+                <section class="card dashboard-panel h-100" aria-labelledby="tvclub-title">
+                    <div class="card-header dashboard-panel-header"><div><span class="dashboard-section-kicker">Sumber daya produksi</span><h2 id="tvclub-title"><i class="bi bi-people me-2"></i>TV Club Production</h2></div><a href="{{ route('admin.tvclub.groups.index') }}" class="btn btn-sm btn-outline-primary">Lihat kelompok</a></div>
+                    <div class="card-body">
+                        <div class="tvclub-metrics mb-3">
+                            <div><i class="bi bi-calendar2-check"></i><span>Generasi aktif</span><strong>{{ number_format($dashboard['tv_club']['active_generations']) }}</strong></div>
+                            <div><i class="bi bi-person-check"></i><span>Anggota aktif</span><strong>{{ number_format($dashboard['tv_club']['active_members']) }}</strong></div>
+                            <div><i class="bi bi-people"></i><span>Kelompok produksi</span><strong>{{ number_format($dashboard['tv_club']['groups']) }}</strong></div>
+                            <div><i class="bi bi-diagram-3"></i><span>Penugasan kru</span><strong>{{ number_format($dashboard['tv_club']['assignments']) }}</strong></div>
+                        </div>
+                        <div class="table-responsive dashboard-table-wrap">
+                            <table class="table align-middle mb-0"><thead><tr><th>Kelompok</th><th>Generasi</th><th>Program</th><th class="text-end">Kru</th></tr></thead><tbody>
+                                @forelse($dashboard['tv_club']['top_groups'] as $group)
+                                    <tr><td class="fw-semibold">{{ $group->name }}</td><td>{{ $group->generation?->name ?? '—' }}</td><td>{{ $group->program?->name ?? 'Belum terhubung' }}</td><td class="text-end"><span class="badge bg-primary"><i class="bi bi-people me-1"></i>{{ $group->members_count }}</span></td></tr>
+                                @empty
+                                    <tr><td colspan="4"><div class="dashboard-empty compact"><i class="bi bi-people"></i><span>Belum ada kelompok produksi.</span></div></td></tr>
+                                @endforelse
+                            </tbody></table>
+                        </div>
+                    </div>
+                </section>
             </div>
-        </section>
+            <div class="col-12 col-xl-5">
+                @include('livewire.admin.dashboard.system')
+            </div>
+        </div>
 
         <div id="dashboard-chart-data" data-production-labels='@json($dashboard['production']['labels'])' data-production-videos='@json($dashboard['production']['videos'])' data-production-news='@json($dashboard['production']['news'])' data-traffic-labels='@json($dashboard['traffic']['labels'])' data-traffic-hits='@json($dashboard['traffic']['hits'])' data-traffic-visitors='@json($dashboard['traffic']['visitors'])' hidden></div>
 
@@ -237,11 +297,13 @@
         @script
         <script>
             const dashboardData = document.getElementById('dashboard-chart-data');
-            if (dashboardData && typeof Chart !== 'undefined') {
+            const renderDashboardCharts = () => {
+                if (!dashboardData || typeof Chart === 'undefined') return;
                 const styles = getComputedStyle(document.documentElement);
                 const primary = styles.getPropertyValue('--wp-primary-deep').trim() || '#155DAC';
                 const cyan = styles.getPropertyValue('--wp-cyan').trim() || '#1B8CD1';
                 const red = styles.getPropertyValue('--wp-danger').trim() || '#D9251D';
+                const surface = styles.getPropertyValue('--wp-surface').trim() || '#FFFFFF';
                 const dark = document.documentElement.getAttribute('data-bs-theme') === 'dark';
                 const grid = dark ? '#24334D' : '#E2E8F0';
                 const ticks = dark ? '#94A3B8' : '#64748B';
@@ -249,13 +311,18 @@
                 const productionCanvas = document.getElementById('productionChart');
                 if (productionCanvas) {
                     Chart.getChart(productionCanvas)?.destroy();
-                    new Chart(productionCanvas, { data: { labels: JSON.parse(dashboardData.dataset.productionLabels), datasets: [ { type: 'bar', label: 'Tayangan', data: JSON.parse(dashboardData.dataset.productionVideos), backgroundColor: 'rgba(21, 93, 172, .78)', borderRadius: 7, maxBarThickness: 34 }, { type: 'line', label: 'Berita', data: JSON.parse(dashboardData.dataset.productionNews), borderColor: red, backgroundColor: red, borderWidth: 2.5, tension: .35, pointRadius: 3, pointBackgroundColor: '#fff', pointBorderWidth: 2 } ] }, options: sharedOptions });
+                    new Chart(productionCanvas, { data: { labels: JSON.parse(dashboardData.dataset.productionLabels), datasets: [ { type: 'bar', label: 'Tayangan', data: JSON.parse(dashboardData.dataset.productionVideos), backgroundColor: 'rgba(21, 93, 172, .78)', borderRadius: 7, maxBarThickness: 34 }, { type: 'line', label: 'Berita', data: JSON.parse(dashboardData.dataset.productionNews), borderColor: red, backgroundColor: red, borderWidth: 2.5, tension: .35, pointRadius: 3, pointBackgroundColor: surface, pointBorderWidth: 2 } ] }, options: sharedOptions });
                 }
                 const trafficCanvas = document.getElementById('trafficChart');
                 if (trafficCanvas) {
                     Chart.getChart(trafficCanvas)?.destroy();
                     new Chart(trafficCanvas, { type: 'line', data: { labels: JSON.parse(dashboardData.dataset.trafficLabels), datasets: [ { label: 'Tayangan', data: JSON.parse(dashboardData.dataset.trafficHits), borderColor: primary, backgroundColor: 'rgba(21, 93, 172, .1)', borderWidth: 2.5, fill: true, tension: .35, pointRadius: 3 }, { label: 'Pengunjung', data: JSON.parse(dashboardData.dataset.trafficVisitors), borderColor: cyan, backgroundColor: cyan, borderWidth: 2, tension: .35, pointRadius: 3 } ] }, options: sharedOptions });
                 }
+            };
+            renderDashboardCharts();
+            if (!window.__wpitvChartThemeObserver) {
+                window.__wpitvChartThemeObserver = new MutationObserver(() => renderDashboardCharts());
+                window.__wpitvChartThemeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['data-bs-theme'] });
             }
         </script>
         @endscript

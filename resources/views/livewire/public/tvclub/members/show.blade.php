@@ -24,7 +24,7 @@
     </section>
 
     <section class="pub-section tvclub-member-assignments" aria-labelledby="assignmentsH"><div class="pub-container">
-        <div class="tvclub-member-section-heading"><div><span>Rekam Jejak Kru</span><h2 id="assignmentsH">Penugasan Produksi</h2><p>Peran dan tim produksi yang pernah dijalankan oleh anggota ini.</p></div><strong>{{ $member->groups->count() }} Penugasan</strong></div>
+        <div class="tvclub-member-section-heading"><div><span>Rekam Jejak Kru</span><h2 id="assignmentsH">Penugasan Produksi</h2><p>Peran dan tim produksi yang dijalankan dalam kegiatan TV Club.</p></div><strong>{{ $member->groups->count() }} Penugasan</strong></div>
         @if($member->groups->isNotEmpty())
             <div class="tvclub-member-assignments__grid" role="list">
                 @foreach($member->groups as $group)

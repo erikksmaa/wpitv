@@ -90,7 +90,7 @@ class Index extends Component
 
         // Delete Protection: Block deletion if members are assigned
         if ($group->members_count > 0) {
-            session()->flash('error', 'This group still has assigned members. Remove all member assignments before deleting the group.');
+            session()->flash('error', 'Kelompok ini masih memiliki anggota terdaftar. Hapus seluruh penugasan anggota sebelum menghapus kelompok.');
 
             return;
         }

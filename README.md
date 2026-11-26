@@ -1,57 +1,20 @@
-<<<<<<< HEAD
-# WPiTV / iTV Laravel 12 Core Structure
+# WPiTV — Project Handover
 
-## Project Overview
-Modernisasi website media digital kampus **WPiTV / iTV** milik **STMIK Widya Pratama Pekalongan** berbasis **Laravel 12** dan database eksisting MySQL (`wpitv`).
+Modernisasi portal publik dan operasional WPiTV berbasis Laravel/Livewire dengan database existing. Baseline dokumentasi: **25 November 2026**, branch `rebuild/wpitv-clean`, termasuk perubahan lokal yang belum commit.
 
-## Technology Stack
-- **Backend:** PHP 8.4, Laravel 12, Composer 2.x, MySQL 8.0.30 (Engine: InnoDB, Charset: utf8mb4), Eloquent ORM, Blade
-- **Authentication:** Laravel Breeze (Session-based, disesuaikan menggunakan `username` + `password` & status aktif `status = 1`)
-- **Reactive UI:** Livewire 4.x / 3.x
-- **Public Frontend:** Blade + Livewire + Tailwind CSS 3.4
-- **Admin Frontend:** Blade + Livewire + Bootstrap 5.3 + Mazer Admin Template
-- **Build System:** Vite (Entry point publik dan admin dipisah)
+## Mulai membaca
 
-## Environment & Database Configuration
-Isi konfigurasi pada file `.env` (pastikan tidak memicu migrasi ulang database):
-```ini
-DB_CONNECTION=mysql
-DB_HOST=127.0.0.1
-DB_PORT=3306
-DB_DATABASE=wpitv
-DB_USERNAME=root
-DB_PASSWORD=
-SESSION_DRIVER=file
-```
+1. [AGENTS.md](AGENTS.md): aturan kerja AI, keamanan data, pengujian dan Git; berlaku juga bagi Google Antigravity.
+2. [PROJECT_CONTEXT.md](docs/PROJECT_CONTEXT.md): tujuan, aktor, modul dan alur bisnis.
+3. [ARCHITECTURE.md](docs/ARCHITECTURE.md): versi aktual, struktur kode/database, authorization, media dan setup lokal.
+4. [DEVELOPMENT_STATUS.md](docs/DEVELOPMENT_STATUS.md): status seluruh modul, tes, blocker SQL/config dan identitas commit.
+5. [ROADMAP.md](docs/ROADMAP.md): prioritas tersisa dan acceptance criteria.
+6. [DECISIONS.md](docs/DECISIONS.md): kontrak aktif, alasan dan rancangan yang digantikan.
 
-## Running the Application
-### Development Server
-```bash
-php artisan serve
-```
-Akses Aplikasi:
-- **Public Website:** `http://127.0.0.1:8000/`
-- **Login Admin:** `http://127.0.0.1:8000/login`
-- **Admin Dashboard:** `http://127.0.0.1:8000/admin` (memerlukan autentikasi pengguna aktif)
+## Menjalankan dan melanjutkan
 
-### Build Frontend Assets
-```bash
-npm run build
-```
-Atau mode watch development:
-```bash
-npm run dev
-```
+Ikuti [setup lokal](docs/ARCHITECTURE.md#menjalankan-secara-lokal) setelah dependensi, konfigurasi privat dan schema yang diotorisasi tersedia. Jalankan `php artisan serve` dan `npm run dev`, atau `npm run build` untuk aset statis. Portal tersedia pada `/`, login pada `/login`, admin pada `/admin` di URL server lokal.
 
-## Architecture & Rules
-1. **Pemisahan Asset Frontend:**
-   - Asset Publik: `resources/css/public.css` & `resources/js/public.js` (Tailwind CSS)
-   - Asset Admin: `resources/css/admin.css` & `resources/js/admin.js` (Bootstrap 5 & Mazer UI)
-2. **Aturan Database & Keamanan Data:**
-   - DILARANG menjalankan `php artisan migrate:fresh` atau `php artisan db:wipe`.
-   - Table name legacy diakomodasi langsung via Eloquent Model `$table` property (`ms_banner`, `ms_program`, `ms_news`, `ms_video`, `tr_perliputan`, `tr_usercounter`).
-   - Autentikasi menggunakan field `username` (bukan email). User non-aktif (`status = 0`) diblokir dari login.
-=======
-# wpitv
-moderenisasi website wpitv
->>>>>>> 9e488494db8ac2e4e11a467fd09d6487acd39dbe
+Migration repository bukan bootstrap seluruh database. Jangan menjalankan reset/migration/seeder otomatis pada sumber. Media Sosial masih memiliki SQL dan reviewer tertunda; keberadaan halaman/kode tidak berarti siap digunakan. Detail verifikasi ada pada DEVELOPMENT_STATUS.
+
+Dokumen deployment dan checklist lama tetap tersedia sebagai referensi historis/operasional. Scope tugas terkini dan AGENTS.md mengatur tindakan; tidak ada izin commit, push, SQL atau deployment yang tersirat dari dokumentasi ini.

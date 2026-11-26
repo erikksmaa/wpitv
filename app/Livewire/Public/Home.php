@@ -32,6 +32,7 @@ class Home extends Component
 
         return view('livewire.public.home', $data)->layout('layouts.public', [
             'title' => 'WPiTV — Televisi Digital Kampus Institut Widya Pratama',
+            'description' => 'Portal resmi WPiTV Institut Widya Pratama Pekalongan: program acara, tayangan, berita kampus, agenda, live streaming, peliputan, dan TV Club.',
         ]);
     }
 

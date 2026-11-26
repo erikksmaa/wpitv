@@ -71,12 +71,17 @@ class Show extends Component
             ->orderBy('id', 'asc')
             ->first(['id', 'title']);
 
+        $description = filled($this->video->description)
+            ? \Illuminate\Support\Str::limit(strip_tags((string) $this->video->description), 160)
+            : 'Tonton tayangan '.$this->video->title.' produksi WPiTV Institut Widya Pratama.';
+
         return view('livewire.public.videos.show', [
             'relatedVideos' => $relatedVideos,
             'prevVideo' => $prevVideo,
             'nextVideo' => $nextVideo,
         ])->layout('layouts.public', [
             'title' => "{$this->video->title} | WPiTV — Televisi Digital Kampus",
+            'description' => $description,
         ]);
     }
 }

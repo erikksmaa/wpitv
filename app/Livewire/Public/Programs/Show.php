@@ -55,6 +55,10 @@ class Show extends Component
             ->orderByDesc('id')
             ->get();
 
+        $description = filled($this->program->description)
+            ? \Illuminate\Support\Str::limit(strip_tags((string) $this->program->description), 160)
+            : 'Daftar tayangan dan informasi program acara '.$this->program->name.' di WPiTV Institut Widya Pratama.';
+
         return view('livewire.public.programs.show', [
             'liveHighlights' => app(LiveStreamHighlights::class)->get($this->program->id),
             'videos' => $videos,
@@ -63,6 +67,7 @@ class Show extends Component
             'defaultProductionGroup' => $productionGroups->first(),
         ])->layout('layouts.public', [
             'title' => "{$this->program->name} | WPiTV — Televisi Digital Kampus",
+            'description' => $description,
         ]);
     }
 }

@@ -27,6 +27,19 @@ import './bootstrap';
     applyTheme(prefersDark ? 'dark' : 'light');
   }
 
+  let floatingScrollBound = false;
+
+  function syncBackToTopVisibility() {
+    const scrollY = window.scrollY || window.pageYOffset || 0;
+    const visible = scrollY >= 400;
+
+    document.querySelectorAll('[data-back-to-top]').forEach(function (button) {
+      button.classList.toggle('is-visible', visible);
+      button.setAttribute('aria-hidden', visible ? 'false' : 'true');
+      button.setAttribute('tabindex', visible ? '0' : '-1');
+    });
+  }
+
   document.addEventListener('DOMContentLoaded', () => {
     initInteractive();
   });
@@ -445,6 +458,26 @@ import './bootstrap';
         });
       }
     }
+
+    // ===================== FLOATING BACK TO TOP =====================
+    if (!floatingScrollBound) {
+      floatingScrollBound = true;
+      window.addEventListener('scroll', syncBackToTopVisibility, { passive: true });
+    }
+    syncBackToTopVisibility();
+
+    document.querySelectorAll('[data-back-to-top]').forEach(function (button) {
+      if (button.dataset.bound === 'true') return;
+
+      button.dataset.bound = 'true';
+      button.addEventListener('click', function () {
+        const reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        window.scrollTo({
+          top: 0,
+          behavior: reduced ? 'auto' : 'smooth',
+        });
+      });
+    });
 
     // ===================== FLOATING VISITOR WIDGET =====================
     document.querySelectorAll('[data-visitor-widget]').forEach(function (widget) {

@@ -20,7 +20,7 @@
                     Ikuti jadwal produksi, peliputan, siaran, dan kegiatan publik WPiTV.
                 </p>
                 <div class="flex items-center gap-3 flex-wrap">
-                    <a href="#agenda-terdekat" class="pub-btn pub-btn--primary">Lihat Agenda Terdekat</a>
+                    <a href="#agenda-terdekat" class="pub-btn pub-btn--primary">Lihat Agenda</a>
                 </div>
             </div>
         </div>
@@ -28,15 +28,15 @@
 
     <section class="pub-section" id="agenda-terdekat">
         <div class="pub-container">
-            <div class="public-agenda-heading"><div><span class="sec-label">Segera Hadir</span><h2 class="sec-h2">Agenda Terdekat</h2><p>Agenda hari ini tetap ditampilkan bersama jadwal mendatang.</p></div></div>
+            <div class="public-agenda-heading"><div><span class="sec-label">Jadwal Publik</span><h2 class="sec-h2">Agenda Terdekat</h2><p>Menampilkan kegiatan publik hari ini dan jadwal mendatang dalam waktu WIB.</p></div></div>
             <div class="public-agenda-list">
                 @forelse($upcoming as $agenda)
                     <article class="public-agenda-card">
                         <div class="public-agenda-date"><strong>{{ $agenda->agenda_date->format('d') }}</strong><span>{{ $agenda->agenda_date->locale('id')->translatedFormat('M') }}</span><small>{{ $agenda->agenda_date->format('Y') }}</small></div>
-                        <div class="public-agenda-card-body"><span class="public-agenda-type">{{ $agenda->type_label }}</span><h3>{{ $agenda->title }}</h3>@if($agenda->liveStream)<a class="pub-btn pub-btn--primary" href="{{ route('live.show', $agenda->liveStream->id) }}">Lihat Live Streaming</a>@endif<div class="public-agenda-meta"><span><i class="bi bi-clock"></i>{{ $agenda->time_label }}</span><span><i class="bi bi-geo-alt"></i>{{ $agenda->location ?: 'Lokasi menyusul' }}</span></div>@if($agenda->program)<a href="{{ route('program.show',$agenda->program->slug) }}" class="public-agenda-program">Program: {{ $agenda->program->name }} <i class="bi bi-arrow-up-right"></i></a>@endif</div>
+                        <div class="public-agenda-card-body"><span class="public-agenda-type">{{ $agenda->type_label }}</span><h3>{{ $agenda->title }}</h3>@if($agenda->liveStream)<a class="pub-btn pub-btn--primary" href="{{ route('live.show', $agenda->liveStream->id) }}">Tonton Siaran</a>@endif<div class="public-agenda-meta"><span><i class="bi bi-clock"></i>{{ $agenda->time_label }}</span><span><i class="bi bi-geo-alt"></i>{{ $agenda->location ?: 'Lokasi menyusul' }}</span></div>@if($agenda->program)<a href="{{ route('program.show',$agenda->program->slug) }}" class="public-agenda-program">Program: {{ $agenda->program->name }} <i class="bi bi-arrow-up-right"></i></a>@endif</div>
                     </article>
                 @empty
-                    <div class="public-agenda-empty"><i class="bi bi-calendar2-heart"></i><h3>Belum ada agenda publik terdekat.</h3><p>Pantau kembali halaman ini untuk jadwal kegiatan WPiTV berikutnya.</p></div>
+                    <div class="public-agenda-empty"><i class="bi bi-calendar2-heart"></i><h3>Belum ada agenda mendatang.</h3><p>Jadwal kegiatan WPiTV berikutnya akan ditampilkan di sini.</p></div>
                 @endforelse
             </div>
         </div>
@@ -94,7 +94,7 @@
                     @endforeach
                 </div>
             </div>
-            <p class="public-agenda-mobile-note">Pada layar kecil, jumlah agenda per tanggal ditampilkan sebagai indikator. Rincian lengkap tersedia pada daftar Agenda Terdekat.</p>
+            <p class="public-agenda-mobile-note">Pada layar kecil, angka di setiap tanggal menandakan jumlah agenda. Lihat daftar Agenda Terdekat di atas untuk rincian lengkapnya.</p>
         </div>
     </section>
 </div>

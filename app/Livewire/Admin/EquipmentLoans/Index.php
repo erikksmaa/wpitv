@@ -3,6 +3,8 @@
 namespace App\Livewire\Admin\EquipmentLoans;
 
 use App\Services\Equipment\LoanService;
+use Illuminate\Database\QueryException;
+use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Str;
@@ -36,6 +38,8 @@ class Index extends Component
     #[Url]
     public string $borrowerType = '';
 
+    public string $category = '';
+
     public int $perPage = 10;
 
     public array $selected = [];
@@ -55,10 +59,17 @@ class Index extends Component
 
     public function updated($property): void
     {
-        if (in_array($property, ['search', 'status', 'borrowerType', 'perPage'], true)) {
+        if (in_array($property, ['search', 'status', 'borrowerType', 'category', 'perPage'], true)) {
             $this->resetPage('availablePage');
             $this->resetPage('loansPage');
         }
+    }
+
+    public function resetFilters(): void
+    {
+        $this->reset('search', 'status', 'borrowerType', 'category');
+        $this->resetPage('availablePage');
+        $this->resetPage('loansPage');
     }
 
     public function removeUnit(int $id): void
@@ -70,8 +81,22 @@ class Index extends Component
     {
         Gate::authorize('equipment.loan.checkout');
         abort_unless($this->creating, 403);
-        $id = $service->execute(auth()->user(), 'loan.checkout', $this->token, $this->form + ['units' => $this->selected]);
-        session()->flash('success', 'Peminjaman tersimpan. Periksa detail sebelum menyerahkan unit.');
+        $this->resetValidation();
+        try {
+            $id = $service->execute(auth()->user(), 'loan.checkout', $this->token, ['units' => $this->selected] + $this->form);
+        } catch (ValidationException $error) {
+            $messages = [];
+            foreach ($error->errors() as $field => $message) {
+                $key = str_starts_with($field, 'units') ? 'units' : (array_key_exists($field, $this->form) ? 'form.'.$field : 'action');
+                $messages[$key] ??= $message;
+            }
+            throw ValidationException::withMessages($messages);
+        } catch (QueryException $error) {
+            report($error);
+            $this->dispatch('equipment-feedback', message: 'Peminjaman gagal disimpan. Silakan coba lagi.', type: 'error');
+            return;
+        }
+        session()->flash('success', 'Peminjaman berhasil dicatat.');
         $this->redirectRoute('admin.equipment-loans.show', ['loanId' => $id]);
     }
 
@@ -81,18 +106,21 @@ class Index extends Component
         $search = '%'.mb_substr(trim($this->search), 0, 100).'%';
         if ($this->creating) {
             Gate::authorize('equipment.loan.checkout');
+            $categories = DB::table('equipment_categories')->where('is_active', 1)->orderBy('name')->get(['id', 'name']);
             $available = DB::table('equipment_units as u')->join('equipment_models as m', 'm.id', '=', 'u.model_id')
                 ->join('equipment_categories as c', 'c.id', '=', 'm.category_id')
                 ->where('m.is_active', 1)->where('u.operational_status', 'active')->where('u.physical_condition', 'good')
                 ->whereNotExists(fn ($q) => $q->selectRaw('1')->from('equipment_loan_units as lu')->whereColumn('lu.unit_id', 'u.id')->where('lu.outcome', 'on_loan'))
-                ->where(fn ($q) => $q->where('u.asset_code', 'like', $search)->orWhere('m.name', 'like', $search)->orWhere('c.name', 'like', $search))
-                ->select('u.id', 'u.asset_code', 'm.name as model_name', 'c.name as category_name')->orderBy('m.name')->orderBy('u.id');
+                ->when(ctype_digit($this->category), fn ($q) => $q->where('c.id', (int) $this->category))
+                ->where(fn ($q) => $q->where('u.asset_code', 'like', $search)->orWhere('u.serial_number', 'like', $search)->orWhere('m.name', 'like', $search)->orWhere('c.name', 'like', $search))
+                ->select('u.id', 'u.asset_code', 'u.serial_number', 'm.name as model_name', 'c.name as category_name')->orderBy('m.name')->orderBy('u.id');
             $selection = array_slice(array_map('intval', $this->selected), 0, 50);
 
             return view('livewire.admin.equipment-loans.index', [
+                'categories' => $categories,
                 'available' => $available->paginate(10, ['*'], 'availablePage'),
                 'basket' => DB::table('equipment_units as u')->join('equipment_models as m', 'm.id', '=', 'u.model_id')->whereIn('u.id', $selection)
-                    ->select('u.id', 'u.asset_code', 'm.name as model_name')->orderBy('u.id')->get(),
+                    ->select('u.id', 'u.asset_code', 'u.serial_number', 'm.name as model_name')->orderBy('u.id')->get(),
             ]);
         }
         $query = $service->listing()->where(fn ($q) => $q->where('l.loan_number', 'like', $search)->orWhere('l.borrower_name', 'like', $search)->orWhere('l.identity_number', 'like', $search));

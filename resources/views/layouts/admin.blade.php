@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>{{ $title ?? 'Dasbor Admin - WPiTV' }}</title>
+    <title>{{ $title ?? 'Dashboard Admin - WPiTV' }}</title>
     <link rel="icon" type="image/png" href="{{ asset('favicon.png') }}">
     <link rel="apple-touch-icon" href="{{ asset('favicon.png') }}">
 
@@ -51,22 +51,45 @@
                         <li class="sidebar-item {{ request()->routeIs('admin.dashboard', 'admin.index') ? 'active' : '' }}">
                             <a href="{{ route('admin.dashboard') }}" class="sidebar-link">
                                 <i class="bi bi-grid-fill"></i>
-                                <span>Dasbor</span>
+                                <span>Dashboard</span>
                             </a>
                         </li>
 
                         @include('components.admin.role-navigation')
 
+                        @can('social.view')
+                            <li class="sidebar-title">Media Sosial</li>
+                            <li class="sidebar-item has-sub {{ request()->routeIs('admin.social.*') ? 'active' : '' }}">
+                                <a href="#" class="sidebar-link"><i class="bi bi-share"></i><span>Media Sosial</span></a>
+                                <ul class="submenu {{ request()->routeIs('admin.social.*') ? 'submenu-open' : '' }}">
+                                    @foreach(['accounts'=>'Akun Media Sosial','posts'=>'Publikasi Konten','reports'=>'Laporan Bulanan'] as $key => $label)
+                                        <li class="submenu-item {{ request()->routeIs('admin.social.'.$key) ? 'active' : '' }}"><a class="submenu-link" href="{{ route('admin.social.'.$key) }}">{{ $label }}</a></li>
+                                    @endforeach
+                                </ul>
+                            </li>
+                        @endcan
+
                         @can('equipment.inventory.view')
                             <li class="sidebar-title">Peralatan</li>
-                            <li class="sidebar-item {{ request()->routeIs('admin.inventory.*') ? 'active' : '' }}">
-                                <a href="{{ route('admin.inventory.index') }}" class="sidebar-link"><i class="bi bi-box-seam"></i><span>Inventory Peralatan</span></a>
+                            @php($inventoryActive = request()->routeIs('admin.inventory.*'))
+                            <li class="sidebar-item has-sub {{ $inventoryActive ? 'active' : '' }}">
+                                <a href="#" class="sidebar-link"><i class="bi bi-box-seam"></i><span>Inventaris</span></a>
+                                <ul class="submenu {{ $inventoryActive ? 'submenu-open' : '' }}">
+                                    @foreach(['categories'=>'Kategori','equipment'=>'Peralatan','activity'=>'Riwayat Aktivitas'] as $item => $label)
+                                        @if($item !== 'activity' || auth()->user()->can('equipment.audit.view'))
+                                            @php($current = request()->routeIs('admin.inventory.'.$item))
+                                            <li class="submenu-item {{ $current ? 'active' : '' }}">
+                                                <a href="{{ route('admin.inventory.'.$item) }}" class="submenu-link" @if($current) aria-current="page" @endif>{{ $label }}</a>
+                                            </li>
+                                        @endif
+                                    @endforeach
+                                </ul>
                             </li>
                         @endcan
 
                         @can('equipment.report.view')
                             <li class="sidebar-item {{ request()->routeIs('admin.equipment-reports.*') ? 'active' : '' }}">
-                                <a href="{{ route('admin.equipment-reports.index') }}" class="sidebar-link"><i class="bi bi-bar-chart"></i><span>Dashboard &amp; Laporan</span></a>
+                                <a href="{{ route('admin.equipment-reports.index') }}" class="sidebar-link"><i class="bi bi-bar-chart"></i><span>Laporan Peralatan</span></a>
                             </li>
                         @endcan
                         @can('equipment.loan.view')
@@ -95,13 +118,18 @@
                 <button type="button" class="burger-btn admin-menu-toggle d-xl-none" aria-controls="sidebar" aria-expanded="false" aria-label="Buka menu admin">
                     <i class="bi bi-list" aria-hidden="true"></i>
                 </button>
-                <a href="{{ route('admin.dashboard') }}" class="admin-topbar-brand" aria-label="Ke Dasbor WPiTV">
+                <a href="{{ route('admin.dashboard') }}" class="admin-topbar-brand" aria-label="Ke Dashboard WPiTV">
                     <img src="{{ asset('logo-wpi.png') }}" alt="" aria-hidden="true">
                     <span>WPiTV Admin</span>
                 </a>
-                <button type="button" class="btn admin-theme-toggle ms-auto" data-admin-theme-toggle aria-label="Aktifkan mode gelap" aria-pressed="false">
-                    <i class="bi bi-sun" data-admin-theme-icon aria-hidden="true"></i><span data-admin-theme-label class="d-none d-sm-inline">Mode terang</span>
-                </button>
+                <div class="d-flex align-items-center gap-2 ms-auto">
+                    <a href="{{ route('public.home') }}" target="_blank" rel="noopener noreferrer" class="btn admin-topbar-btn" aria-label="Buka portal publik WPiTV">
+                        <i class="bi bi-globe2" aria-hidden="true"></i><span class="d-none d-sm-inline">Lihat Situs</span>
+                    </a>
+                    <button type="button" class="btn admin-theme-toggle" data-admin-theme-toggle aria-label="Aktifkan mode gelap" aria-pressed="false">
+                        <i class="bi bi-sun" data-admin-theme-icon aria-hidden="true"></i><span data-admin-theme-label class="d-none d-sm-inline">Mode terang</span>
+                    </button>
+                </div>
             </header>
 
             <div id="main-content">
@@ -118,7 +146,7 @@
                             <div class="col-12 col-md-6 order-md-2 order-first">
                                 <nav aria-label="breadcrumb" class="breadcrumb-header float-start float-lg-end">
                                     <ol class="breadcrumb">
-                                        <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">Dasbor</a></li>
+                                        <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">Dashboard</a></li>
                                         <li class="breadcrumb-item active" aria-current="page">{{ $header }}</li>
                                     </ol>
                                 </nav>

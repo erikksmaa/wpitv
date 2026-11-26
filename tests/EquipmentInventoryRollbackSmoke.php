@@ -99,13 +99,20 @@ try {
     DB::table('equipment_loan_units')->insert(['loan_id' => $loan, 'unit_id' => $units[1]->id, 'category_id_at_checkout' => $category, 'model_id_at_checkout' => $model, 'condition_out' => 'good']);
     $reject(fn () => $service->execute($actor, 'unit.retire', $token(), ['id' => $units[1]->id, 'version' => 1, 'reason' => 'Borrowed test']), 'on-loan retire denied');
     $check(! DB::table('equipment_operation_keys')->whereNull('completed_at')->exists(), 'no committed/pending key produced by operations');
-    $component = Livewire::actingAs($actor)->test(Index::class)->set('search', $code)->assertSee('Inventory Peralatan')->assertSee('Synthetic camera');
-    $component->set('tab', 'categories')->assertSee('Synthetic revised');
-    $component->call('begin', 'category.update', $category)
+    $component = Livewire::actingAs($actor)->test(Index::class)->set('search', $code)->assertSee('Peralatan')->assertSee('Synthetic camera');
+    $categoriesPage = Livewire::actingAs($actor)->test(Index::class, ['section'=>'categories'])->set('search', $code)->assertSee('Synthetic revised');
+    $categoriesPage->call('begin', 'category.create')
+        ->set('form.name', '   ')->set('form.code', $code)->call('save')
+        ->assertHasErrors('form.name')->assertSee('Nama kategori harus diisi.')
+        ->assertSet('operation', 'category.create')->assertSet('form.code', $code)
+        ->set('form.name', 'Synthetic duplicate')->call('save')
+        ->assertHasErrors('form.code')->assertSee('Kode kategori sudah digunakan.');
+    $categoriesPage->call('begin', 'category.update', $category)
+        ->set('form.version', 1)->set('form.id', 0)
         ->set('form.name', 'Synthetic UI revised')->set('form.reason', 'Synthetic UI edit')
-        ->call('save')->assertHasNoErrors()->assertSee('Perubahan Inventory berhasil');
-    $check(DB::table('equipment_categories')->where('id', $category)->value('name') === 'Synthetic UI revised', 'Livewire edit persists transactionally');
-    $component->set('tab', 'models')->call('begin', 'model.photo_add', $model)
+        ->call('save')->assertHasNoErrors()->assertDispatched('equipment-feedback', message: 'Kategori berhasil diperbarui.', type: 'success');
+    $check(DB::table('equipment_categories')->where('id', $category)->value('name') === 'Synthetic UI revised', 'Livewire edit uses locked record and version');
+    $component->call('begin', 'model.photo_add', $model)
         ->set('photos', [UploadedFile::fake()->image('synthetic.png', 64, 64)])
         ->call('save')->assertHasNoErrors();
     $modelPhoto = DB::table('equipment_model_photos')->where('model_id', $model)->first();
@@ -132,14 +139,18 @@ try {
     $check(DB::table('equipment_model_photos')->where('model_id', $model)->count() === $beforePhotoCount, 'invalid image rejected without photo record');
     $component->call('cancel');
 
-    $component->set('tab', 'units')->assertSee($code.'-001');
-    $component->set('tab', 'audit')->set('search', 'Synthetic lifecycle')->assertSee('unit.retired');
+    $component->call('toggleUnits', $model)->assertSee($code.'-001')->call('inspect', 'unit', $units[2]->id)->assertSee('Galeri '.$code.'-003');
+    Livewire::actingAs($actor)->test(Index::class, ['section'=>'audit'])->set('search', 'Synthetic lifecycle')->assertSee('Menonaktifkan unit secara permanen')->assertSee($code.'-001');
     $check(true, 'Livewire renders models/categories/units/audit with filters');
     $check(DB::transactionLevel() === 1, 'outer rollback boundary intact');
 } finally {
-    if (str_contains($photoRoot, 'inventory-smoke-')) {
-        $ownedFiles = Storage::disk('local')->allFiles('equipment/photos');
-        Storage::disk('local')->delete($ownedFiles);
+    foreach ($photoPaths as $relative) {
+        $path = realpath($photoRoot.'/'.$relative);
+        if ($path && dirname($path) === realpath($photoRoot.'/equipment/photos')
+            && dirname(dirname(dirname($path))) === realpath($photoRoot)
+            && dirname(realpath($photoRoot)) === realpath(storage_path('app/testing'))) {
+            unlink($path);
+        }
     }
     config(['filesystems.disks.local' => $oldDisk]);
     Storage::forgetDisk('local');

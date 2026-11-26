@@ -51,6 +51,9 @@ class Index extends Component
             ->orderBy('agenda_date')->orderByRaw('start_time IS NULL')->orderBy('start_time')->orderBy('id')->take(30)->get();
 
         return view('livewire.public.agenda.index', compact('monthStart', 'days', 'calendarAgendas', 'upcoming'))
-            ->layout('layouts.public', ['title' => 'Agenda WPiTV — Jadwal Kegiatan Publik']);
+            ->layout('layouts.public', [
+                'title' => 'Agenda | WPiTV — Televisi Digital Kampus',
+                'description' => 'Kalender kegiatan publik, produksi, peliputan, dan jadwal siaran WPiTV Institut Widya Pratama dalam zona waktu WIB.',
+            ]);
     }
 }

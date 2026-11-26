@@ -14,7 +14,6 @@
         </div>
     </div>
 
-    @include('livewire.public.live-streams.highlights')
     <!-- HERO -->
     @php($activeFeatured = $defaultFeaturedVideo)
     <section class="pub-hero home-featured-hero" id="featuredHero" aria-labelledby="heroTitle">
@@ -163,18 +162,18 @@
         </div>
     </section>
 
-
+    @include('livewire.public.live-streams.highlights', ['isHomepage' => true])
 
     <!-- PROGRAM ACARA -->
     <section class="pub-section" id="program" aria-labelledby="programH">
         <div class="pub-container">
             <div class="flex items-end justify-between gap-5 flex-wrap mb-8" data-reveal>
                 <div>
-                    <div class="sec-label">Program Acara</div>
-                    <h2 class="sec-h2" id="programH">Program Acara WPiTV</h2>
+                    <div class="sec-label">Program</div>
+                    <h2 class="sec-h2" id="programH">Program Acara</h2>
                 </div>
                 <a href="{{ route('program.index') }}" class="sec-link">
-                    Lihat Semua
+                    Lihat Semua Program
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                         <path d="M5 12h14M12 5l7 7-7 7" />
@@ -212,11 +211,11 @@
         <div class="pub-container">
             <div class="flex items-end justify-between gap-5 flex-wrap mb-8" data-reveal>
                 <div>
-                    <div class="sec-label">Tayangan Terbaru</div>
+                    <div class="sec-label">Katalog Video</div>
                     <h2 class="sec-h2" id="tayanganH">Tayangan Terbaru</h2>
                 </div>
                 <a href="{{ route('video.index') }}" class="sec-link">
-                    Lihat Semua
+                    Jelajahi Tayangan
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                         <path d="M5 12h14M12 5l7 7-7 7" />
@@ -299,10 +298,10 @@
             <div class="flex items-end justify-between gap-5 flex-wrap mb-8" data-reveal>
                 <div>
                     <div class="sec-label">Berita Kampus</div>
-                    <h2 class="sec-h2" id="beritaH">Berita Terkini</h2>
+                    <h2 class="sec-h2" id="beritaH">Berita Terbaru</h2>
                 </div>
                 <a href="{{ route('news.index') }}" class="sec-link">
-                    Lihat Semua
+                    Lihat Semua Berita
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                         <path d="M5 12h14M12 5l7 7-7 7" />
@@ -376,11 +375,10 @@
         <div class="pub-container">
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-center">
                 <div class="lg:col-span-6" data-reveal>
-                    <div class="sec-label sec-label--navy mb-4">Di Balik Layar</div>
+                    <div class="sec-label sec-label--navy mb-4">Komunitas Mahasiswa</div>
                     <h2 class="sec-h2 !text-[#EDF4FF] mb-3.5" id="tvclubH">Di Balik Layar WPiTV</h2>
                     <p class="text-sm sm:text-base text-white/70 leading-relaxed mb-7">
-                        Kenali mahasiswa yang berada di balik produksi program, berita, dan tayangan WPiTV. TV Club
-                        adalah komunitas media kampus yang menggerakkan siaran dari semester ke semester.
+                        Kenali mahasiswa penggerak produksi program, berita, dan tayangan WPiTV. TV Club menjadi ruang belajar dan berkarya di media kampus.
                     </p>
 
                     <div class="grid grid-cols-2 gap-3.5 mb-8">
@@ -416,7 +414,7 @@
 
                     <div class="flex gap-3 flex-wrap">
                         <a href="{{ route('tvclub.index') }}" class="pub-btn pub-btn--primary">Jelajahi TV Club</a>
-                        <a href="{{ route('tvclub.index') }}" class="pub-btn pub-btn--ghost-white">Lihat Semua Kru</a>
+                        <a href="{{ route('tvclub.members.index') }}" class="pub-btn pub-btn--ghost-white">Kenali Kru TV Club</a>
                     </div>
                 </div>
 
@@ -437,7 +435,7 @@
                                         {{ $member->name }}
                                     </div>
                                     <div class="text-[11px] text-white/50 truncate">
-                                        {{ $member->groups->first()?->pivot->role ?? 'Crew Member' }}
+                                        {{ $member->groups->first()?->pivot->role ?? 'Anggota Kru' }}
                                     </div>
                                     @if($member->groups->first())
                                         <span
@@ -460,7 +458,7 @@
     @if($upcomingAgendas->isNotEmpty())
     <section class="pub-section pub-section--muted home-agenda" id="agenda" aria-labelledby="agendaH">
         <div class="pub-container">
-            <div class="sec-head"><div><div class="sec-label">Kalender Publik</div><h2 class="sec-h2" id="agendaH">Agenda Terdekat</h2><p class="sec-sub">Jadwal kegiatan publik WPiTV yang dapat Anda ikuti.</p></div><a href="{{ route('agenda.index') }}" class="pub-btn pub-btn--secondary">Lihat Semua Agenda</a></div>
+            <div class="sec-head"><div><div class="sec-label">Kalender Publik</div><h2 class="sec-h2" id="agendaH">Agenda Terdekat</h2><p class="sec-sub">Jadwal kegiatan dan siaran publik WPiTV dalam waktu WIB.</p></div><a href="{{ route('agenda.index') }}" class="pub-btn pub-btn--secondary">Lihat Agenda</a></div>
             <div class="home-agenda-grid">
                 @foreach($upcomingAgendas as $agenda)
                     <article class="home-agenda-card"><div class="home-agenda-date"><strong>{{ $agenda->agenda_date->format('d') }}</strong><span>{{ $agenda->agenda_date->locale('id')->translatedFormat('M Y') }}</span></div><div><span>{{ $agenda->type_label }}</span><h3>{{ $agenda->title }}</h3><p><i class="bi bi-clock"></i> {{ $agenda->time_label }} @if($agenda->location) · <i class="bi bi-geo-alt"></i> {{ $agenda->location }} @endif</p></div></article>
@@ -487,8 +485,8 @@
                         Punya kegiatan yang ingin diliput?
                     </h2>
                     <p class="text-sm sm:text-base text-[var(--text-muted)] leading-relaxed max-w-xl mb-7">
-                        WPiTV menerima pengajuan peliputan kegiatan kampus Institut Widya Pratama. Dari seminar, lomba,
-                        wisuda, hingga acara komunitas — tim kami siap meliput dan mendokumentasikan untuk kamu.
+                        WPiTV menerima pengajuan peliputan kegiatan di Institut Widya Pratama — mulai dari seminar,
+                        kompetisi, wisuda, hingga acara komunitas. Ajukan jadwal agar tim kami dapat meninjaunya.
                     </p>
                     <div class="flex gap-3 flex-wrap">
                         <a href="{{ route('peliputan.create') }}" class="pub-btn pub-btn--primary">

@@ -13,7 +13,7 @@
             <div class="max-w-2xl">
                 <div class="hero-eyebrow !mb-3">
                     <span class="w-1.5 h-1.5 rounded-full bg-brand-blue" aria-hidden="true"></span>
-                    Katalog Siaran &amp; Produksi
+                    Katalog Tayangan &amp; Produksi
                 </div>
                 <h1 class="hero-title !text-3xl md:!text-4xl !mb-2.5" id="videoIndexTitle">
                     Tayangan WPiTV
@@ -39,7 +39,7 @@
                         <input 
                             type="text" 
                             wire:model.live.debounce.300ms="search"
-                            placeholder="Cari judul tayangan / ID YouTube..." 
+                            placeholder="Cari judul tayangan..." 
                             class="w-full pl-10 pr-4 py-2.5 bg-[var(--bg)] border border-[var(--border)] rounded-lg text-sm text-[var(--text-primary)] placeholder-[var(--text-faint)] focus:outline-none focus:border-brand-blue transition-colors"
                             aria-label="Cari tayangan"
                         >
@@ -98,7 +98,7 @@
                             wire:click="resetFilters" 
                             class="text-brand-blue dark:text-brand-cyan hover:underline font-semibold"
                         >
-                            Reset Semua Filter
+                            Reset Filter
                         </button>
                     </div>
                 @endif
@@ -148,10 +148,10 @@
                         </svg>
                     </div>
                     <h3 class="font-heading font-bold text-lg text-[var(--text-primary)] mb-1">
-                        Tidak ada tayangan yang ditemukan.
+                        {{ $search !== '' || $program !== '' || $year !== '' ? 'Tidak ada hasil yang sesuai.' : 'Tayangan belum tersedia.' }}
                     </h3>
                     <p class="text-sm text-[var(--text-muted)] max-w-xs mx-auto mb-6">
-                        Coba sesuaikan kata kunci atau filter pencarian Anda.
+                        {{ $search !== '' || $program !== '' || $year !== '' ? 'Coba ubah kata kunci atau filter pencarian.' : 'Tayangan terbaru akan ditampilkan di sini.' }}
                     </p>
                     <button 
                         type="button" 

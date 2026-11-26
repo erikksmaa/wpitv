@@ -123,7 +123,7 @@
                     <div class="mb-3 text-center p-3 bg-light rounded border position-relative">
                         @if ($image)
                             <img src="{{ $image->temporaryUrl() }}" 
-                                 alt="Preview Baru" 
+                                 alt="Pratinjau Baru" 
                                  class="img-fluid rounded shadow-sm object-fit-cover" 
                                  style="max-height: 180px; width: 100%;">
                             <div class="badge bg-info text-dark mt-2">Gambar Baru Dipilih (Belum Disimpan)</div>
@@ -149,7 +149,7 @@
 
                     <!-- File Input -->
                     <div class="mb-2">
-                        <label for="imageUpload" class="form-label small fw-semibold">Pilih File Cover</label>
+                        <label for="imageUpload" class="form-label small fw-semibold">Pilih Berkas Sampul</label>
                         <input type="file" 
                                id="imageUpload" 
                                wire:model="image" 

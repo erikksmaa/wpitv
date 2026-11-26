@@ -16,6 +16,16 @@ class LiveStreamEvent extends Model
 
     public const TYPES = ['created', 'agenda_updated', 'manual_updated', 'youtube_updated', 'status_changed', 'archive_linked', 'archive_unlinked'];
 
+    public const TYPE_LABELS = [
+        'created' => 'Live Streaming dibuat',
+        'agenda_updated' => 'Disinkronkan dari Agenda',
+        'manual_updated' => 'Jadwal manual diperbarui',
+        'youtube_updated' => 'Tautan YouTube diperbarui',
+        'status_changed' => 'Status siaran diubah',
+        'archive_linked' => 'Arsip tayangan ditautkan',
+        'archive_unlinked' => 'Tautan arsip dilepaskan',
+    ];
+
     protected $guarded = ['*'];
 
     protected $dateFormat = 'Y-m-d H:i:s.u';

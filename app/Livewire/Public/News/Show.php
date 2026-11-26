@@ -42,6 +42,7 @@ class Show extends Component
             'metaDescription' => $metaDescription,
         ])->layout('layouts.public', [
             'title' => "{$this->news->title} | WPiTV — Televisi Digital Kampus",
+            'description' => $metaDescription !== '' ? $metaDescription : 'Baca berita terbaru dari WPiTV Institut Widya Pratama.',
         ]);
     }
 }

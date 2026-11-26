@@ -72,7 +72,7 @@ class Index extends Component
 
         // Delete Protection: Block deletion if foreign keys exist
         if ($generation->members_count > 0 || $generation->groups_count > 0 || $generation->organization_positions_count > 0) {
-            session()->flash('error', 'Generation cannot be deleted because it is still used by members or production groups.');
+            session()->flash('error', 'Generasi tidak dapat dihapus karena masih digunakan oleh anggota atau kelompok produksi.');
 
             return;
         }

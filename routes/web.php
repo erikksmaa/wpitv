@@ -2,8 +2,6 @@
 
 use App\Http\Controllers\EquipmentPhotoController;
 use App\Http\Controllers\EquipmentReturnPhotoController;
-use App\Http\Controllers\MonthlyActivityAttachmentController;
-use App\Http\Controllers\MonthlyActivityDocumentController;
 use App\Livewire\Admin\Dashboard\Index as AdminDashboard;
 use App\Livewire\Admin\Programs\Form;
 use App\Livewire\Admin\Programs\Index;
@@ -49,21 +47,30 @@ Route::get('/agenda', App\Livewire\Public\Agenda\Index::class)->name('agenda.ind
 |--------------------------------------------------------------------------
 */
 Route::prefix('admin')->middleware(['auth', 'session.valid', 'active', 'role:'.implode(',', User::ADMIN_ROLES)])->group(function () {
-    Route::get('/inventory', App\Livewire\Admin\Inventory\Index::class)->name('admin.inventory.index');
+    Route::get('/inventory', function (\Illuminate\Http\Request $request) {
+        $route = match ($request->input('tab')) {
+            'categories' => 'admin.inventory.categories',
+            'audit' => 'admin.inventory.activity',
+            default => 'admin.inventory.equipment',
+        };
+        return redirect()->route($route, $request->except('tab'));
+    })->name('admin.inventory.index');
+    Route::get('/inventory/categories', App\Livewire\Admin\Inventory\Index::class)->defaults('section', 'categories')->name('admin.inventory.categories');
+    Route::get('/inventory/equipment', App\Livewire\Admin\Inventory\Index::class)->defaults('section', 'models')->name('admin.inventory.equipment');
+    Route::get('/inventory/activity', App\Livewire\Admin\Inventory\Index::class)->defaults('section', 'audit')->name('admin.inventory.activity');
     Route::get('/equipment-reports/{section}/csv', App\Http\Controllers\EquipmentReportExportController::class)->whereIn('section', ['inventory', 'loans'])->name('admin.equipment-reports.csv');
-    Route::get('/equipment-reports/{section?}', App\Livewire\Admin\EquipmentReports\Index::class)->whereIn('section', ['dashboard', 'inventory', 'loans'])->name('admin.equipment-reports.index');
+    Route::redirect('/equipment-reports/dashboard', '/admin/inventory/equipment');
+    Route::get('/equipment-reports/{section?}', App\Livewire\Admin\EquipmentReports\Index::class)->whereIn('section', ['inventory', 'loans'])->name('admin.equipment-reports.index');
     Route::get('/equipment-loans', App\Livewire\Admin\EquipmentLoans\Index::class)->name('admin.equipment-loans.index');
     Route::get('/equipment-loans/create', App\Livewire\Admin\EquipmentLoans\Index::class)->name('admin.equipment-loans.create');
     Route::get('/equipment-loans/{loanId}', App\Livewire\Admin\EquipmentLoans\Show::class)->whereNumber('loanId')->name('admin.equipment-loans.show');
     Route::get('/equipment-loans/{loan}/photos/{photo}', [EquipmentReturnPhotoController::class, 'show'])->whereNumber(['loan', 'photo'])->name('admin.equipment-loans.photos');
     Route::get('/inventory/photos/{kind}/{photo}', [EquipmentPhotoController::class, 'show'])->whereIn('kind', ['model', 'unit'])->whereNumber('photo')->name('admin.inventory.photos');
-    Route::get('/monthly-reports', App\Livewire\Admin\MonthlyReports\Index::class)->name('admin.monthly-reports.index');
-    Route::get('/monthly-reports/{reportId}', App\Livewire\Admin\MonthlyReports\Show::class)->whereNumber('reportId')->name('admin.monthly-reports.show');
-    Route::post('/monthly-reports/{report}/csv', [MonthlyActivityDocumentController::class, 'csv'])->whereNumber('report')->name('admin.monthly-reports.csv');
-    Route::get('/monthly-reports/{report}/print', [MonthlyActivityDocumentController::class, 'print'])->whereNumber('report')->name('admin.monthly-reports.print');
-    Route::post('/monthly-reports/{report}/attachments', [MonthlyActivityAttachmentController::class, 'store'])->whereNumber('report')->name('admin.monthly-reports.attachments.store');
-    Route::get('/monthly-reports/{report}/attachments/{attachment}', [MonthlyActivityAttachmentController::class, 'download'])->whereNumber(['report', 'attachment'])->name('admin.monthly-reports.attachments.download');
-    Route::get('/monthly-reports/{report}/versions/{revision}/attachments/{attachment}', [MonthlyActivityAttachmentController::class, 'historical'])->whereNumber(['report', 'revision', 'attachment'])->name('admin.monthly-reports.attachments.historical');
+    Route::get('/social/accounts', App\Livewire\Admin\Social\Catalog::class)->defaults('section', 'accounts')->name('admin.social.accounts');
+    Route::get('/social/posts', App\Livewire\Admin\Social\Catalog::class)->defaults('section', 'posts')->name('admin.social.posts');
+    Route::get('/social/reports', App\Livewire\Admin\Social\Report::class)->name('admin.social.reports');
+    Route::get('/social/reports/draft/{period}', [App\Http\Controllers\SocialDocumentController::class,'draft'])->where('period','[0-9]{4}-(0[1-9]|1[0-2])')->name('admin.social.draft');
+    Route::get('/social/reports/versions/{version}/{format?}', [App\Http\Controllers\SocialDocumentController::class,'version'])->whereNumber('version')->whereIn('format',['preview','xlsx','print'])->name('admin.social.preview');
     Route::get('/', AdminDashboard::class)->name('admin.index');
     Route::get('/dashboard', AdminDashboard::class)->name('admin.dashboard');
 
@@ -118,6 +125,7 @@ Route::prefix('admin')->middleware(['auth', 'session.valid', 'active', 'role:'.i
     Route::get('/roles', App\Livewire\Admin\Roles\Index::class)->name('admin.roles.index');
     Route::get('/roles/create', App\Livewire\Admin\Roles\Form::class)->name('admin.roles.create');
     Route::get('/roles/{role}/edit', App\Livewire\Admin\Roles\Form::class)->name('admin.roles.edit');
+    Route::get('/settings', App\Livewire\Admin\Settings\Index::class)->name('admin.settings.index');
 
     // Peliputan / Coverage Management
     Route::get('/peliputan', App\Livewire\Admin\Peliputan\Index::class)->name('admin.peliputan.index');

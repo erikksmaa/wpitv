@@ -303,7 +303,7 @@
                             @if ($preparedWhatsAppUrl)
                                 <div class="alert alert-success mb-3" role="status">
                                     <strong>Status sudah disimpan.</strong>
-                                    Draft WhatsApp untuk {{ $preparedWhatsAppCode }} siap dibuka. Pesan tetap perlu dikirim manual di WhatsApp.
+                                    Draf WhatsApp untuk {{ $preparedWhatsAppCode }} siap dibuka. Pesan tetap perlu dikirim manual di WhatsApp.
                                 </div>
                             @endif
 

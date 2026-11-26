@@ -68,7 +68,7 @@
                         </div>
                         <div class="coverage-field">
                             <label for="description">Deskripsi Kegiatan <span aria-hidden="true">*</span></label>
-                            <textarea id="description" wire:model="description" rows="6" maxlength="3000" placeholder="Jelaskan tujuan, rangkaian singkat, atau konteks kegiatan..." aria-describedby="descriptionHelp @error('description') descriptionError @enderror" @error('description') aria-invalid="true" @enderror></textarea>
+                            <textarea id="description" wire:model="description" rows="6" maxlength="3000" placeholder="Tuliskan tujuan dan rangkaian singkat kegiatan..." aria-describedby="descriptionHelp @error('description') descriptionError @enderror" @error('description') aria-invalid="true" @enderror></textarea>
                             <small id="descriptionHelp">Jelaskan tujuan, rangkaian singkat, atau konteks kegiatan yang perlu diketahui tim WPiTV.</small>
                             @error('description')<p class="coverage-field-error" id="descriptionError">{{ $message }}</p>@enderror
                         </div>
@@ -90,7 +90,7 @@
 
             <aside class="coverage-form-aside" aria-labelledby="coverageGuideTitle">
                 <div class="coverage-guide-card"><p class="coverage-section-eyebrow">Sebelum Mengirim</p><h2 id="coverageGuideTitle">Pengajuan yang mudah ditinjau</h2><ul><li><span>✓</span> Pastikan kontak aktif</li><li><span>✓</span> Periksa tanggal kegiatan</li><li><span>✓</span> Jelaskan kegiatan dengan ringkas</li><li><span>✓</span> Simpan kode setelah berhasil</li></ul></div>
-                <div class="coverage-guide-status"><strong>Sudah pernah mengajukan?</strong><p>Gunakan kode dan kontak Anda untuk melihat perkembangannya.</p><a href="{{ route('peliputan.status') }}">Cek Status Pengajuan <span aria-hidden="true">→</span></a></div>
+                <div class="coverage-guide-status"><strong>Sudah pernah mengajukan?</strong><p>Gunakan kode dan nomor kontak yang didaftarkan untuk memantau perkembangannya.</p><a href="{{ route('peliputan.status') }}">Cek Status Pengajuan <span aria-hidden="true">→</span></a></div>
             </aside>
         </div>
     </div></section>

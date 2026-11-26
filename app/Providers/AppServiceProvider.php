@@ -30,6 +30,12 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         TestingDatabaseGuard::assertSafe($this->app);
+        foreach (['manage' => 'managers', 'review' => 'reviewers'] as $action => $group) {
+            Gate::define('social.'.$action, fn (User $user) => $user->status && $user->canAccessAdmin()
+                && in_array((string) $user->id, config('social-media.'.$group), true));
+        }
+        Gate::define('social.view', fn (User $user) => $user->canAny(['social.manage', 'social.review']));
+
         foreach (EquipmentPermissions::catalog() as $permission) {
             Gate::define($permission, fn (User $user) => EquipmentPermissions::allows($user, $permission));
         }
@@ -59,6 +65,10 @@ class AppServiceProvider extends ServiceProvider
         });
 
         Gate::define('view-visitor-statistics', function (User $user) {
+            return $user->status && $user->isSuperAdmin();
+        });
+
+        Gate::define('manage-website-settings', function (User $user) {
             return $user->status && $user->isSuperAdmin();
         });
     }

@@ -273,7 +273,7 @@ class TVClubGenerationManagementTest extends TestCase
         Livewire::actingAs($this->superAdmin)
             ->test(Index::class)
             ->call('delete', $gen->id)
-            ->assertSee('Generation cannot be deleted because it is still used by members or production groups.');
+            ->assertSee('Generasi tidak dapat dihapus karena masih digunakan oleh anggota atau kelompok produksi.');
 
         $this->assertDatabaseHas('tvclub_generations', [
             'id' => $gen->id,
@@ -304,7 +304,7 @@ class TVClubGenerationManagementTest extends TestCase
         Livewire::actingAs($this->superAdmin)
             ->test(Index::class)
             ->call('delete', $gen->id)
-            ->assertSee('Generation cannot be deleted because it is still used by members or production groups.');
+            ->assertSee('Generasi tidak dapat dihapus karena masih digunakan oleh anggota atau kelompok produksi.');
 
         $this->assertDatabaseHas('tvclub_generations', [
             'id' => $gen->id,

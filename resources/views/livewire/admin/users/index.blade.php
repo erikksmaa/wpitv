@@ -135,8 +135,8 @@
                 <div class="col-6 col-md-2">
                     <select wire:model.live="statusFilter" class="form-select bg-light">
                         <option value="">Semua Status</option>
-                        <option value="1">Aktif (1)</option>
-                        <option value="0">Nonaktif (0)</option>
+                        <option value="1">Aktif</option>
+                        <option value="0">Nonaktif</option>
                     </select>
                 </div>
 
@@ -195,7 +195,7 @@
                                     <div class="fw-bold text-dark">
                                         {{ $user->name }}
                                         @if($user->id === auth()->id())
-                                            <span class="badge bg-secondary bg-opacity-25 text-dark ms-1 small">You</span>
+                                            <span class="badge bg-secondary bg-opacity-25 text-dark ms-1 small">Anda</span>
                                         @endif
                                     </div>
                                     <small class="text-muted font-monospace">@<span>{{ $user->username }}</span></small>
@@ -255,7 +255,7 @@
                                     <div class="text-muted">
                                         <i class="bi bi-people fs-1 d-block mb-2 text-secondary"></i>
                                         <h6>Pengguna tidak ditemukan.</h6>
-                                        <p class="small mb-0">Belum ada data user yang sesuai dengan filter atau pencarian Anda.</p>
+                                        <p class="small mb-0">Belum ada data pengguna yang sesuai dengan filter atau pencarian Anda.</p>
                                     </div>
                                 </td>
                             </tr>

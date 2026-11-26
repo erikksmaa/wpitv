@@ -114,7 +114,7 @@
             <div class="card border-0 shadow-sm mb-4">
                 <div class="card-header bg-white border-0 pt-4 pb-2">
                     <h6 class="card-title mb-0 text-primary">
-                        <i class="bi bi-image me-2"></i>Cover Gambar Program
+                        <i class="bi bi-image me-2"></i>Gambar Sampul Program
                     </h6>
                 </div>
                 <div class="card-body">
@@ -122,7 +122,7 @@
                     <div class="mb-3 text-center p-3 bg-light rounded border position-relative">
                         @if ($image)
                             <img src="{{ $image->temporaryUrl() }}" 
-                                 alt="Preview Baru" 
+                                 alt="Pratinjau Baru" 
                                  class="img-fluid rounded shadow-sm object-fit-cover" 
                                  style="max-height: 180px; width: 100%;">
                             <div class="badge bg-info text-dark mt-2">Gambar Baru Dipilih (Belum Disimpan)</div>
@@ -148,7 +148,7 @@
 
                     <!-- File Input -->
                     <div class="mb-2">
-                        <label for="imageUpload" class="form-label small fw-semibold">Pilih File Gambar</label>
+                        <label for="imageUpload" class="form-label small fw-semibold">Pilih Berkas Gambar</label>
                         <input type="file" 
                                id="imageUpload" 
                                wire:model="image" 

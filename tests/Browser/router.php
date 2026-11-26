@@ -47,9 +47,6 @@ try {
         mkdir($sessionDirectory, 0700, true);
     }
     $app['config']->set(['session.driver' => 'file', 'session.files' => $sessionDirectory, 'session.cookie' => 'wpitv_isolated_qa_session']);
-    if (getenv('WPITV_MONTHLY_ATTACHMENTS_QA') === 'true') {
-        $app['config']->set('filesystems.disks.local.root', dirname($configPath).'/private');
-    }
     $identity = $app['db']->selectOne('SELECT DATABASE() AS db,CURRENT_USER() AS account');
     if ($identity->db !== 'wpitv_rebuild_testing' || $identity->account !== 'wpitv_rebuild_runner@localhost') {
         throw new RuntimeException('QA_IDENTITY');

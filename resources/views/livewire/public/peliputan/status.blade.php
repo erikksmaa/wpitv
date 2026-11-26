@@ -18,10 +18,10 @@
                     Pelacakan Pengajuan
                 </div>
                 <h1 class="hero-title !text-3xl md:!text-4xl !mb-2.5" id="statusTitle">
-                    Cek Status Permohonan Liputan
+                    Cek Status Pengajuan Peliputan
                 </h1>
                 <p class="text-sm md:text-base text-[var(--text-muted)] leading-relaxed">
-                    Masukkan kode unik pengajuan dan kontak verifikasi Anda untuk melihat perkembangan tindak lanjut dari tim WPiTV.
+                    Masukkan kode pengajuan dan nomor WhatsApp saat mendaftar untuk melihat perkembangan tindak lanjut dari tim WPiTV.
                 </p>
             </div>
         </div>
@@ -55,7 +55,7 @@
                             <!-- Kontak Verifikasi -->
                             <div>
                                 <label for="phone" class="block text-xs font-semibold text-[var(--text-secondary)] mb-1.5">
-                                    No. WhatsApp / Telepon Pemohon <span class="text-red-500">*</span>
+                                    Nomor WhatsApp / Telepon <span class="text-red-500">*</span>
                                 </label>
                                 <input 
                                     type="text" 
@@ -177,15 +177,15 @@
                         <!-- STATUS MESSAGE -->
                         <div class="text-xs text-[var(--text-muted)] leading-relaxed p-4 rounded-xl bg-[var(--bg)] border border-[var(--border)]">
                             @if($coverageResult->status === 'pending')
-                                Permohonan Anda sedang dalam tahap verifikasi jadwal dan kru. Tim kami akan segera meninjau detail acara Anda.
+                                Pengajuan sedang dalam tahap peninjauan jadwal dan ketersediaan kru tim WPiTV.
                             @elseif($coverageResult->status === 'approved')
-                                Permohonan telah disetujui! Tim kru WPiTV telah dijadwalkan dan narahubung kami akan segera menghubungi Anda untuk koordinasi teknis di lokasi.
+                                Pengajuan disetujui. Tim kru WPiTV telah dijadwalkan dan akan menghubungi pemohon untuk koordinasi teknis di lokasi.
                             @elseif($coverageResult->status === 'in_progress')
                                 Tim kru WPiTV sedang bertugas meliput dan mendokumentasikan kegiatan ini.
                             @elseif($coverageResult->status === 'completed')
-                                Peliputan telah selesai dilaksanakan. Hasil liputan akan diproses oleh tim editing untuk penayangan dan arsip.
+                                Peliputan telah selesai dilaksanakan. Hasil liputan diproses oleh tim editing untuk penayangan atau arsip.
                             @elseif($coverageResult->status === 'rejected')
-                                Pengajuan peliputan ini belum dapat kami proses. Hubungi Admin WPiTV bila Anda memerlukan informasi lebih lanjut.
+                                Pengajuan peliputan ini belum dapat kami penuhi. Hubungi Admin WPiTV melalui WhatsApp bila memerlukan informasi lebih lanjut.
                             @endif
                         </div>
 
@@ -193,7 +193,7 @@
                             <div class="coverage-whatsapp-panel">
                                 <div>
                                     <strong>Perlu koordinasi lebih lanjut?</strong>
-                                    <span>Hubungi Admin WPiTV melalui WhatsApp dengan detail pengajuan Anda.</span>
+                                    <span>Hubungi Admin WPiTV melalui WhatsApp dengan membawa detail pengajuan.</span>
                                 </div>
                                 <a href="{{ $whatsAppUrl }}"
                                    class="pub-btn pub-btn--secondary coverage-whatsapp-action"

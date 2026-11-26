@@ -189,7 +189,7 @@
                         @if ($isEdit && $preparedWhatsAppUrl)
                             <div class="alert alert-success mt-4 mb-0" role="status">
                                 <strong>Perubahan sudah disimpan.</strong>
-                                Draft WhatsApp menggunakan status terbaru dan siap dibuka.
+                                Draf WhatsApp menggunakan status terbaru dan siap dibuka.
                             </div>
                         @endif
                         @error('whatsapp')

@@ -191,7 +191,12 @@ class LiveStreamLifecycle
                         $this->validateAgenda($agenda);
                     } else {
                         $this->allowFields($reschedule, [...self::SCHEDULE_FIELDS, 'visibility']);
-                        $this->applyManual($stream, $fresh, [...$reschedule, 'title' => $stream->manual_title, 'program_id' => $stream->manual_program_id]);
+                        $this->applyManual($stream, $fresh, [
+                            ...$reschedule,
+                            'title' => $stream->manual_title,
+                            'description' => $stream->manual_description,
+                            'program_id' => $stream->manual_program_id,
+                        ]);
                     }
                 } elseif ($reschedule !== []) {
                     throw ValidationException::withMessages(['operation' => 'Jadwal ulang hanya dapat diberikan untuk siaran dibatalkan.']);
@@ -372,17 +377,25 @@ class LiveStreamLifecycle
 
     private function applyManual(LiveStream $stream, User $actor, array $input): void
     {
-        $this->allowFields($input, ['title', 'program_id', ...self::SCHEDULE_FIELDS, 'visibility']);
+        $this->allowFields($input, ['title', 'description', 'program_id', ...self::SCHEDULE_FIELDS, 'visibility']);
         if (is_string($input['title'] ?? null)) {
             $input['title'] = trim($input['title']);
         }
+        if (is_string($input['description'] ?? null)) {
+            $input['description'] = trim(strip_tags($input['description']));
+        }
         $data = Validator::make($input, [
             'title' => ['required', 'string', 'max:200'],
+            'description' => ['nullable', 'string', 'max:5000'],
             'program_id' => ['nullable', 'integer', 'min:1', 'exists:ms_program,id'],
             'agenda_date' => ['required', 'date_format:Y-m-d'],
             'start_time' => ['required', 'date_format:H:i'],
             'end_time' => ['nullable', 'date_format:H:i'],
             'visibility' => ['required', Rule::in(['public', 'internal'])],
+        ], [
+            'title.required' => 'Judul siaran harus diisi.',
+            'title.max' => 'Judul siaran maksimal 200 karakter.',
+            'description.max' => 'Deskripsi terlalu panjang (maksimal 5.000 karakter).',
         ])->validate();
         $programId = $data['program_id'] ?? null;
         if ($programId !== null) {
@@ -390,6 +403,12 @@ class LiveStreamLifecycle
         }
         [$start, $end] = LiveStreamSchedule::manual($data['agenda_date'], $data['start_time'], $data['end_time'] ?? null);
         $stream->manual_title = $data['title'];
+        $description = ($data['description'] ?? '') !== '' ? $data['description'] : null;
+        if (LiveStream::supportsManualDescription()) {
+            $stream->manual_description = $description;
+        } elseif ($description !== null) {
+            throw ValidationException::withMessages(['description' => 'Kolom deskripsi manual belum tersedia pada database.']);
+        }
         $stream->manual_program_id = $programId;
         $stream->manual_starts_at = $start;
         $stream->manual_ends_at = $end;
@@ -405,7 +424,7 @@ class LiveStreamLifecycle
         $liveData = $stream->only(['id', 'agenda_id', 'youtube_id', 'status', 'archive_video_id', 'version']);
         $liveData['creation_mode'] = $agenda === null ? 'manual' : 'agenda';
         if ($agenda === null) {
-            $liveData += $stream->only(['manual_title', 'manual_program_id', 'manual_visibility']);
+            $liveData += $stream->only(array_filter(['manual_title', LiveStream::supportsManualDescription() ? 'manual_description' : null, 'manual_program_id', 'manual_visibility']));
             foreach (['manual_starts_at', 'manual_ends_at'] as $column) {
                 $liveData[$column] = $stream->$column?->utc()->format('Y-m-d H:i:s.u');
             }

@@ -54,7 +54,7 @@
                     <div class="flex gap-3 flex-wrap mt-auto">
                         <a href="#daftar-tayangan" class="pub-btn pub-btn--primary">
                             <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor" aria-hidden="true"><polygon points="3,1 13,7 3,13"/></svg>
-                            Lihat Tayangan
+                            Tonton Tayangan
                         </a>
                         <a href="{{ route('program.index') }}" class="pub-btn pub-btn--secondary">
                             &larr; Kembali ke Program
@@ -75,7 +75,7 @@
                     <h2 class="sec-h2" id="videoSectionTitle">Tayangan {{ $program->name }}</h2>
                 </div>
                 <span class="text-xs font-medium text-[var(--text-muted)]">
-                    Total {{ $videos->total() }} video
+                    {{ $videos->total() }} Tayangan
                 </span>
             </div>
 
@@ -116,7 +116,7 @@
                         Belum ada tayangan untuk program ini.
                     </h3>
                     <p class="text-xs text-[var(--text-muted)]">
-                        Tayangan episode terbaru akan segera diunggah.
+                        Episode terbaru untuk program ini belum tersedia.
                     </p>
                 </div>
             @endif

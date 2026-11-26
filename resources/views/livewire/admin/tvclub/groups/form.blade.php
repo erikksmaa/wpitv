@@ -144,7 +144,7 @@
                                     <input type="text" 
                                            wire:model="customRole" 
                                            class="form-control form-control-sm" 
-                                           placeholder="Atau ketik role custom...">
+                                           placeholder="Atau ketik peran khusus...">
                                 </div>
 
                                 <div class="col-12 col-md-3">
